@@ -573,12 +573,12 @@ export function Overview() {
 
             return (
               <div>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.1, color: c.muted, marginBottom: 8 }}>FLOW</div>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.1, color: '#ffffff', marginBottom: 8 }}>FLOW</div>
                 {/* KPI tiles */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
                   {kpis.map(kpi => (
                     <div key={kpi.label} style={{ background: kpi.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: '10px 12px' }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.8, color: c.muted, marginBottom: 3 }}>{kpi.label.toUpperCase()}</div>
+                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.8, color: '#ffffff', marginBottom: 3 }}>{kpi.label.toUpperCase()}</div>
                       <div style={{ fontSize: 24, fontWeight: 800, color: kpi.color, lineHeight: 1 }}>{kpi.value}</div>
                     </div>
                   ))}
@@ -610,10 +610,10 @@ export function Overview() {
           {/* Ready Builds KPI */}
           <div style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
             <div>
-              <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 4 }}>READY BUILDS</div>
+              <div style={{ fontSize: 10, color: '#ffffff', fontWeight: 700, letterSpacing: 0.8, marginBottom: 4 }}>READY BUILDS</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                 <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#d0a838' : c.text, lineHeight: 1 }}>{readyBuildsCount}</span>
-                <span style={{ fontSize: 12, color: c.muted, fontWeight: 500 }}>queued</span>
+                <span style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>queued</span>
               </div>
             </div>
             <button
@@ -639,7 +639,7 @@ export function Overview() {
 
           {/* Build Activity Feed */}
           <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: '0 0 auto' }}>
-            <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: c.muted, borderBottom: `1px solid ${c.border}` }}>BUILD ACTIVITY</div>
+            <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: '#ffffff', borderBottom: `1px solid ${c.border}` }}>BUILD ACTIVITY</div>
             <div
               ref={feedRef}
               onMouseEnter={() => setFeedHovered(true)}
@@ -668,7 +668,7 @@ export function Overview() {
 
           {/* Code Stream */}
           <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-            <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: c.muted, borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: '#ffffff', borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>CODE STREAM</span>
               <span style={{ width: 6, height: 6, borderRadius: 999, background: '#39d632', display: 'inline-block' }} />
             </div>
