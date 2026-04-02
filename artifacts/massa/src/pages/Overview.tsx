@@ -271,14 +271,15 @@ export function Overview() {
         <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 16, overflow: 'auto', borderRadius: 2 }}>
 
           {/* Input area */}
-          <div style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: 14, marginBottom: 12, minHeight: 110 }}>
-            <div style={{ fontSize: 11, letterSpacing: 1, color: c.muted, marginBottom: 10, fontWeight: 700 }}>RAW INPUT</div>
-            <div style={{ color: c.muted, fontSize: 15, lineHeight: 1.5 }}>Describe what you want to build... Be as messy as you want. MASSA will turn it into the right execution.</div>
+          <div style={{ border: `1px solid ${c.green}55`, background: isDark ? '#0a120a' : '#edf7eb', borderRadius: 12, padding: 16, marginBottom: 12, minHeight: 130, position: 'relative' }}>
+            <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.green, marginBottom: 12, fontWeight: 700 }}>RAW INPUT</div>
+            <div style={{ color: isDark ? '#4a5e4a' : '#7a9878', fontSize: 15, lineHeight: 1.6 }}>Describe what you want to build... Be as messy as you want. MASSA will turn it into the right execution.</div>
+            <div style={{ position: 'absolute', top: 12, right: 14, width: 6, height: 6, borderRadius: 999, background: c.green, animation: 'pg 2s ease-in-out infinite' }} />
           </div>
 
           {/* Action bar */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-            <button style={{ background: c.green, color: '#081008', border: 'none', padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Architect &amp; Build</button>
+            <button style={{ background: 'transparent', color: c.green, border: `1px solid ${c.green}`, padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Architect &amp; Build</button>
             <div style={{ border: `1px solid ${c.border}`, padding: '9px 12px', borderRadius: 9, color: c.text, background: c.alt, fontSize: 12 }}>Claude recommended</div>
             <div style={{ marginLeft: 'auto' }}>
               <button style={{ border: `1px solid ${c.green}`, background: c.greenSoft, color: c.green, padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Run</button>
