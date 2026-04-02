@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { Workspace } from "@/pages/Workspace";
 import { Overview } from "@/pages/Overview";
+import { InsideMassa } from "@/pages/InsideMassa";
 import { PROJECTS } from "@/data/mock";
 
 const queryClient = new QueryClient();
@@ -19,6 +20,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Overview} />
+      <Route path="/inside" component={InsideMassa} />
       <Route path="/workspace/:projectId">
         {(params) => <WorkspaceRoute projectId={params.projectId} />}
       </Route>

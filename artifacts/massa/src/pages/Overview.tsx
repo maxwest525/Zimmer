@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'wouter'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 
@@ -24,6 +25,7 @@ export function Overview() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [selectedProjectId, setSelectedProjectId] = useState('trading-bot')
+  const [, navigate] = useLocation()
 
   const [projects, setProjects] = useState<Project[]>([
     {
@@ -336,18 +338,20 @@ export function Overview() {
             </div>
 
             {[
-              'Dashboard',
-              'History',
-              'Automations',
-              'Marketing',
-              'Skills',
-              'APIs',
-              'Web Scraper',
-            ].map((item, i) => {
-              const active = i === 0
+              { label: 'Dashboard', path: '/' },
+              { label: 'History', path: '' },
+              { label: 'Automations', path: '' },
+              { label: 'Marketing', path: '' },
+              { label: 'Skills', path: '' },
+              { label: 'APIs', path: '' },
+              { label: 'Web Scraper', path: '' },
+              { label: 'Inside MASSA', path: '/inside' },
+            ].map((item) => {
+              const active = item.label === 'Dashboard'
               return (
                 <div
-                  key={item}
+                  key={item.label}
+                  onClick={() => item.path && navigate(item.path)}
                   style={{
                     padding: '12px 12px',
                     borderRadius: 10,
@@ -357,10 +361,10 @@ export function Overview() {
                     border: active ? `1px solid ${colors.border}` : '1px solid transparent',
                     fontSize: 15,
                     fontWeight: active ? 600 : 500,
-                    cursor: 'pointer',
+                    cursor: item.path ? 'pointer' : 'default',
                   }}
                 >
-                  {item}
+                  {item.label}
                 </div>
               )
             })}
