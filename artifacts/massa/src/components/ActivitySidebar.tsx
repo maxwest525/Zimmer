@@ -3,7 +3,7 @@ import { ActivityItem, ActivityStatus } from "@/data/mock";
 import { Loader2, CheckCircle2, Clock, XCircle } from "lucide-react";
 
 interface ActivityItemProps {
-  item: ActivityItem;
+  item: ActivityItem & { projectName?: string };
 }
 
 function statusIcon(status: ActivityStatus) {
@@ -25,6 +25,11 @@ function ActivityItemRow({ item }: ActivityItemProps) {
       <div className="mt-0.5">{statusIcon(item.status)}</div>
       <div className="flex-1 min-w-0">
         <div className="text-xs text-foreground leading-snug">{item.label}</div>
+        {item.projectName && (
+          <div className="text-[10px] text-emerald-600/80 font-medium mt-0.5 truncate">
+            {item.projectName}
+          </div>
+        )}
         {item.sublabel && (
           <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
             {item.sublabel}
@@ -39,16 +44,17 @@ function ActivityItemRow({ item }: ActivityItemProps) {
 }
 
 interface ActivitySidebarProps {
-  items: ActivityItem[];
+  items: (ActivityItem & { projectName?: string })[];
+  isGlobal?: boolean;
 }
 
-export function ActivitySidebar({ items }: ActivitySidebarProps) {
+export function ActivitySidebar({ items, isGlobal }: ActivitySidebarProps) {
   return (
     <aside className="flex flex-col h-full w-64 shrink-0 border-l border-border bg-sidebar">
       <div className="px-3 py-3 border-b border-border shrink-0">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground select-none">
-            Activity
+            {isGlobal ? "All Activity" : "Activity"}
           </span>
           {items.some((i) => i.status === "running") && (
             <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">

@@ -7,9 +7,10 @@ interface ActivityDrawerProps {
   items: ActivityItem[];
   open: boolean;
   onClose: () => void;
+  isGlobal?: boolean;
 }
 
-export function ActivityDrawer({ items, open, onClose }: ActivityDrawerProps) {
+export function ActivityDrawer({ items, open, onClose, isGlobal }: ActivityDrawerProps) {
   return (
     <>
       {open && (
@@ -31,7 +32,7 @@ export function ActivityDrawer({ items, open, onClose }: ActivityDrawerProps) {
           >
             <X className="w-4 h-4" />
           </button>
-          <ActivitySidebar items={items} />
+          <ActivitySidebar items={items} isGlobal={isGlobal} />
         </div>
       </div>
     </>

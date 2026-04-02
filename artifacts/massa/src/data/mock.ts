@@ -1,5 +1,5 @@
 export type ProjectStatus = "running" | "idle" | "needs-review" | "failed";
-export type TaskStatus = "running" | "queued" | "completed" | "failed";
+export type TaskStatus = "running" | "queued" | "completed" | "failed" | "needs-review";
 export type ActivityStatus = "running" | "completed" | "failed" | "waiting";
 
 export interface Project {
@@ -124,7 +124,7 @@ export const PROJECT_CARDS: Record<string, ExecutionCard[]> = {
       id: "ec6",
       title: "Chart Component Library",
       goal: "Create reusable Recharts components for bar, line, and funnel visualizations with shared theming.",
-      status: "needs-review" as unknown as TaskStatus,
+      status: "needs-review",
       progress: 90,
       stack: ["Claude", "React", "Recharts"],
       outputs: ["src/components/charts/BarChart.tsx", "src/components/charts/Funnel.tsx"],

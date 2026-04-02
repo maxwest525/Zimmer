@@ -41,9 +41,14 @@ function StatusBadge({ status }: StatusBadgeProps) {
       className: "bg-red-500/10 text-red-600 border-red-500/20",
       icon: <XCircle className="w-3 h-3" />,
     },
+    "needs-review": {
+      label: "Needs Review",
+      className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+      icon: <Clock className="w-3 h-3" />,
+    },
   };
 
-  const { label, className, icon } = config[status];
+  const { label, className, icon } = config[status] ?? config.queued;
   return (
     <span
       className={cn(
@@ -68,6 +73,7 @@ function ProgressBar({ value, status }: ProgressBarProps) {
     queued: "bg-amber-400",
     completed: "bg-blue-500",
     failed: "bg-red-500",
+    "needs-review": "bg-amber-400",
   };
   return (
     <div className="w-full h-1 bg-border rounded-full overflow-hidden">
