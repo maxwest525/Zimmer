@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
 import { Project, ProjectStatus } from "@/data/mock";
-import { AlertCircle, CheckCircle2, Loader2, Circle, XCircle, Settings2 } from "lucide-react";
+import { AlertCircle, Loader2, Circle, XCircle, Settings2, Activity } from "lucide-react";
 
 interface WorkspaceHeaderProps {
   project: Project;
+  onOpenActivity?: () => void;
+  activityCount?: number;
 }
 
 function StatusPill({ status }: { status: ProjectStatus }) {
@@ -43,16 +45,30 @@ function StatusPill({ status }: { status: ProjectStatus }) {
   );
 }
 
-export function WorkspaceHeader({ project }: WorkspaceHeaderProps) {
+export function WorkspaceHeader({ project, onOpenActivity, activityCount = 0 }: WorkspaceHeaderProps) {
   return (
     <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
       <div className="flex items-center gap-3">
         <h1 className="text-base font-semibold text-foreground">{project.name}</h1>
         <StatusPill status={project.status} />
       </div>
-      <button className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-        <Settings2 className="w-4 h-4" />
-      </button>
+      <div className="flex items-center gap-1">
+        {onOpenActivity && (
+          <button
+            onClick={onOpenActivity}
+            className="lg:hidden relative p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+            title="Open activity panel"
+          >
+            <Activity className="w-4 h-4" />
+            {activityCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            )}
+          </button>
+        )}
+        <button className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+          <Settings2 className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 }

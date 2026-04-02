@@ -5,6 +5,7 @@ import { ProjectTabs } from "@/components/ProjectTabs";
 import { WritingCanvas } from "@/components/WritingCanvas";
 import { ExecutionCardsPanel } from "@/components/ExecutionCardsPanel";
 import { ActivitySidebar } from "@/components/ActivitySidebar";
+import { ActivityDrawer } from "@/components/ActivityDrawer";
 import {
   PROJECTS,
   EXECUTION_CARDS_ACTIVE,
@@ -19,15 +20,22 @@ export function Workspace() {
   const [activeProjectId, setActiveProjectId] = useState(PROJECTS[0].id);
   const [activeTab, setActiveTab] = useState<Tab>("canvas");
   const [isActive, setIsActive] = useState(true);
+  const [activityOpen, setActivityOpen] = useState(false);
 
   const activeProject = PROJECTS.find((p) => p.id === activeProjectId) ?? PROJECTS[0];
   const cards = isActive ? EXECUTION_CARDS_ACTIVE : EXECUTION_CARDS_IDLE;
   const activity = isActive ? ACTIVITY_ACTIVE : ACTIVITY_IDLE;
 
-  function handleSubmit(value: string) {
+  function handleSubmit(_value: string) {
     if (!isActive) {
       setIsActive(true);
     }
+  }
+
+  function handleSelectProject(id: string) {
+    setActiveProjectId(id);
+    const found = PROJECTS.find((pr) => pr.id === id);
+    setIsActive(found ? found.status === "running" : false);
   }
 
   return (
@@ -35,15 +43,15 @@ export function Workspace() {
       <ProjectSidebar
         projects={PROJECTS}
         activeProjectId={activeProjectId}
-        onSelectProject={(id) => {
-          setActiveProjectId(id);
-          const p = PROJECTS.find((pr) => pr.id === id);
-          setIsActive(p?.status === "running" ?? false);
-        }}
+        onSelectProject={handleSelectProject}
       />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <WorkspaceHeader project={activeProject} />
+        <WorkspaceHeader
+          project={activeProject}
+          onOpenActivity={() => setActivityOpen(true)}
+          activityCount={activity.filter((a) => a.status === "running").length}
+        />
         <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="flex-1 overflow-y-auto">
@@ -55,7 +63,17 @@ export function Workspace() {
         </div>
       </main>
 
-      <ActivitySidebar items={activity} />
+      {/* Desktop: persistent right sidebar */}
+      <div className="hidden lg:flex">
+        <ActivitySidebar items={activity} />
+      </div>
+
+      {/* Tablet/narrow: slide-over drawer */}
+      <ActivityDrawer
+        items={activity}
+        open={activityOpen}
+        onClose={() => setActivityOpen(false)}
+      />
     </div>
   );
 }
