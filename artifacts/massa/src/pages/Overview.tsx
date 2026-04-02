@@ -770,42 +770,6 @@ export function Overview() {
             overflow: 'auto',
           }}
         >
-          {/* Execution Simulation */}
-          <div
-            style={{
-              border: `1px solid ${colors.border}`,
-              background: colors.panel2,
-              borderRadius: 14,
-              padding: 14,
-            }}
-          >
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>Execution Simulation</div>
-            <div style={{ color: colors.muted, fontSize: 13, marginBottom: 14 }}>
-              MASSA decides the flow and shows what is happening now.
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {['Claude — Brain', 'n8n — Routing', 'Claude Code — Build', 'Lovable — UI'].map(
-                (item, index) => (
-                  <div
-                    key={item}
-                    style={{
-                      border: `1px solid ${colors.border}`,
-                      background: index < 3 ? colors.greenSoft : colors.panel,
-                      color: index < 3 ? colors.text : colors.muted,
-                      borderRadius: 10,
-                      padding: '10px 12px',
-                      fontSize: 13,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {item}
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-
           {/* Agent Flow */}
           <div
             style={{
