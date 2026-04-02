@@ -6,36 +6,25 @@ import { WritingCanvas } from "@/components/WritingCanvas";
 import { ExecutionCardsPanel } from "@/components/ExecutionCardsPanel";
 import { ActivitySidebar } from "@/components/ActivitySidebar";
 import { ActivityDrawer } from "@/components/ActivityDrawer";
-import {
-  PROJECTS,
-  EXECUTION_CARDS_ACTIVE,
-  EXECUTION_CARDS_IDLE,
-  ACTIVITY_ACTIVE,
-  ACTIVITY_IDLE,
-} from "@/data/mock";
+import { PROJECTS, PROJECT_CARDS, PROJECT_ACTIVITY } from "@/data/mock";
 
 type Tab = "canvas" | "builds" | "history";
 
 export function Workspace() {
   const [activeProjectId, setActiveProjectId] = useState(PROJECTS[0].id);
   const [activeTab, setActiveTab] = useState<Tab>("canvas");
-  const [isActive, setIsActive] = useState(true);
   const [activityOpen, setActivityOpen] = useState(false);
 
   const activeProject = PROJECTS.find((p) => p.id === activeProjectId) ?? PROJECTS[0];
-  const cards = isActive ? EXECUTION_CARDS_ACTIVE : EXECUTION_CARDS_IDLE;
-  const activity = isActive ? ACTIVITY_ACTIVE : ACTIVITY_IDLE;
+  const cards = PROJECT_CARDS[activeProjectId] ?? [];
+  const activity = PROJECT_ACTIVITY[activeProjectId] ?? [];
+  const isActive = activeProject.status === "running";
 
   function handleSubmit(_value: string) {
-    if (!isActive) {
-      setIsActive(true);
-    }
   }
 
   function handleSelectProject(id: string) {
     setActiveProjectId(id);
-    const found = PROJECTS.find((pr) => pr.id === id);
-    setIsActive(found ? found.status === "running" : false);
   }
 
   return (
