@@ -1,0 +1,223 @@
+Build a desktop-first application layout for MASSA that is focused on clarity, simultaneous project visibility, and easy understanding of AI workflow state.
+
+This is a layout and structure task only.
+Do not focus on colors, branding, visual style, or fancy design.
+Prioritize clean information architecture, spacing, and component relationships.
+
+APP PURPOSE
+
+MASSA is a reasoning-first AI command system.
+Users may have multiple projects open over time, and multiple tasks or agents working within a project.
+The interface should make it extremely easy to understand:
+- what project is active
+- what the user is currently working on
+- what the system is currently doing
+- what jobs are running, queued, completed, or failed
+
+This is not a chatbot layout.
+This is not a developer terminal.
+This is not a traditional dashboard overloaded with tiny widgets.
+
+The layout should feel like an AI operating workspace.
+
+PRIMARY LAYOUT
+
+Create a 3-column desktop application shell:
+
+1. LEFT SIDEBAR, PROJECTS
+Width: narrow to medium fixed column
+Purpose:
+- show all projects
+- allow quick switching between projects
+- allow creation of new project
+- show lightweight status indicators per project
+
+Content:
+- top action: + New Project
+- project list
+- each project row should include:
+  - project name
+  - status indicator
+  - optional small metadata like running / idle / needs review
+
+Behavior:
+- selecting a project updates the center workspace and right activity panel
+- sidebar should be collapsible
+
+2. CENTER WORKSPACE
+Width: flexible main column
+Purpose:
+- primary user interaction area
+- writing / refining / building
+- execution cards for tasks inside the selected project
+
+The center workspace should have two major vertical regions:
+
+A. TOP REGION, INPUT / THINKING AREA
+This is where the user writes naturally.
+Include:
+- project title / current workspace label
+- optional small project tabs such as:
+  - Canvas
+  - Builds
+  - History
+- main writing canvas
+- area for sentence refinement behavior
+- primary action button such as Architect & Build
+
+The writing canvas should feel like a large open work area, not a chat input.
+
+B. BOTTOM REGION, EXECUTION CARDS AREA
+This region displays task cards generated after the user submits work.
+
+Each execution card should represent a distinct running or completed work unit, such as:
+- trading bot backend
+- dashboard UI
+- alert automation
+- data connection setup
+
+Each card should clearly show:
+- card title
+- short understanding / interpreted goal
+- current status
+- progress indicator
+- stack being used
+- current output or expected deliverables
+
+The execution card region should support multiple cards visible at once in a vertical or responsive grid layout.
+
+3. RIGHT SIDEBAR, ACTIVITY PANEL
+Width: narrow to medium fixed column
+Purpose:
+- show what the system is doing right now
+- show a simplified live workflow state
+- show recent completed or failed events
+
+This is not raw logs.
+This is a clean operational awareness panel.
+
+Content:
+- section title: Activity
+- live status items such as:
+  - building backend
+  - generating interface
+  - preparing automation
+  - completed packet
+- each item should include:
+  - status icon
+  - short label
+  - component or layer involved if useful
+
+Behavior:
+- updates as work progresses
+- tied to the active project
+- should be easy to scan in under 3 seconds
+
+KEY LAYOUT RULES
+
+1. Left = project navigation
+2. Center = user work + execution cards
+3. Right = system activity
+4. No chat bubbles
+5. No terminal panels
+6. No tool selection UI
+7. No cluttered analytics dashboard feel
+8. Must support multiple tasks per project without confusion
+
+PROJECT-LEVEL STRUCTURE
+
+Inside the center workspace, define a clean hierarchy:
+
+- Header row
+  - active project name
+  - optional project status
+  - optional secondary actions
+
+- Sub-navigation row
+  - Canvas
+  - Builds
+  - History
+
+- Main writing canvas section
+
+- Primary action section
+  - Architect & Build button
+
+- Execution cards section below the writing canvas
+
+EXECUTION CARD COMPONENT
+
+Design a reusable execution card layout with the following structure:
+
+- card header
+  - task title
+  - status badge
+
+- understanding block
+  - short interpreted summary of what the task is doing
+
+- stack block
+  - example: Claude / Claude Code / Lovable / n8n
+
+- progress block
+  - progress bar or simple step indicator
+
+- outputs block
+  - list of current or expected outputs
+
+Make the card readable, expandable, and scannable.
+
+ACTIVITY PANEL COMPONENT
+
+Design a reusable activity item layout with:
+
+- icon or state marker
+- concise action label
+- optional sub-label for system layer
+- timestamp optional
+
+Examples:
+- Building backend logic
+- Generating dashboard layout
+- Routing automation workflow
+- Build packet completed
+
+RESPONSIVE THINKING
+
+Primary target is desktop.
+Tablet may stack or compress columns.
+Mobile is not the main priority for this version.
+
+If screen narrows:
+- left sidebar may collapse to icons or hidden drawer
+- right activity panel may collapse into a slide-over panel
+- center workspace remains priority
+
+REACT COMPONENT STRUCTURE
+
+Provide the layout in a component-friendly structure like:
+
+- AppShell
+- ProjectSidebar
+- WorkspaceHeader
+- ProjectTabs
+- WritingCanvas
+- ActionBar
+- ExecutionCardsPanel
+- ExecutionCard
+- ActivitySidebar
+- ActivityItem
+
+OUTPUT FORMAT
+
+Respond with:
+
+1. a clear layout explanation
+2. a suggested React component tree
+3. a suggested CSS grid or flex layout structure
+4. a description of how the layout behaves in idle vs active execution states
+5. a simple wireframe in text form
+6. recommendations for which regions should scroll independently
+7. suggestions for how multiple running tasks should be displayed without confusion
+
+Keep the response practical, build-oriented, and easy for a frontend builder to implement.
