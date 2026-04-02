@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Project, ProjectStatus } from "@/data/mock";
 import { useIsNarrow } from "@/hooks/use-narrow";
@@ -9,6 +10,7 @@ import {
   Circle,
   AlertCircle,
   XCircle,
+  LayoutGrid,
 } from "lucide-react";
 
 interface StatusIconProps {
@@ -69,6 +71,7 @@ export function ProjectSidebar({
   activeProjectId,
   onSelectProject,
 }: ProjectSidebarProps) {
+  const [, navigate] = useLocation();
   const isNarrow = useIsNarrow();
   const [manualCollapsed, setManualCollapsed] = useState<boolean | null>(null);
 
@@ -108,9 +111,21 @@ export function ProjectSidebar({
       </div>
 
       <button
+        onClick={() => navigate("/")}
+        className={cn(
+          "flex items-center gap-2 mx-2 mt-2 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors text-xs font-medium shrink-0",
+          collapsed && "justify-center"
+        )}
+        title="Overview"
+      >
+        <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
+        {!collapsed && <span>Overview</span>}
+      </button>
+
+      <button
         onClick={() => {}}
         className={cn(
-          "flex items-center gap-2 mx-2 mt-2 mb-1 px-2 py-1.5 rounded-md border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 hover:bg-accent/50 transition-colors text-xs font-medium shrink-0",
+          "flex items-center gap-2 mx-2 mt-1 mb-1 px-2 py-1.5 rounded-md border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 hover:bg-accent/50 transition-colors text-xs font-medium shrink-0",
           collapsed && "justify-center"
         )}
         title="New Project"

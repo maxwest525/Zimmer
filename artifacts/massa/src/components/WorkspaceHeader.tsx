@@ -1,6 +1,7 @@
+import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Project, ProjectStatus } from "@/data/mock";
-import { AlertCircle, Loader2, Circle, XCircle, Settings2, Activity } from "lucide-react";
+import { AlertCircle, Loader2, Circle, XCircle, Settings2, Activity, LayoutGrid } from "lucide-react";
 
 interface WorkspaceHeaderProps {
   project: Project;
@@ -46,9 +47,20 @@ function StatusPill({ status }: { status: ProjectStatus }) {
 }
 
 export function WorkspaceHeader({ project, onOpenActivity, activityCount = 0 }: WorkspaceHeaderProps) {
+  const [, navigate] = useLocation();
+
   return (
     <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
       <div className="flex items-center gap-3">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+          title="Back to Overview"
+        >
+          <LayoutGrid className="w-3.5 h-3.5" />
+          <span className="text-xs font-medium">Overview</span>
+        </button>
+        <span className="text-muted-foreground/50 text-sm">/</span>
         <h1 className="text-base font-semibold text-foreground">{project.name}</h1>
         <StatusPill status={project.status} />
       </div>

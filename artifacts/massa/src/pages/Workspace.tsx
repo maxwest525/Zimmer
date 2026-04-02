@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { WorkspaceHeader } from "@/components/WorkspaceHeader";
 import { ProjectTabs } from "@/components/ProjectTabs";
@@ -10,8 +10,6 @@ import { OpenProjectsTabBar } from "@/components/OpenProjectsTabBar";
 import { PROJECTS, PROJECT_CARDS, PROJECT_ACTIVITY, ActivityItem } from "@/data/mock";
 
 type Tab = "canvas" | "builds" | "history";
-
-const DEFAULT_OPEN_PROJECT_IDS = ["p1", "p2"];
 
 function timestampToSortKey(ts: string): number {
   if (ts === "now") return 0;
@@ -43,11 +41,25 @@ function buildGlobalActivity(openProjectIds: string[]): (ActivityItem & { projec
   return items;
 }
 
-export function Workspace() {
-  const [openProjectIds, setOpenProjectIds] = useState<string[]>(DEFAULT_OPEN_PROJECT_IDS);
-  const [activeProjectId, setActiveProjectId] = useState(DEFAULT_OPEN_PROJECT_IDS[0]);
+interface WorkspaceProps {
+  initialProjectId?: string;
+}
+
+export function Workspace({ initialProjectId }: WorkspaceProps) {
+  const defaultIds = initialProjectId ? [initialProjectId] : ["p1", "p2"];
+  const [openProjectIds, setOpenProjectIds] = useState<string[]>(defaultIds);
+  const [activeProjectId, setActiveProjectId] = useState(defaultIds[0]);
   const [activeTab, setActiveTab] = useState<Tab>("canvas");
   const [activityOpen, setActivityOpen] = useState(false);
+
+  useEffect(() => {
+    if (!initialProjectId) return;
+    setOpenProjectIds((prev) => {
+      if (prev.includes(initialProjectId)) return prev;
+      return [initialProjectId, ...prev];
+    });
+    setActiveProjectId(initialProjectId);
+  }, [initialProjectId]);
 
   const openProjects = openProjectIds.map((id) => PROJECTS.find((p) => p.id === id)!).filter(Boolean);
 
