@@ -5,7 +5,7 @@ import { Project, ProjectStatus } from "@/data/mock";
 function StatusDot({ status }: { status: ProjectStatus }) {
   if (status === "running") {
     return (
-      <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
     );
   }
   if (status === "needs-review") {

@@ -52,7 +52,7 @@ export function WritingCanvas({ onSubmit, isActive }: WritingCanvasProps) {
       </div>
       {isActive && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
           System is working on your build. Tasks are running below.
         </div>
       )}

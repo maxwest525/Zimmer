@@ -58,7 +58,7 @@ export function ActivitySidebar({ items, isGlobal }: ActivitySidebarProps) {
           </span>
           {items.some((i) => i.status === "running") && (
             <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
               Live
             </span>
           )}

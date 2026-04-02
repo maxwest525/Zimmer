@@ -23,7 +23,7 @@ function StatusIcon({ status, className }: StatusIconProps) {
     return (
       <span
         className={cn(
-          "inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse",
+          "inline-block w-2 h-2 rounded-full bg-emerald-500",
           className
         )}
       />

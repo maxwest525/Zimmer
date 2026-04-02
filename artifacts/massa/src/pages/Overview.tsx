@@ -69,7 +69,7 @@ function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: 
   const pad = size === 'lg' ? '5px 12px' : '3px 8px'
   if (status === 'running') return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: colors.green, background: colors.greenSoft, border: `1px solid ${colors.green}`, padding: pad, borderRadius: 999, fontWeight: 600 }}>
-      <span style={{ width: 7, height: 7, borderRadius: 999, background: colors.green, display: 'inline-block', animation: 'pg 1.4s ease-in-out infinite', flexShrink: 0 }} />
+      <span style={{ width: 7, height: 7, borderRadius: 999, background: colors.green, display: 'inline-block', flexShrink: 0 }} />
       Building
     </span>
   )
@@ -366,7 +366,6 @@ export function Overview() {
   return (
     <div style={{ minHeight: '100vh', background: c.bg, color: c.text, fontFamily: 'Inter, Arial, sans-serif', padding: 16 }}>
       <style>{`
-        @keyframes pg { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
         @keyframes phase-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { height: 4px; width: 4px; }
@@ -426,7 +425,7 @@ export function Overview() {
           <div style={{ border: `1px solid ${c.border}`, background: c.panel, borderRadius: 12, padding: 16, marginBottom: 12, minHeight: 130, position: 'relative' }}>
             <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.green, marginBottom: 12, fontWeight: 700 }}>RAW INPUT</div>
             <div style={{ color: isDark ? '#4a5e4a' : '#7a9878', fontSize: 15, lineHeight: 1.6 }}>Describe what you want to build... Be as messy as you want. MASSA will turn it into the right execution.</div>
-            <div style={{ position: 'absolute', top: 12, right: 14, width: 6, height: 6, borderRadius: 999, background: c.green, animation: 'pg 2s ease-in-out infinite' }} />
+            <div style={{ position: 'absolute', top: 12, right: 14, width: 6, height: 6, borderRadius: 999, background: c.green }} />
           </div>
 
           {/* Action bar */}
@@ -517,8 +516,6 @@ export function Overview() {
                               {/* Skill color top pip */}
                               <div style={{ position: 'absolute', top: 0, left: 16, width: 28, height: 2, background: sc, borderRadius: '0 0 3px 3px' }} />
 
-                              {/* Running pulse dot */}
-                              {isRunning && <div style={{ position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%)', width: 7, height: 7, borderRadius: 999, background: sc, animation: 'pg 1.4s ease-in-out infinite' }} />}
 
                               <div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 5 }}>
@@ -572,7 +569,7 @@ export function Overview() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                 <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.1, color: c.muted, marginRight: 2 }}>LIVE</span>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: phaseMeta.color, background: `${phaseMeta.color}18`, border: `1px solid ${phaseMeta.color}44`, padding: '3px 9px', borderRadius: 999 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: 999, background: phaseMeta.color, display: 'inline-block', animation: phase !== 'done' && phase !== 'queued' ? 'pg 1.4s ease-in-out infinite' : 'none' }} />
+                  <span style={{ width: 6, height: 6, borderRadius: 999, background: phaseMeta.color, display: 'inline-block' }} />
                   {phaseMeta.label}
                 </span>
                 <span style={{ fontSize: 11, fontWeight: 600, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}33`, padding: '3px 9px', borderRadius: 999 }}>{activeCount} Build{activeCount !== 1 ? 's' : ''} Active</span>
@@ -645,7 +642,7 @@ export function Overview() {
           <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: c.muted, borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>CODE STREAM</span>
-              <span style={{ width: 6, height: 6, borderRadius: 999, background: '#39d632', display: 'inline-block', animation: 'pg 1.4s ease-in-out infinite' }} />
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: '#39d632', display: 'inline-block' }} />
             </div>
             <div
               ref={codeRef}
