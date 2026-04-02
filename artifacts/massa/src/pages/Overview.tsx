@@ -496,7 +496,7 @@ export function Overview() {
                 <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>{expandProject.name}</div>
                 <div style={{ color: c.muted, fontSize: 13 }}>{expandProject.goal}</div>
               </div>
-              <button onClick={() => setExpandedProject(null)} style={{ border: `1px solid ${c.border}`, background: c.alt, color: c.text, padding: '9px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Close</button>
+              <button onClick={() => setExpandedProject(null)} style={{ border: `1px solid rgba(255,255,255,0.35)`, background: c.alt, color: c.text, padding: '9px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Close</button>
             </div>
 
             {/* Root node */}
@@ -575,7 +575,7 @@ export function Overview() {
                       </div>
                       <div style={{ fontSize: 13, color: c.muted }}>{expandedBuild.project.name}</div>
                     </div>
-                    <button onClick={() => setExpandedBuildId(null)} style={{ border: `1px solid ${c.border}`, background: c.alt, color: c.text, padding: '9px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Close</button>
+                    <button onClick={() => setExpandedBuildId(null)} style={{ border: `1px solid rgba(255,255,255,0.35)`, background: c.alt, color: c.text, padding: '9px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Close</button>
                   </div>
 
                   {/* Progress */}
