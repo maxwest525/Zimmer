@@ -418,6 +418,35 @@ export function Overview() {
         {/* CENTER MAIN */}
         <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 16, overflow: 'auto', borderRadius: 2 }}>
 
+          {/* Pizza tracker — flow steps */}
+          {(() => {
+            const flowSteps = [
+              { label: 'Prompt', active: true },
+              { label: 'Enhance', active: true },
+              { label: 'Build', active: selectedProject.builds.some(b => b.status !== 'idle') },
+              { label: 'Deploy', active: selectedProject.builds.every(b => b.status === 'complete') },
+            ]
+            return (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 30px 20px', position: 'relative' }}>
+                {/* connecting line */}
+                <div style={{ position: 'absolute', left: 19, right: 19, top: 18, height: 2, background: c.border, zIndex: 0 }} />
+                {flowSteps.map((step, i) => (
+                  <div key={step.label} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1 }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 999,
+                      border: `1px solid ${step.active ? c.green : c.border}`,
+                      background: step.active ? c.greenSoft : c.alt,
+                      color: step.active ? c.green : c.muted,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, fontSize: 14,
+                    }}>{i + 1}</div>
+                    <div style={{ fontSize: 11, color: step.active ? c.text : c.muted, fontWeight: step.active ? 600 : 400 }}>{step.label}</div>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+
           {/* Input area */}
           <div style={{ border: `1px solid #ffffff`, background: c.panel, borderRadius: 12, padding: 16, marginBottom: 12, minHeight: 130, position: 'relative' }}>
             <div style={{ fontSize: 10, letterSpacing: 1.2, color: '#ffffff', marginBottom: 12, fontWeight: 700 }}>RAW INPUT</div>
