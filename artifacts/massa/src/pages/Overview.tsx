@@ -402,55 +402,49 @@ export function Overview() {
           <div
             style={{
               display: 'flex',
-              justifyContent: 'space-between',
               alignItems: 'center',
-              margin: '10px 30px 26px',
-              position: 'relative',
+              gap: 6,
+              marginBottom: 16,
+              padding: '6px 10px',
+              border: `1px solid ${colors.border}`,
+              borderRadius: 10,
+              background: colors.panel2,
+              width: 'fit-content',
             }}
           >
-            <div
-              style={{
-                position: 'absolute',
-                left: 30,
-                right: 30,
-                top: 20,
-                height: 2,
-                background: colors.border,
-                zIndex: 0,
-              }}
-            />
             {flowSteps.map((step, index) => (
               <div
                 key={step.label}
                 style={{
-                  position: 'relative',
-                  zIndex: 1,
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 8,
-                  flex: 1,
+                  gap: 5,
                 }}
               >
                 <div
                   style={{
-                    width: 38,
-                    height: 38,
+                    width: 18,
+                    height: 18,
                     borderRadius: 999,
                     border: `1px solid ${step.active ? colors.green : colors.border}`,
-                    background: step.active ? colors.greenSoft : colors.panel2,
+                    background: step.active ? colors.greenSoft : 'transparent',
                     color: step.active ? colors.green : colors.muted,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontWeight: 700,
+                    fontSize: 10,
+                    flexShrink: 0,
                   }}
                 >
                   {index + 1}
                 </div>
-                <div style={{ fontSize: 13, color: step.active ? colors.text : colors.muted }}>
+                <span style={{ fontSize: 12, color: step.active ? colors.text : colors.muted }}>
                   {step.label}
-                </div>
+                </span>
+                {index < flowSteps.length - 1 && (
+                  <span style={{ color: colors.border, marginLeft: 2, fontSize: 12 }}>›</span>
+                )}
               </div>
             ))}
           </div>
