@@ -517,7 +517,7 @@ export function Overview() {
                               <div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 5 }}>
                                   <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                                  <span style={{ fontSize: 9, color: sc, fontWeight: 700, border: `1px solid ${sc}44`, padding: '1px 5px', borderRadius: 4, background: `${sc}15`, flexShrink: 0 }}>{ps}</span>
+                                  <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '1px 5px', borderRadius: 4, background: `${sc}15`, flexShrink: 0 }}>{ps}</span>
                                 </div>
                                 <StatusBadge status={build.status} colors={c} />
                               </div>
@@ -734,7 +734,7 @@ export function Overview() {
                       <div style={{ width: 2, height: 20, background: c.border }} />
                       <div style={{ border: `1px solid ${sc}66`, borderTop: `3px solid ${sc}`, background: isDark ? `${sc}0a` : `${sc}08`, borderRadius: 12, padding: 14, width: 160, cursor: 'pointer' }} onClick={() => { setExpandedBuildId(build.id); setExpandedProject(null) }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                          <span style={{ fontSize: 11, color: sc, fontWeight: 700 }}>{ps}</span>
+                          <span style={{ fontSize: 11, color: '#ffffff', fontWeight: 700 }}>{ps}</span>
                           <StatusBadge status={build.status} colors={c} />
                         </div>
                         <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{build.title}</div>
@@ -745,7 +745,7 @@ export function Overview() {
                         </div>
                         <div style={{ fontSize: 10, color: c.muted, marginTop: 3 }}>{build.progress}%</div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
-                          {build.stack.map(s => <span key={s} style={{ fontSize: 9, border: `1px solid ${c.border}`, padding: '1px 5px', borderRadius: 4, color: SKILL_COLORS[s] || c.muted, background: c.panel }}>{s}</span>)}
+                          {build.stack.map(s => <span key={s} style={{ fontSize: 9, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '1px 5px', borderRadius: 4, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}>{s}</span>)}
                         </div>
                       </div>
                     </div>
@@ -785,7 +785,7 @@ export function Overview() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                         <div style={{ fontWeight: 800, fontSize: 22 }}>{expandedBuild.build.title}</div>
                         <StatusBadge status={expandedBuild.build.status} colors={c} size="lg" />
-                        <span style={{ fontSize: 11, color: sc, fontWeight: 700, border: `1px solid ${sc}44`, padding: '2px 7px', borderRadius: 6, background: `${sc}14` }}>{ps}</span>
+                        <span style={{ fontSize: 11, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '2px 7px', borderRadius: 6, background: `${sc}14` }}>{ps}</span>
                       </div>
                       <div style={{ fontSize: 13, color: c.muted }}>{expandedBuild.project.name}</div>
                     </div>
@@ -813,7 +813,7 @@ export function Overview() {
                     <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
                       <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>STACK</div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {expandedBuild.build.stack.map(s => <span key={s} style={{ fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '4px 10px', borderRadius: 999, color: SKILL_COLORS[s] || c.text, background: `${SKILL_COLORS[s] || c.green}12` }}>{s}</span>)}
+                        {expandedBuild.build.stack.map(s => <span key={s} style={{ fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '4px 10px', borderRadius: 999, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}>{s}</span>)}
                       </div>
                     </div>
                   </div>
