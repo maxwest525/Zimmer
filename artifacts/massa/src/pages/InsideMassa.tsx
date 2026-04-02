@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
+import { CompanyLogo, DualCompanyLogo } from '@/components/CompanyLogo'
 
 const KEYFRAMES = `
 @keyframes fadeInRow {
@@ -63,7 +64,15 @@ export function InsideMassa() {
     { label: 'Build', desc: 'The selected layers execute in parallel.' },
   ]
 
-  const systems = [
+  const systems: Array<{
+    name: string
+    label: string
+    role: string
+    for: string[]
+    why: string
+    color: string
+    logoNames?: string[]
+  }> = [
     {
       name: 'Claude',
       label: 'Think',
@@ -71,7 +80,6 @@ export function InsideMassa() {
       for: ['Intent', 'Refinement', 'Planning', 'Classification'],
       why: 'Used before anything is built.',
       color: c.green,
-      icon: '🧠',
     },
     {
       name: 'Claude Code',
@@ -80,7 +88,6 @@ export function InsideMassa() {
       for: ['Backend', 'APIs', 'Logic', 'Infrastructure'],
       why: 'Used for technical depth and code.',
       color: '#7ef57a',
-      icon: '⚙️',
     },
     {
       name: 'Lovable / Replit',
@@ -89,7 +96,7 @@ export function InsideMassa() {
       for: ['Dashboards', 'Front-end', 'Control panels', 'UI'],
       why: 'Used when the output needs a visual surface.',
       color: '#60a5fa',
-      icon: '🖥️',
+      logoNames: ['Lovable', 'Replit'],
     },
     {
       name: 'n8n',
@@ -98,7 +105,6 @@ export function InsideMassa() {
       for: ['Routing', 'Triggers', 'Scheduling', 'Notifications'],
       why: 'Used to connect, schedule, and orchestrate.',
       color: '#d0d45b',
-      icon: '🔁',
     },
   ]
 
@@ -245,7 +251,13 @@ export function InsideMassa() {
                     }}>
                       {/* Color accent bar */}
                       <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 48, height: 3, background: sys.color, borderRadius: '0 0 4px 4px' }} />
-                      <div style={{ fontSize: 26, marginBottom: 6, marginTop: 4, display: 'block' }}>{sys.icon}</div>
+                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6, marginTop: 4 }}>
+                        {sys.logoNames ? (
+                          <DualCompanyLogo names={sys.logoNames} size={28} accentColor={sys.color} />
+                        ) : (
+                          <CompanyLogo name={sys.name} size={32} accentColor={sys.color} />
+                        )}
+                      </div>
                       <div style={{ fontSize: 10, fontWeight: 700, color: sys.color, letterSpacing: 1, marginBottom: 3 }}>{sys.label}</div>
                       <div style={{ fontWeight: 700, fontSize: 12 }}>{sys.name}</div>
                     </div>
@@ -286,7 +298,13 @@ export function InsideMassa() {
                   borderTop: `2px solid ${sys.color}`,
                   background: c.alt,
                 }}>
-                  <div style={{ fontSize: 26, marginBottom: 10, display: 'block' }}>{sys.icon}</div>
+                  <div style={{ marginBottom: 10 }}>
+                    {sys.logoNames ? (
+                      <DualCompanyLogo names={sys.logoNames} size={32} accentColor={sys.color} />
+                    ) : (
+                      <CompanyLogo name={sys.name} size={36} accentColor={sys.color} />
+                    )}
+                  </div>
                   <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 3 }}>{sys.name}</div>
                   <div style={{ fontSize: 11, color: sys.color, fontWeight: 700, marginBottom: 10, letterSpacing: 0.5 }}>{sys.role}</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 12 }}>

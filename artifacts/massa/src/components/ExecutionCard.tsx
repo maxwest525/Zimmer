@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ExecutionCard as ExecutionCardData, TaskStatus } from "@/data/mock";
+import { InlineCompanyLogo } from "@/components/CompanyLogo";
 import {
   ChevronDown,
   ChevronUp,
@@ -153,8 +154,9 @@ export function ExecutionCard({ card }: ExecutionCardProps) {
               {card.stack.map((s) => (
                 <span
                   key={s}
-                  className="px-2 py-0.5 rounded text-[10px] font-medium bg-accent text-white border border-border"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-accent text-white border border-border"
                 >
+                  <InlineCompanyLogo name={s} size={12} />
                   {s}
                 </span>
               ))}
