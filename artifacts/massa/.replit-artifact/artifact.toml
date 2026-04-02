@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "MASSA"
+version = "1.0.0"
+id = "artifacts/massa"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23220
+
+[services.development]
+run = "pnpm --filter @workspace/massa run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/massa", "run", "build" ]
+publicDir = "artifacts/massa/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23220"
+BASE_PATH = "/"
