@@ -40,8 +40,8 @@ export function InsideMassa() {
     green: '#39d632',
     soft: isDark ? 'rgba(57,214,50,0.13)' : 'rgba(57,214,50,0.10)',
     greenDark: isDark ? '#091409' : '#e4f7e2',
-    terminalBg: isDark ? '#080e08' : '#f0f9ef',
-    terminalBorder: isDark ? '#1a2e1a' : '#b0d4ae',
+    terminalBg: isDark ? '#0a0a0a' : '#f5f5f5',
+    terminalBorder: isDark ? '#2a2a2a' : '#d0d0d0',
   }
 
   const nav = [
@@ -346,7 +346,7 @@ export function InsideMassa() {
                     <div style={{
                       position: 'absolute',
                       inset: 0,
-                      backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 3px, ${isDark ? 'rgba(57,214,50,0.025)' : 'rgba(57,214,50,0.05)'} 3px, ${isDark ? 'rgba(57,214,50,0.025)' : 'rgba(57,214,50,0.05)'} 4px)`,
+                      backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 3px, ${isDark ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.03)'} 3px, ${isDark ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.03)'} 4px)`,
                       pointerEvents: 'none',
                       borderRadius: 14,
                       zIndex: 0,
