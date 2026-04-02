@@ -406,6 +406,252 @@ export function InsideMassa() {
             </div>
           </section>
 
+          {/* EXECUTION SIMULATION INFOGRAPHIC */}
+          <section style={{ marginBottom: 24 }}>
+            <div style={{ marginBottom: 12 }}>
+              <h2 style={{ margin: 0, fontSize: 22 }}>Execution simulation</h2>
+              <p style={{ margin: '6px 0 0', color: colors.muted, lineHeight: 1.6 }}>
+                When you submit a request, MASSA activates layers in sequence. Here is how a full execution unfolds in real time.
+              </p>
+            </div>
+
+            <div
+              style={{
+                border: `1px solid ${colors.border}`,
+                background: colors.panelAlt,
+                borderRadius: 18,
+                padding: 24,
+              }}
+            >
+              {/* Pipeline visualization */}
+              <div style={{ display: 'flex', alignItems: 'stretch', gap: 0, marginBottom: 24 }}>
+                {[
+                  {
+                    layer: 'Claude',
+                    role: 'Brain',
+                    desc: 'Interprets your request, refines intent, classifies complexity, and builds the execution packet.',
+                    color: colors.green,
+                    phase: 'Think',
+                  },
+                  {
+                    layer: 'n8n',
+                    role: 'Routing',
+                    desc: 'Reads the packet and determines which systems to activate, in what order, with what dependencies.',
+                    color: '#d0d45b',
+                    phase: 'Route',
+                  },
+                  {
+                    layer: 'Claude Code',
+                    role: 'Build',
+                    desc: 'Writes backend logic, APIs, data models, infrastructure code, and complex multi-file systems.',
+                    color: '#7ef57a',
+                    phase: 'Build',
+                  },
+                  {
+                    layer: 'Lovable',
+                    role: 'UI',
+                    desc: 'Generates dashboards, interfaces, control panels, and any visual product surface.',
+                    color: '#60a5fa',
+                    phase: 'Surface',
+                  },
+                ].map((step, index, arr) => (
+                  <div key={step.layer} style={{ flex: 1, display: 'flex', alignItems: 'stretch' }}>
+                    <div
+                      style={{
+                        flex: 1,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: 14,
+                        padding: 16,
+                        background: colors.panel,
+                        position: 'relative',
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: 3,
+                          background: step.color,
+                          borderRadius: '14px 14px 0 0',
+                        }}
+                      />
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: step.color,
+                          letterSpacing: 1,
+                          marginBottom: 8,
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        {step.phase}
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+                        {step.layer}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: colors.green,
+                          fontWeight: 600,
+                          marginBottom: 8,
+                        }}
+                      >
+                        {step.role}
+                      </div>
+                      <div style={{ fontSize: 12, color: colors.muted, lineHeight: 1.55 }}>
+                        {step.desc}
+                      </div>
+                    </div>
+                    {index < arr.length - 1 && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '0 6px',
+                          color: colors.muted,
+                          fontSize: 18,
+                          fontWeight: 700,
+                        }}
+                      >
+                        ›
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Example execution trace */}
+              <div style={{ marginBottom: 20 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                    color: colors.muted,
+                    marginBottom: 12,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Example trace: "Build me a trading bot with alerts and a dashboard"
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {[
+                    {
+                      time: '0.0s',
+                      system: 'Claude',
+                      action: 'Receives raw input, identifies 3 sub-tasks: backend engine, alert system, dashboard UI',
+                      color: colors.green,
+                    },
+                    {
+                      time: '1.2s',
+                      system: 'Claude',
+                      action: 'Builds structured execution packet with dependencies and routing hints',
+                      color: colors.green,
+                    },
+                    {
+                      time: '2.0s',
+                      system: 'n8n',
+                      action: 'Routes packet: Claude Code for backend, n8n for alerts, Lovable for dashboard',
+                      color: '#d0d45b',
+                    },
+                    {
+                      time: '2.8s',
+                      system: 'Claude Code',
+                      action: 'Begins building trading engine: order executor, market feeds, risk module',
+                      color: '#7ef57a',
+                    },
+                    {
+                      time: '3.1s',
+                      system: 'n8n',
+                      action: 'Configures alert workflows: Slack integration, email templates, price triggers',
+                      color: '#d0d45b',
+                    },
+                    {
+                      time: '4.5s',
+                      system: 'Lovable',
+                      action: 'Generates dashboard: P&L chart, open positions table, trade history view',
+                      color: '#60a5fa',
+                    },
+                    {
+                      time: '8.2s',
+                      system: 'All',
+                      action: 'Execution complete — 3 parallel builds merged into one project output',
+                      color: colors.text,
+                    },
+                  ].map((entry, i, arr) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '50px 100px 1fr',
+                        gap: 12,
+                        alignItems: 'start',
+                        padding: '10px 0',
+                        borderBottom: i < arr.length - 1 ? `1px solid ${colors.border}` : 'none',
+                      }}
+                    >
+                      <span style={{ fontSize: 12, color: colors.muted, fontFamily: 'monospace' }}>
+                        {entry.time}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: entry.color }}>
+                        {entry.system}
+                      </span>
+                      <span style={{ fontSize: 13, color: colors.muted, lineHeight: 1.5 }}>
+                        {entry.action}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Key insight */}
+              <div
+                style={{
+                  border: `1px solid ${colors.border}`,
+                  background: colors.greenSoft,
+                  borderRadius: 12,
+                  padding: 14,
+                  display: 'flex',
+                  gap: 12,
+                  alignItems: 'flex-start',
+                }}
+              >
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 999,
+                    background: colors.green,
+                    color: '#091109',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 800,
+                    fontSize: 14,
+                    flexShrink: 0,
+                  }}
+                >
+                  !
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>
+                    Parallel execution, not sequential
+                  </div>
+                  <div style={{ fontSize: 13, color: colors.muted, lineHeight: 1.6 }}>
+                    MASSA does not wait for one system to finish before starting the next. Independent
+                    sub-tasks run in parallel across multiple agents simultaneously, which is why a
+                    complex project with 3-4 builds completes in seconds, not minutes.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* SYSTEMS */}
           <section style={{ marginBottom: 24 }}>
             <div style={{ marginBottom: 12 }}>
