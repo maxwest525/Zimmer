@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useMemo, useState } from 'react'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
@@ -20,7 +22,7 @@ type Project = {
   builds: Build[]
 }
 
-export function Overview() {
+export default function Page() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [selectedProjectId, setSelectedProjectId] = useState('trading-bot')
@@ -119,15 +121,19 @@ export function Overview() {
     const timer = setInterval(() => {
       setProjects((current) =>
         current.map((project) => {
+          let anyRunning = false
+
           const updatedBuilds = project.builds.map((build) => {
             if (build.status === 'running') {
+              anyRunning = true
               const next = Math.min(build.progress + Math.floor(Math.random() * 8), 100)
               return {
                 ...build,
                 progress: next,
-                status: (next >= 100 ? 'complete' : 'running') as Status,
+                status: next >= 100 ? 'complete' : 'running',
               }
             }
+
             return build
           })
 
@@ -234,7 +240,6 @@ export function Overview() {
         padding: 16,
       }}
     >
-      {/* HEADER */}
       <div
         style={{
           height: 64,
@@ -259,10 +264,9 @@ export function Overview() {
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 800,
-              fontSize: 15,
             }}
           >
-            M
+            ⚡
           </div>
           <div style={{ fontSize: 16, fontWeight: 700 }}>
             Massa <span style={{ color: colors.green }}>AI</span>
@@ -279,7 +283,6 @@ export function Overview() {
               padding: '8px 12px',
               borderRadius: 10,
               cursor: 'pointer',
-              fontSize: 13,
             }}
           >
             {isDark ? 'Light Mode' : 'Dark Mode'}
@@ -303,7 +306,6 @@ export function Overview() {
         </div>
       </div>
 
-      {/* 3-COLUMN GRID */}
       <div
         style={{
           display: 'grid',
@@ -312,7 +314,7 @@ export function Overview() {
           minHeight: 'calc(100vh - 110px)',
         }}
       >
-        {/* LEFT SIDEBAR */}
+        {/* SIDEBAR */}
         <div
           style={{
             border: `1px solid ${colors.border}`,
@@ -357,7 +359,6 @@ export function Overview() {
                     border: active ? `1px solid ${colors.border}` : '1px solid transparent',
                     fontSize: 15,
                     fontWeight: active ? 600 : 500,
-                    cursor: 'pointer',
                   }}
                 >
                   {item}
@@ -389,7 +390,7 @@ export function Overview() {
           </div>
         </div>
 
-        {/* MAIN CENTER */}
+        {/* MAIN */}
         <div
           style={{
             border: `1px solid ${colors.border}`,
@@ -398,7 +399,7 @@ export function Overview() {
             overflow: 'auto',
           }}
         >
-          {/* FLOW STEPS */}
+          {/* FLOW */}
           <div
             style={{
               display: 'flex',
@@ -455,7 +456,7 @@ export function Overview() {
             ))}
           </div>
 
-          {/* INPUT AREA */}
+          {/* INPUT */}
           <div
             style={{
               border: `1px solid ${colors.border}`,
@@ -483,7 +484,6 @@ export function Overview() {
             </div>
           </div>
 
-          {/* ACTION BAR */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 22 }}>
             <button
               style={{
@@ -494,10 +494,9 @@ export function Overview() {
                 borderRadius: 10,
                 fontWeight: 700,
                 cursor: 'pointer',
-                fontSize: 14,
               }}
             >
-              Enhance
+              → Enhance
             </button>
 
             <div
@@ -507,7 +506,6 @@ export function Overview() {
                 borderRadius: 10,
                 color: colors.text,
                 background: colors.panel2,
-                fontSize: 13,
               }}
             >
               Recommended: Claude
@@ -520,7 +518,6 @@ export function Overview() {
                 borderRadius: 10,
                 color: colors.text,
                 background: colors.panel2,
-                fontSize: 13,
               }}
             >
               Skill Set
@@ -535,7 +532,6 @@ export function Overview() {
                   padding: '10px 18px',
                   borderRadius: 10,
                   cursor: 'pointer',
-                  fontSize: 14,
                 }}
               >
                 Run
@@ -543,8 +539,8 @@ export function Overview() {
             </div>
           </div>
 
-          {/* PROJECTS HEADER */}
-          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* PROJECTS + BUILDS */}
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
             <div
               style={{
                 fontSize: 13,
@@ -555,10 +551,9 @@ export function Overview() {
             >
               PROJECTS
             </div>
-            <div style={{ fontSize: 13, color: colors.muted, cursor: 'pointer' }}>Find Project</div>
+            <div style={{ fontSize: 13, color: colors.muted }}>Find Project</div>
           </div>
 
-          {/* PROJECTS LIST */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {projects.map((project) => (
               <div
@@ -570,7 +565,6 @@ export function Overview() {
                   alignItems: 'start',
                 }}
               >
-                {/* Project card */}
                 <div
                   onClick={() => setSelectedProjectId(project.id)}
                   style={{
@@ -583,6 +577,7 @@ export function Overview() {
                     cursor: 'pointer',
                   }}
                 >
+                  <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 8 }}>▣</div>
                   <div style={{ fontWeight: 700, marginBottom: 6 }}>{project.name}</div>
                   <div style={{ color: colors.muted, fontSize: 13, marginBottom: 12 }}>
                     {project.goal}
@@ -628,14 +623,12 @@ export function Overview() {
                       padding: '10px 12px',
                       borderRadius: 10,
                       cursor: 'pointer',
-                      fontSize: 13,
                     }}
                   >
                     {expandedProject === project.id ? 'Collapse Project' : 'Expand Project'}
                   </button>
                 </div>
 
-                {/* Build cards — horizontally scrollable */}
                 <div
                   style={{
                     display: 'flex',
@@ -680,7 +673,7 @@ export function Overview() {
                         {build.summary}
                       </div>
 
-                      <div style={{ fontSize: 12, color: colors.muted, marginBottom: 4 }}>
+                      <div style={{ fontSize: 12, color: colors.muted, marginBottom: 6 }}>
                         Agent
                       </div>
                       <div style={{ marginBottom: 12, fontSize: 13 }}>{build.agent}</div>
@@ -702,9 +695,9 @@ export function Overview() {
                             style={{
                               fontSize: 12,
                               border: `1px solid ${colors.border}`,
-                              padding: '3px 8px',
+                              background: colors.panel,
+                              padding: '5px 8px',
                               borderRadius: 999,
-                              color: colors.muted,
                             }}
                           >
                             {item}
@@ -729,7 +722,6 @@ export function Overview() {
                             width: `${build.progress}%`,
                             height: '100%',
                             background: colors.green,
-                            transition: 'width 0.6s ease',
                           }}
                         />
                       </div>
@@ -737,7 +729,6 @@ export function Overview() {
                     </div>
                   ))}
 
-                  {/* Add agent placeholder */}
                   <div
                     style={{
                       minWidth: 210,
@@ -748,8 +739,6 @@ export function Overview() {
                       justifyContent: 'center',
                       color: colors.muted,
                       background: colors.panel2,
-                      cursor: 'pointer',
-                      fontSize: 14,
                     }}
                   >
                     + Add Agent
@@ -772,7 +761,6 @@ export function Overview() {
             overflow: 'auto',
           }}
         >
-          {/* Execution Simulation */}
           <div
             style={{
               border: `1px solid ${colors.border}`,
@@ -787,7 +775,7 @@ export function Overview() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {['Claude — Brain', 'n8n — Routing', 'Claude Code — Build', 'Lovable — UI'].map(
+              {['Claude → Brain', 'n8n → Routing', 'Claude Code → Build', 'Lovable → UI'].map(
                 (item, index) => (
                   <div
                     key={item}
@@ -808,7 +796,6 @@ export function Overview() {
             </div>
           </div>
 
-          {/* Agent Flow */}
           <div
             style={{
               border: `1px solid ${colors.border}`,
@@ -834,7 +821,6 @@ export function Overview() {
             </div>
           </div>
 
-          {/* Activity */}
           <div
             style={{
               border: `1px solid ${colors.border}`,
@@ -877,7 +863,7 @@ export function Overview() {
         </div>
       </div>
 
-      {/* EXPANDED PROJECT TREE MODAL */}
+      {/* EXPANDED TREE */}
       {expandedProject && (
         <div
           onClick={() => setExpandedProject(null)}
@@ -889,7 +875,6 @@ export function Overview() {
             justifyContent: 'center',
             alignItems: 'flex-end',
             padding: 18,
-            zIndex: 50,
           }}
         >
           <div
@@ -928,7 +913,6 @@ export function Overview() {
                   padding: '8px 12px',
                   borderRadius: 10,
                   cursor: 'pointer',
-                  fontSize: 13,
                 }}
               >
                 Close
@@ -953,7 +937,7 @@ export function Overview() {
                 </div>
               </div>
 
-              <div style={{ fontSize: 15, lineHeight: 1.9, color: colors.text }}>
+              <div style={{ fontSize: 15, lineHeight: 1.9 }}>
                 <div>├── Backend</div>
                 <div style={{ marginLeft: 24 }}>├── Core Engine</div>
                 <div style={{ marginLeft: 24 }}>├── Risk Layer</div>
