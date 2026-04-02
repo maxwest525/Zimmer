@@ -181,6 +181,25 @@ export function Overview() {
   const phase = getPhase(selectedProject.builds)
   const phaseMeta = PHASE_META[phase]
 
+  const readyBuildsCount = useMemo(
+    () => selectedProject.builds.filter(b => b.status === 'queued').length,
+    [selectedProject.builds]
+  )
+
+  const handleStartAll = () => {
+    setProjects(cur => cur.map(p => {
+      if (p.id !== selectedProjectId) return p
+      const builds = p.builds.map(b =>
+        b.status === 'queued' ? { ...b, status: 'running' as Status, progress: Math.max(b.progress, 5) } : b
+      )
+      const overall: Status = builds.every(b => b.status === 'complete') ? 'complete'
+        : builds.some(b => b.status === 'running') ? 'running'
+        : builds.some(b => b.status === 'queued') ? 'queued'
+        : p.status
+      return { ...p, builds, status: overall }
+    }))
+  }
+
   // Active layers from running builds of selected project
   const activeLayers = useMemo(() => {
     const layers = new Set<string>()
@@ -408,6 +427,36 @@ export function Overview() {
         {/* RIGHT PANEL — System Awareness */}
         <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 14, display: 'flex', flexDirection: 'column', gap: 14, overflow: 'auto', borderRadius: 2 }}>
           <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.muted, fontWeight: 700 }}>SYSTEM AWARENESS</div>
+
+          {/* Ready Builds KPI */}
+          <div style={{ border: `1px solid ${readyBuildsCount > 0 ? '#d0a83866' : c.border}`, background: readyBuildsCount > 0 ? (isDark ? 'rgba(208,168,56,0.08)' : 'rgba(208,168,56,0.1)') : c.alt, borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 4 }}>READY BUILDS</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#d0a838' : c.muted, lineHeight: 1 }}>{readyBuildsCount}</span>
+                <span style={{ fontSize: 12, color: c.muted, fontWeight: 500 }}>queued</span>
+              </div>
+            </div>
+            <button
+              onClick={handleStartAll}
+              disabled={readyBuildsCount === 0}
+              style={{
+                background: readyBuildsCount > 0 ? '#d0a838' : (isDark ? '#1e1e1e' : '#e8e8e8'),
+                color: readyBuildsCount > 0 ? (isDark ? '#0d0d0d' : '#fff') : c.muted,
+                border: 'none',
+                borderRadius: 8,
+                padding: '7px 13px',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: readyBuildsCount > 0 ? 'pointer' : 'default',
+                letterSpacing: 0.3,
+                transition: 'all 0.15s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Start All
+            </button>
+          </div>
 
           {/* Current phase */}
           <div style={{ border: `1px solid ${phaseMeta.color}44`, background: isDark ? `${phaseMeta.color}0d` : `${phaseMeta.color}15`, borderRadius: 12, padding: 14 }}>
