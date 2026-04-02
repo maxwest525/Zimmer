@@ -87,6 +87,28 @@ function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: 
   return <span style={{ fontSize: fs, color: '#888', background: 'rgba(128,128,128,0.10)', border: '1px solid rgba(128,128,128,0.2)', padding: pad, borderRadius: 999, fontWeight: 600 }}>Idle</span>
 }
 
+const KEYWORDS = ['async', 'function', 'await', 'const', 'let', 'if', 'return', 'export', 'import', 'from', 'throw', 'new', 'type', 'interface']
+
+function renderCodeLine(code: string, isDark: boolean) {
+  const kw = isDark ? '#c792ea' : '#7c3aed'
+  const str = isDark ? '#c3e88d' : '#166534'
+  const cmt = isDark ? '#546e7a' : '#9ca3af'
+  const def = isDark ? '#82aaff' : '#1e40af'
+  if (code.trim().startsWith('//') || code.trim().startsWith('#')) {
+    return <span style={{ color: cmt }}>{code}</span>
+  }
+  const tokens = code.split(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b(?:async|function|await|const|let|if|return|export|import|from|throw|new|type|interface)\b)/)
+  return (
+    <>
+      {tokens.map((t, i) => {
+        if ((t.startsWith('"') || t.startsWith("'") || t.startsWith('`')) && t.length > 1) return <span key={i} style={{ color: str }}>{t}</span>
+        if (KEYWORDS.includes(t)) return <span key={i} style={{ color: kw, fontWeight: 600 }}>{t}</span>
+        return <span key={i} style={{ color: def }}>{t}</span>
+      })}
+    </>
+  )
+}
+
 export function Overview() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
@@ -200,12 +222,123 @@ export function Overview() {
     }))
   }
 
-  // Active layers from running builds of selected project
-  const activeLayers = useMemo(() => {
-    const layers = new Set<string>()
-    selectedProject.builds.filter(b => b.status === 'running').forEach(b => b.stack.forEach(s => layers.add(s)))
-    return [...layers]
-  }, [selectedProject])
+  // Build activity feed
+  type FeedEntry = { id: number; time: string; buildName: string; phase: Phase; agent: string; status: string }
+  const [feedEntries, setFeedEntries] = useState<FeedEntry[]>([])
+  const [feedHovered, setFeedHovered] = useState(false)
+  const feedRef = useRef<HTMLDivElement>(null)
+  const feedCounter = useRef(0)
+  const projectsRef = useRef(projects)
+  const feedHoveredRef = useRef(feedHovered)
+  useEffect(() => { projectsRef.current = projects }, [projects])
+  useEffect(() => { feedHoveredRef.current = feedHovered }, [feedHovered])
+
+  useEffect(() => {
+    const statuses = [
+      'Parsing AST and extracting symbols',
+      'Running type checker on module',
+      'Generating boilerplate from schema',
+      'Writing integration test suite',
+      'Resolving dependency graph',
+      'Compiling to target format',
+      'Optimising bundle size',
+      'Streaming output to preview',
+      'Verifying API contract',
+      'Staging build artefacts',
+      'Linking shared utilities',
+      'Deploying to ephemeral env',
+      'Running smoke test suite',
+      'Refreshing asset hashes',
+    ]
+    const tick = () => {
+      const allRunning = projectsRef.current.flatMap(p => p.builds.filter(b => b.status === 'running').map(b => ({ b, p })))
+      if (allRunning.length === 0) return
+      const { b, p } = allRunning[Math.floor(Math.random() * allRunning.length)]
+      const phaseVal = getPhase([b])
+      const now = new Date()
+      const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
+      feedCounter.current += 1
+      const entry: FeedEntry = {
+        id: feedCounter.current,
+        time,
+        buildName: `${p.name} / ${b.title}`,
+        phase: phaseVal,
+        agent: b.agent,
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+      }
+      setFeedEntries(prev => [...prev.slice(-39), entry])
+    }
+    tick()
+    const t = setInterval(tick, 1600)
+    return () => clearInterval(t)
+  }, [])
+
+  useEffect(() => {
+    if (!feedHovered && feedRef.current) {
+      feedRef.current.scrollTop = feedRef.current.scrollHeight
+    }
+  }, [feedEntries, feedHovered])
+
+  // Code stream
+  type CodeLine = { id: number; kind: 'code' | 'qa'; content: string; file?: string; lineNo?: number; qa?: 'pass' | 'warn' }
+  const [codeLines, setCodeLines] = useState<CodeLine[]>([])
+  const [codeHovered, setCodeHovered] = useState(false)
+  const codeRef = useRef<HTMLDivElement>(null)
+  const codeCounter = useRef(0)
+
+  const CODE_POOL = [
+    { file: 'src/engine/strategy.ts', line: 42, code: 'async function evaluateSignal(ctx: Context): Promise<Signal> {' },
+    { file: 'src/engine/strategy.ts', line: 43, code: '  const price = await ctx.market.getLatestPrice(ctx.symbol)' },
+    { file: 'src/risk/limits.ts', line: 17, code: 'if (exposure > MAX_EXPOSURE) throw new RiskError("limit exceeded")' },
+    { file: 'src/api/client.ts', line: 88, code: 'const res = await fetch(`${BASE_URL}/v1/orders`, { method: "POST", body })' },
+    { file: 'src/db/schema.ts', line: 5, code: 'export const orders = pgTable("orders", { id: serial("id").primaryKey(),' },
+    { file: 'src/ui/Dashboard.tsx', line: 14, code: 'const { data, isLoading } = useQuery(["positions"], fetchPositions)' },
+    { file: 'src/ui/Dashboard.tsx', line: 31, code: '  return <Chart series={data?.series ?? []} height={320} />' },
+    { file: 'src/workers/scheduler.ts', line: 6, code: 'cron.schedule("0 9 * * 1-5", () => runDailyExport())' },
+    { file: 'src/engine/backtest.ts', line: 77, code: 'const equity = positions.reduce((s, p) => s + p.unrealised, initialCapital)' },
+    { file: 'src/scraper/crawler.ts', line: 23, code: 'const $ = cheerio.load(await axios.get(url).then(r => r.data))' },
+    { file: 'src/notifications/slack.ts', line: 11, code: '// Send alert to #trading-alerts channel' },
+    { file: 'src/notifications/slack.ts', line: 12, code: 'await slackClient.chat.postMessage({ channel, text: message })' },
+    { file: 'src/engine/order.ts', line: 55, code: 'export type Order = { id: string; side: "buy" | "sell"; qty: number }' },
+  ]
+  const QA_POOL = [
+    { qa: 'pass' as const, content: '✓ Unit test passed: strategy.evaluateSignal' },
+    { qa: 'pass' as const, content: '✓ Type check: src/engine/order.ts — no errors' },
+    { qa: 'pass' as const, content: '✓ Code review: logic approved by QA agent' },
+    { qa: 'pass' as const, content: '✓ Lint: 0 warnings, 0 errors' },
+    { qa: 'warn' as const, content: '⚠ Type mismatch on line 42 — Signal | undefined' },
+    { qa: 'warn' as const, content: '⚠ Unused import: Logger in risk/limits.ts' },
+    { qa: 'warn' as const, content: '⚠ Missing null check before API call on line 88' },
+    { qa: 'pass' as const, content: '✓ Integration test: /v1/orders endpoint — 200 OK' },
+    { qa: 'pass' as const, content: '✓ Schema migration dry-run succeeded' },
+    { qa: 'warn' as const, content: '⚠ Bundle size increased by 4.2 kB — review imports' },
+    { qa: 'pass' as const, content: '✓ Snapshot test: Dashboard renders correctly' },
+  ]
+
+  useEffect(() => {
+    const tick = () => {
+      codeCounter.current += 1
+      const isQA = Math.random() < 0.3
+      let entry: CodeLine
+      if (isQA) {
+        const q = QA_POOL[Math.floor(Math.random() * QA_POOL.length)]
+        entry = { id: codeCounter.current, kind: 'qa', content: q.content, qa: q.qa }
+      } else {
+        const c = CODE_POOL[Math.floor(Math.random() * CODE_POOL.length)]
+        entry = { id: codeCounter.current, kind: 'code', content: c.code, file: c.file, lineNo: c.line }
+      }
+      setCodeLines(prev => [...prev.slice(-79), entry])
+    }
+    tick()
+    const t = setInterval(tick, 900)
+    return () => clearInterval(t)
+  }, [])
+
+  useEffect(() => {
+    if (!codeHovered && codeRef.current) {
+      codeRef.current.scrollTop = codeRef.current.scrollHeight
+    }
+  }, [codeLines, codeHovered])
 
   // Drag handlers
   const handleDragStart = (buildId: string, projectId: string) => setDraggedBuild({ buildId, projectId })
@@ -424,9 +557,30 @@ export function Overview() {
           </div>
         </div>
 
-        {/* RIGHT PANEL — System Awareness */}
-        <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 14, display: 'flex', flexDirection: 'column', gap: 14, overflow: 'auto', borderRadius: 2 }}>
-          <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.muted, fontWeight: 700 }}>SYSTEM AWARENESS</div>
+        {/* RIGHT PANEL — Live Feed */}
+        <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 14, display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden', borderRadius: 2 }}>
+
+          {/* Agent & Flow Summary Bar */}
+          {(() => {
+            const allBuilds = projects.flatMap(p => p.builds)
+            const activeCount = allBuilds.filter(b => b.status === 'running').length
+            const avgProgress = activeCount > 0
+              ? Math.round(allBuilds.filter(b => b.status === 'running').reduce((s, b) => s + b.progress, 0) / activeCount)
+              : 0
+            const agentSet = new Set(allBuilds.filter(b => b.status === 'running').map(b => b.agent))
+            return (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.1, color: c.muted, marginRight: 2 }}>LIVE</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: phaseMeta.color, background: `${phaseMeta.color}18`, border: `1px solid ${phaseMeta.color}44`, padding: '3px 9px', borderRadius: 999 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: 999, background: phaseMeta.color, display: 'inline-block', animation: phase !== 'done' && phase !== 'queued' ? 'pg 1.4s ease-in-out infinite' : 'none' }} />
+                  {phaseMeta.label}
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}33`, padding: '3px 9px', borderRadius: 999 }}>{activeCount} Build{activeCount !== 1 ? 's' : ''} Active</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#f59e0b', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', padding: '3px 9px', borderRadius: 999 }}>{avgProgress}% Avg Progress</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#a78bfa', background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.3)', padding: '3px 9px', borderRadius: 999 }}>{agentSet.size} Agent{agentSet.size !== 1 ? 's' : ''}</span>
+              </div>
+            )
+          })()}
 
           {/* Ready Builds KPI */}
           <div style={{ border: `1px solid ${readyBuildsCount > 0 ? '#d0a83866' : c.border}`, background: readyBuildsCount > 0 ? (isDark ? 'rgba(208,168,56,0.08)' : 'rgba(208,168,56,0.1)') : c.alt, borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -458,78 +612,64 @@ export function Overview() {
             </button>
           </div>
 
-          {/* Current phase */}
-          <div style={{ border: `1px solid ${phaseMeta.color}44`, background: isDark ? `${phaseMeta.color}0d` : `${phaseMeta.color}15`, borderRadius: 12, padding: 14 }}>
-            <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>CURRENT PHASE</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              {phase !== 'done' && phase !== 'queued' && (
-                <div style={{ width: 8, height: 8, borderRadius: 999, background: phaseMeta.color, animation: 'pg 1.4s ease-in-out infinite', flexShrink: 0 }} />
-              )}
-              <div style={{ fontSize: 18, fontWeight: 800, color: phaseMeta.color }}>{phaseMeta.label}</div>
-            </div>
-            <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.4 }}>{phaseMeta.desc}</div>
-          </div>
-
-          {/* Phase flow */}
-          <div style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: 12 }}>
-            <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>FLOW</div>
-            {(['thinking', 'building', 'deploying', 'done'] as Phase[]).map((p, i) => {
-              const pm = PHASE_META[p]
-              const isActive = phase === p
-              const isDone = ['thinking', 'building', 'deploying', 'done'].indexOf(phase) > i
-              return (
-                <div key={p} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <div style={{ width: 24, height: 24, borderRadius: 999, border: `1.5px solid ${isActive || isDone ? pm.color : c.border}`, background: isDone ? pm.color : isActive ? `${pm.color}20` : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {isDone ? <span style={{ fontSize: 11, color: isDark ? '#0d0d0d' : '#fff', fontWeight: 800 }}>✓</span>
-                      : <span style={{ fontSize: 10, color: isActive ? pm.color : c.muted, fontWeight: 700 }}>{i + 1}</span>}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? pm.color : isDone ? c.text : c.muted }}>{pm.label}</div>
-                  </div>
-                  {isActive && <div style={{ width: 6, height: 6, borderRadius: 999, background: pm.color, marginLeft: 'auto', animation: 'pg 1.4s ease-in-out infinite' }} />}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Active layers */}
-          <div style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: 12 }}>
-            <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>ACTIVE LAYERS</div>
-            {activeLayers.length === 0
-              ? <div style={{ fontSize: 12, color: c.muted }}>No layers currently active</div>
-              : activeLayers.map(layer => {
-                const lc = SKILL_COLORS[layer] || c.muted
+          {/* Build Activity Feed */}
+          <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: '0 0 auto' }}>
+            <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: c.muted, borderBottom: `1px solid ${c.border}` }}>BUILD ACTIVITY</div>
+            <div
+              ref={feedRef}
+              onMouseEnter={() => setFeedHovered(true)}
+              onMouseLeave={() => setFeedHovered(false)}
+              style={{ position: 'relative', height: 210, overflowY: 'auto', scrollBehavior: 'smooth', padding: '8px 0 4px' }}
+            >
+              <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#0d0d0d' : '#ffffff'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
+              {feedEntries.map(entry => {
+                const pm = PHASE_META[entry.phase]
                 return (
-                  <div key={layer} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7, padding: '7px 10px', border: `1px solid ${lc}44`, borderRadius: 8, background: `${lc}0d` }}>
-                    <div style={{ width: 7, height: 7, borderRadius: 999, background: lc, animation: 'pg 1.4s ease-in-out infinite' }} />
-                    <span style={{ fontSize: 12, fontWeight: 600, color: lc }}>{layer}</span>
-                    <span style={{ fontSize: 11, color: c.muted, marginLeft: 'auto' }}>
-                      {layer === 'Claude' ? 'Thinking' : layer === 'Claude Code' ? 'Building' : layer === 'Lovable' || layer === 'Replit' ? 'UI' : layer === 'n8n' ? 'Routing' : 'Active'}
-                    </span>
-                  </div>
-                )
-              })}
-          </div>
-
-          {/* Live signals */}
-          <div style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: 12, flex: 1 }}>
-            <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>LIVE SIGNALS</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {selectedProject.builds.filter(b => b.status === 'running' || b.status === 'complete').map(b => {
-                const sc = skillColor(b.stack)
-                return (
-                  <div key={b.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                    <div style={{ width: 6, height: 6, borderRadius: 999, background: b.status === 'running' ? sc : '#7ef57a', marginTop: 4, flexShrink: 0, animation: b.status === 'running' ? 'pg 1.4s ease-in-out infinite' : 'none' }} />
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: c.text }}>{b.title}</div>
-                      <div style={{ fontSize: 11, color: c.muted }}>{b.status === 'running' ? `${b.progress}% — ${primarySkill(b.stack)}` : 'Done'}</div>
+                  <div key={entry.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 12px', borderBottom: `1px solid ${c.border}33` }}>
+                    <span style={{ fontSize: 10, color: c.muted, fontVariantNumeric: 'tabular-nums', flexShrink: 0, marginTop: 1 }}>{entry.time}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: pm.color, background: `${pm.color}18`, border: `1px solid ${pm.color}44`, padding: '1px 6px', borderRadius: 999, flexShrink: 0, alignSelf: 'center' }}>{pm.label}</span>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.buildName}</div>
+                      <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.agent} — {entry.status}</div>
                     </div>
                   </div>
                 )
               })}
-              {!selectedProject.builds.some(b => b.status === 'running') && (
-                <div style={{ fontSize: 12, color: c.muted }}>Waiting for builds to start</div>
+              {feedEntries.length === 0 && (
+                <div style={{ padding: '12px', fontSize: 12, color: c.muted }}>Waiting for activity…</div>
               )}
+            </div>
+          </div>
+
+          {/* Code Stream */}
+          <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+            <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: c.muted, borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>CODE STREAM</span>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: '#39d632', display: 'inline-block', animation: 'pg 1.4s ease-in-out infinite' }} />
+            </div>
+            <div
+              ref={codeRef}
+              onMouseEnter={() => setCodeHovered(true)}
+              onMouseLeave={() => setCodeHovered(false)}
+              style={{ flex: 1, overflowY: 'auto', background: isDark ? '#080f08' : '#f0f7f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
+            >
+              <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#080f08' : '#f0f7f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
+              {codeLines.map(line => {
+                if (line.kind === 'qa') {
+                  const isPass = line.qa === 'pass'
+                  return (
+                    <div key={line.id} style={{ padding: '3px 12px', color: isPass ? '#7ef57a' : '#f59e0b', lineHeight: 1.5 }}>
+                      {line.content}
+                    </div>
+                  )
+                }
+                return (
+                  <div key={line.id} style={{ padding: '2px 12px', lineHeight: 1.5 }}>
+                    <span style={{ color: isDark ? '#555' : '#aaa' }}>{line.file}:{line.lineNo} </span>
+                    {renderCodeLine(line.content, isDark)}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
