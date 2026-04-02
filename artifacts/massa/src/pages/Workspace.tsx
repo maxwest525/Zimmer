@@ -46,20 +46,22 @@ export function Workspace() {
         onSelectProject={handleSelectProject}
       />
 
+      {/* Center workspace: fixed top region + independently scrolling cards below */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Fixed top region: header, tabs, writing canvas, action bar */}
         <WorkspaceHeader
           project={activeProject}
           onOpenActivity={() => setActivityOpen(true)}
           activityCount={activity.filter((a) => a.status === "running").length}
         />
         <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-        <div className="flex-1 overflow-y-auto">
+        <div className="shrink-0">
           <WritingCanvas onSubmit={handleSubmit} isActive={isActive} />
+        </div>
 
-          <div className="border-t border-border/50">
-            <ExecutionCardsPanel cards={cards} />
-          </div>
+        {/* Independently scrolling execution cards region */}
+        <div className="flex-1 overflow-y-auto border-t border-border/50">
+          <ExecutionCardsPanel cards={cards} />
         </div>
       </main>
 
@@ -68,7 +70,7 @@ export function Workspace() {
         <ActivitySidebar items={activity} />
       </div>
 
-      {/* Tablet/narrow: slide-over drawer */}
+      {/* Tablet/narrow: slide-over drawer triggered from header */}
       <ActivityDrawer
         items={activity}
         open={activityOpen}

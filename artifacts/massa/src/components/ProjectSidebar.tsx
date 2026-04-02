@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Project, ProjectStatus } from "@/data/mock";
+import { useIsNarrow } from "@/hooks/use-narrow";
 import {
   ChevronLeft,
   ChevronRight,
   Plus,
   Circle,
   AlertCircle,
-  CheckCircle2,
   XCircle,
 } from "lucide-react";
 
@@ -69,7 +69,14 @@ export function ProjectSidebar({
   activeProjectId,
   onSelectProject,
 }: ProjectSidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const isNarrow = useIsNarrow();
+  const [manualCollapsed, setManualCollapsed] = useState<boolean | null>(null);
+
+  const collapsed = manualCollapsed !== null ? manualCollapsed : isNarrow;
+
+  useEffect(() => {
+    setManualCollapsed(null);
+  }, [isNarrow]);
 
   return (
     <aside
@@ -85,7 +92,7 @@ export function ProjectSidebar({
           </span>
         )}
         <button
-          onClick={() => setCollapsed((c) => !c)}
+          onClick={() => setManualCollapsed((c) => (c === null ? !isNarrow : !c))}
           className={cn(
             "flex items-center justify-center w-6 h-6 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors",
             collapsed && "mx-auto"
