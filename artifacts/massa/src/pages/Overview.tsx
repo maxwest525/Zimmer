@@ -419,9 +419,9 @@ export function Overview() {
         <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 16, overflow: 'auto', borderRadius: 2 }}>
 
           {/* Input area */}
-          <div style={{ border: `1px solid ${c.border}`, background: c.panel, borderRadius: 12, padding: 16, marginBottom: 12, minHeight: 130, position: 'relative' }}>
-            <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.green, marginBottom: 12, fontWeight: 700 }}>RAW INPUT</div>
-            <div style={{ color: isDark ? '#4a5e4a' : '#7a9878', fontSize: 15, lineHeight: 1.6 }}>Describe what you want to build... Be as messy as you want. MASSA will turn it into the right execution.</div>
+          <div style={{ border: `1px solid #ffffff`, background: c.panel, borderRadius: 12, padding: 16, marginBottom: 12, minHeight: 130, position: 'relative' }}>
+            <div style={{ fontSize: 10, letterSpacing: 1.2, color: '#ffffff', marginBottom: 12, fontWeight: 700 }}>RAW INPUT</div>
+            <div style={{ color: '#ffffff', fontSize: 15, lineHeight: 1.6 }}>Describe what you want to build... Be as messy as you want. MASSA will turn it into the right execution.</div>
             <div style={{ position: 'absolute', top: 12, right: 14, width: 6, height: 6, borderRadius: 999, background: c.green }} />
           </div>
 
