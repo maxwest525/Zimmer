@@ -1,11 +1,53 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
+
+const KEYFRAMES = `
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(57,214,50,0.55); opacity: 1; }
+  50% { box-shadow: 0 0 0 8px rgba(57,214,50,0); opacity: 0.85; }
+}
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes flowDash {
+  0% { stroke-dashoffset: 40; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes glowBreathe {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+@keyframes fadeInRow {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 4px; }
+}
+`
 
 export function InsideMassa() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [, navigate] = useLocation()
+  const [hoveredStep, setHoveredStep] = useState<number | null>(null)
 
   const isDark = theme === 'dark'
+
+  useEffect(() => {
+    const id = 'massa-inside-keyframes'
+    if (!document.getElementById(id)) {
+      const style = document.createElement('style')
+      style.id = id
+      style.textContent = KEYFRAMES
+      document.head.appendChild(style)
+    }
+    return () => {
+      const el = document.getElementById(id)
+      if (el) el.remove()
+    }
+  }, [])
 
   const c = {
     bg: isDark ? '#050505' : '#f0f4ef',
@@ -17,6 +59,8 @@ export function InsideMassa() {
     green: '#39d632',
     soft: isDark ? 'rgba(57,214,50,0.13)' : 'rgba(57,214,50,0.10)',
     greenDark: isDark ? '#091409' : '#e4f7e2',
+    terminalBg: isDark ? '#080e08' : '#f0f9ef',
+    terminalBorder: isDark ? '#1a2e1a' : '#b0d4ae',
   }
 
   const nav = [
@@ -47,6 +91,7 @@ export function InsideMassa() {
       for: ['Intent', 'Refinement', 'Planning', 'Classification'],
       why: 'Used before anything is built.',
       color: c.green,
+      icon: '🧠',
     },
     {
       name: 'Claude Code',
@@ -55,6 +100,7 @@ export function InsideMassa() {
       for: ['Backend', 'APIs', 'Logic', 'Infrastructure'],
       why: 'Used for technical depth and code.',
       color: '#7ef57a',
+      icon: '⚙️',
     },
     {
       name: 'Lovable / Replit',
@@ -63,6 +109,7 @@ export function InsideMassa() {
       for: ['Dashboards', 'Front-end', 'Control panels', 'UI'],
       why: 'Used when the output needs a visual surface.',
       color: '#60a5fa',
+      icon: '🖥️',
     },
     {
       name: 'n8n',
@@ -71,6 +118,7 @@ export function InsideMassa() {
       for: ['Routing', 'Triggers', 'Scheduling', 'Notifications'],
       why: 'Used to connect, schedule, and orchestrate.',
       color: '#d0d45b',
+      icon: '🔁',
     },
   ]
 
@@ -91,6 +139,13 @@ export function InsideMassa() {
       why: 'Scraper logic + scheduling',
     },
   ]
+
+  const systemColorMap: Record<string, string> = {
+    Claude: c.green,
+    'Claude Code': '#7ef57a',
+    Lovable: '#60a5fa',
+    n8n: '#d0d45b',
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: c.bg, color: c.text, fontFamily: 'Inter, system-ui, sans-serif', padding: 16 }}>
@@ -148,94 +203,288 @@ export function InsideMassa() {
             </p>
           </div>
 
-          {/* WORKFLOW ROW */}
-          <div style={{ marginBottom: 36 }}>
-            <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 14 }}>HOW IT WORKS</div>
-            <div style={{ display: 'flex', gap: 0 }}>
-              {steps.map((step, i) => (
-                <div key={step.label} style={{ flex: 1, display: 'flex', alignItems: 'stretch' }}>
-                  <div style={{ flex: 1, border: `1px solid ${c.border}`, borderRight: i < steps.length - 1 ? 'none' : `1px solid ${c.border}`, borderRadius: i === 0 ? '12px 0 0 12px' : i === steps.length - 1 ? '0 12px 12px 0' : 0, padding: '14px 14px', background: c.alt }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: 999, background: c.soft, color: c.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
-                      <span style={{ fontWeight: 700, fontSize: 13 }}>{step.label}</span>
+          {/* WORKFLOW ROW — Glowing nodes with SVG connectors */}
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 20 }}>HOW IT WORKS</div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0, position: 'relative' }}>
+              {steps.map((step, i) => {
+                const isHovered = hoveredStep === i
+                const isActive = i === 0
+                return (
+                  <div key={step.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                    {/* Connector SVG between nodes */}
+                    {i < steps.length - 1 && (
+                      <div style={{ position: 'absolute', top: 20, right: '-50%', width: '100%', height: 2, zIndex: 0, pointerEvents: 'none' }}>
+                        <svg width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                          <line
+                            x1="0" y1="10" x2="100" y2="10"
+                            stroke={c.green}
+                            strokeWidth="1.5"
+                            strokeDasharray="6 4"
+                            strokeOpacity="0.45"
+                            style={{ animation: 'flowDash 1.2s linear infinite' }}
+                          />
+                        </svg>
+                      </div>
+                    )}
+                    {/* Node */}
+                    <div
+                      onMouseEnter={() => setHoveredStep(i)}
+                      onMouseLeave={() => setHoveredStep(null)}
+                      style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}
+                    >
+                      {/* Pulse ring */}
+                      <div style={{
+                        position: 'absolute',
+                        width: 44,
+                        height: 44,
+                        borderRadius: '50%',
+                        border: `1.5px solid ${c.green}`,
+                        opacity: isHovered || isActive ? 0.7 : 0,
+                        animation: isHovered || isActive ? 'pulseRing 1.4s ease-out infinite' : 'none',
+                        pointerEvents: 'none',
+                      }} />
+                      <div style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        background: isHovered ? c.green : c.soft,
+                        border: `2px solid ${c.green}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 13,
+                        fontWeight: 800,
+                        color: isHovered ? '#091109' : c.green,
+                        boxShadow: isHovered
+                          ? `0 0 18px 4px rgba(57,214,50,0.5)`
+                          : `0 0 8px 1px rgba(57,214,50,0.2)`,
+                        animation: isActive ? 'pulse 2s ease-in-out infinite' : 'none',
+                        cursor: 'default',
+                        transition: 'background 0.2s, color 0.2s, box-shadow 0.2s',
+                        position: 'relative',
+                        zIndex: 2,
+                      }}>
+                        {i + 1}
+                      </div>
                     </div>
-                    <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.45 }}>{step.desc}</div>
+                    {/* Label + desc */}
+                    <div style={{ marginTop: 10, textAlign: 'center', padding: '0 4px' }}>
+                      <div style={{ fontWeight: 700, fontSize: 12, color: c.text, marginBottom: 3 }}>{step.label}</div>
+                      <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.4 }}>{step.desc}</div>
+                    </div>
                   </div>
-                  {i < steps.length - 1 && (
-                    <div style={{ display: 'flex', alignItems: 'center', color: c.muted, fontSize: 14, padding: '0 0', zIndex: 1 }}>›</div>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
-          {/* LLM INFOGRAPHIC */}
+          {/* SYSTEM ARCHITECTURE PIPELINE */}
           <div style={{ marginBottom: 36 }}>
             <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 14 }}>SYSTEM ARCHITECTURE</div>
-            <div style={{ border: `1px solid ${c.border}`, borderRadius: 16, padding: 20, background: c.alt }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 16 }}>
+            <div style={{ border: `1px solid ${c.border}`, borderRadius: 16, padding: '24px 20px 18px', background: c.alt, position: 'relative', overflow: 'hidden' }}>
+              {/* Subtle grid texture */}
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: 16, pointerEvents: 'none', zIndex: 0,
+                backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(57,214,50,0.03)' : 'rgba(57,214,50,0.05)'} 1px, transparent 1px)`,
+                backgroundSize: '24px 24px',
+              }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 18, position: 'relative', zIndex: 1 }}>
                 {systems.map((sys, i) => (
                   <div key={sys.name} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                    <div style={{ flex: 1, border: `1px solid ${c.border}`, borderRadius: 12, padding: '14px 12px', background: c.panel, position: 'relative', textAlign: 'center' }}>
-                      <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 36, height: 3, background: sys.color, borderRadius: '0 0 4px 4px' }} />
-                      <div style={{ fontSize: 10, fontWeight: 700, color: sys.color, letterSpacing: 1, marginBottom: 4, marginTop: 6 }}>{sys.label}</div>
-                      <div style={{ fontWeight: 700, fontSize: 13 }}>{sys.name}</div>
+                    <div style={{
+                      flex: 1,
+                      border: `1px solid ${sys.color}55`,
+                      borderRadius: 14,
+                      padding: '16px 12px',
+                      background: isDark
+                        ? `radial-gradient(ellipse at 50% 0%, ${sys.color}18 0%, ${c.panel} 70%)`
+                        : `radial-gradient(ellipse at 50% 0%, ${sys.color}22 0%, #fff 70%)`,
+                      position: 'relative',
+                      textAlign: 'center',
+                      boxShadow: `0 0 20px 0 ${sys.color}22`,
+                      transition: 'box-shadow 0.3s',
+                    }}>
+                      {/* Color accent bar */}
+                      <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 48, height: 3, background: sys.color, borderRadius: '0 0 4px 4px' }} />
+                      {/* Glow halo behind icon */}
+                      <div style={{
+                        fontSize: 28,
+                        marginBottom: 6,
+                        marginTop: 4,
+                        display: 'block',
+                        filter: `drop-shadow(0 0 8px ${sys.color}99)`,
+                        animation: 'glowBreathe 3s ease-in-out infinite',
+                      }}>{sys.icon}</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: sys.color, letterSpacing: 1, marginBottom: 3 }}>{sys.label}</div>
+                      <div style={{ fontWeight: 700, fontSize: 12 }}>{sys.name}</div>
                     </div>
+                    {/* Animated SVG arrow between cards */}
                     {i < systems.length - 1 && (
-                      <div style={{ padding: '0 6px', color: c.muted, fontSize: 18, fontWeight: 300 }}>→</div>
+                      <div style={{ padding: '0 4px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                        <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
+                          <line
+                            x1="2" y1="8" x2="26" y2="8"
+                            stroke={c.green}
+                            strokeWidth="1.5"
+                            strokeDasharray="5 3"
+                            style={{ animation: 'flowDash 0.9s linear infinite' }}
+                          />
+                          <polyline
+                            points="22,4 28,8 22,12"
+                            fill="none"
+                            stroke={c.green}
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize: 12, color: c.muted }}>
+              <div style={{ fontSize: 12, color: c.muted, position: 'relative', zIndex: 1 }}>
                 MASSA routes each request through different systems depending on what the work needs.
               </div>
             </div>
           </div>
 
-          {/* SYSTEM CARDS */}
+          {/* SYSTEM CARDS — Glassmorphism */}
           <div style={{ marginBottom: 36 }}>
             <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 14 }}>THE SYSTEMS</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {systems.map((sys) => (
-                <div key={sys.name} style={{ border: `1px solid ${c.border}`, borderRadius: 14, padding: 16, background: c.alt, borderTop: `2px solid ${sys.color}` }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{sys.name}</div>
-                  <div style={{ fontSize: 11, color: sys.color, fontWeight: 600, marginBottom: 10 }}>{sys.role}</div>
+                <div key={sys.name} style={{
+                  borderRadius: 16,
+                  padding: 18,
+                  border: `1px solid ${sys.color}44`,
+                  background: isDark
+                    ? `linear-gradient(145deg, ${sys.color}12 0%, ${c.alt} 60%)`
+                    : `linear-gradient(145deg, ${sys.color}18 0%, #fff 60%)`,
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  boxShadow: `inset 0 1px 0 ${sys.color}33, 0 4px 24px ${sys.color}18`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}>
+                  {/* Soft glow in corner */}
+                  <div style={{
+                    position: 'absolute',
+                    top: -20,
+                    right: -20,
+                    width: 70,
+                    height: 70,
+                    borderRadius: '50%',
+                    background: `radial-gradient(circle, ${sys.color}30 0%, transparent 70%)`,
+                    pointerEvents: 'none',
+                    animation: 'glowBreathe 3.5s ease-in-out infinite',
+                  }} />
+                  {/* Large icon */}
+                  <div style={{
+                    fontSize: 30,
+                    marginBottom: 10,
+                    display: 'block',
+                    filter: `drop-shadow(0 0 6px ${sys.color}88)`,
+                  }}>{sys.icon}</div>
+                  <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 3 }}>{sys.name}</div>
+                  <div style={{ fontSize: 11, color: sys.color, fontWeight: 700, marginBottom: 10, letterSpacing: 0.5 }}>{sys.role}</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 12 }}>
                     {sys.for.map(f => (
-                      <span key={f} style={{ fontSize: 11, border: `1px solid ${c.border}`, padding: '2px 7px', borderRadius: 999, color: c.muted, background: c.panel }}>{f}</span>
+                      <span key={f} style={{
+                        fontSize: 10,
+                        border: `1px solid ${sys.color}55`,
+                        padding: '2px 7px',
+                        borderRadius: 999,
+                        color: sys.color,
+                        background: `${sys.color}14`,
+                        fontWeight: 600,
+                      }}>{f}</span>
                     ))}
                   </div>
-                  <div style={{ fontSize: 12, color: c.muted }}>{sys.why}</div>
+                  <div style={{ fontSize: 11, color: c.muted }}>{sys.why}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* SWITCHING LOGIC */}
+          {/* TERMINAL SWITCHING EXAMPLES */}
           <div>
             <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 14 }}>WHEN MASSA SWITCHES</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {examples.map((ex, i) => (
-                <div key={i} style={{ border: `1px solid ${c.border}`, borderRadius: 14, padding: 16, background: c.alt, display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16, alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: 11, color: c.muted, marginBottom: 4 }}>INPUT</div>
-                    <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.4 }}>{ex.input}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 11, color: c.muted, marginBottom: 6 }}>USES</div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                      {ex.uses.map(u => (
-                        <span key={u} style={{ fontSize: 11, background: c.soft, color: c.text, border: `1px solid ${c.border}`, padding: '3px 8px', borderRadius: 999, fontWeight: 600 }}>{u}</span>
-                      ))}
+              {examples.map((ex, i) => {
+                const animDelay = `${i * 0.12}s`
+                return (
+                  <div key={i} style={{
+                    borderRadius: 14,
+                    border: `1px solid ${c.terminalBorder}`,
+                    background: c.terminalBg,
+                    overflow: 'hidden',
+                    animation: `fadeInRow 0.4s ease both`,
+                    animationDelay: animDelay,
+                    position: 'relative',
+                  }}>
+                    {/* Scanline texture overlay */}
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 3px, ${isDark ? 'rgba(57,214,50,0.025)' : 'rgba(57,214,50,0.05)'} 3px, ${isDark ? 'rgba(57,214,50,0.025)' : 'rgba(57,214,50,0.05)'} 4px)`,
+                      pointerEvents: 'none',
+                      borderRadius: 14,
+                      zIndex: 0,
+                    }} />
+                    {/* Terminal header bar */}
+                    <div style={{
+                      padding: '8px 14px',
+                      borderBottom: `1px solid ${c.terminalBorder}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      position: 'relative',
+                      zIndex: 1,
+                    }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff5f57' }} />
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#febc2e' }} />
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.green }} />
+                      <span style={{ marginLeft: 8, fontSize: 10, color: c.muted, fontFamily: 'monospace', letterSpacing: 0.5 }}>massa — terminal</span>
+                    </div>
+                    <div style={{ padding: '14px 18px', display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16, alignItems: 'center', position: 'relative', zIndex: 1 }}>
+                      <div>
+                        <div style={{ fontFamily: 'monospace', fontSize: 11, color: c.green, opacity: 0.7, marginBottom: 4 }}>$ massa run</div>
+                        <div style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 600, lineHeight: 1.5, color: isDark ? '#d4f5d2' : '#1a3d18' }}>
+                          <span style={{ color: c.green, opacity: 0.8 }}>›</span> {ex.input}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6, fontFamily: 'monospace', letterSpacing: 0.5 }}>ROUTING TO</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                          {ex.uses.map(u => {
+                            const uColor = systemColorMap[u] || c.green
+                            return (
+                              <span key={u} style={{
+                                fontSize: 11,
+                                background: `${uColor}1a`,
+                                color: uColor,
+                                border: `1px solid ${uColor}55`,
+                                padding: '3px 9px',
+                                borderRadius: 999,
+                                fontWeight: 700,
+                                fontFamily: 'monospace',
+                                boxShadow: `0 0 8px ${uColor}33`,
+                                animation: 'glowBreathe 2.5s ease-in-out infinite',
+                              }}>{u}</span>
+                            )
+                          })}
+                        </div>
+                      </div>
+                      <div style={{ minWidth: 160 }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 4, fontFamily: 'monospace', letterSpacing: 0.5 }}>REASON</div>
+                        <div style={{ fontSize: 12, color: c.muted, fontFamily: 'monospace' }}>{ex.why}</div>
+                      </div>
                     </div>
                   </div>
-                  <div style={{ minWidth: 160 }}>
-                    <div style={{ fontSize: 11, color: c.muted, marginBottom: 4 }}>WHY</div>
-                    <div style={{ fontSize: 12, color: c.muted }}>{ex.why}</div>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
