@@ -24,27 +24,27 @@ function StatusBadge({ status }: StatusBadgeProps) {
   > = {
     running: {
       label: "Running",
-      className: "bg-white/5 text-white border-white/10",
+      className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
       icon: <Loader2 className="w-3 h-3 animate-spin" />,
     },
     queued: {
       label: "Queued",
-      className: "bg-white/5 text-white border-white/10",
+      className: "bg-amber-500/10 text-amber-400 border-amber-500/20",
       icon: <Clock className="w-3 h-3" />,
     },
     completed: {
       label: "Completed",
-      className: "bg-white/5 text-white border-white/10",
+      className: "bg-blue-500/10 text-blue-400 border-blue-500/20",
       icon: <CheckCircle2 className="w-3 h-3" />,
     },
     failed: {
       label: "Failed",
-      className: "bg-white/5 text-white border-white/10",
+      className: "bg-red-500/10 text-red-400 border-red-500/20",
       icon: <XCircle className="w-3 h-3" />,
     },
     "needs-review": {
       label: "Needs Review",
-      className: "bg-white/5 text-white border-white/10",
+      className: "bg-amber-500/10 text-amber-400 border-amber-500/20",
       icon: <Clock className="w-3 h-3" />,
     },
   };
@@ -70,11 +70,11 @@ interface ProgressBarProps {
 
 function ProgressBar({ value, status }: ProgressBarProps) {
   const colorMap: Record<TaskStatus, string> = {
-    running: "bg-muted-foreground/50",
-    queued: "bg-muted-foreground/50",
-    completed: "bg-muted-foreground/50",
-    failed: "bg-muted-foreground/50",
-    "needs-review": "bg-muted-foreground/50",
+    running: "bg-emerald-500",
+    queued: "bg-amber-500",
+    completed: "bg-blue-500",
+    failed: "bg-red-500",
+    "needs-review": "bg-amber-500",
   };
   return (
     <div className="w-full h-1 bg-border rounded-full overflow-hidden">
