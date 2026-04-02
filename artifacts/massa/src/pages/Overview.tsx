@@ -385,7 +385,7 @@ export function Overview() {
                               <div style={{ position: 'absolute', top: 0, left: 16, width: 28, height: 2, background: sc, borderRadius: '0 0 3px 3px' }} />
 
                               {/* Running pulse dot */}
-                              {isRunning && <div style={{ position: 'absolute', left: -2, top: '50%', transform: 'translateY(-50%)', width: 7, height: 7, borderRadius: 999, background: sc, animation: 'pg 1.4s ease-in-out infinite' }} />}
+                              {isRunning && <div style={{ position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%)', width: 7, height: 7, borderRadius: 999, background: sc, animation: 'pg 1.4s ease-in-out infinite' }} />}
 
                               <div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 5 }}>
