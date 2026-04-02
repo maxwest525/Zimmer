@@ -236,7 +236,7 @@ export function InsideMassa() {
                   <div key={sys.name} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                     <div style={{
                       flex: 1,
-                      border: `1px solid ${sys.color}66`,
+                      border: `1px solid ${sys.color}cc`,
                       borderRadius: 14,
                       padding: '16px 12px',
                       background: c.panel,
@@ -282,7 +282,7 @@ export function InsideMassa() {
                 <div key={sys.name} style={{
                   borderRadius: 14,
                   padding: 16,
-                  border: `1px solid ${sys.color}66`,
+                  border: `1px solid ${sys.color}cc`,
                   borderTop: `2px solid ${sys.color}`,
                   background: c.alt,
                 }}>
