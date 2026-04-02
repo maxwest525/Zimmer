@@ -390,12 +390,6 @@ export function Overview() {
                           )
                         })}
 
-                        {/* View Full Project sentinel */}
-                        <div onClick={() => { setSelectedProjectId(project.id); setExpandedProject(project.id) }}
-                          style={{ minWidth: 110, height: 148, border: `1px solid ${c.green}44`, background: c.greenSoft, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: c.green, cursor: 'pointer', flexShrink: 0, textAlign: 'center', padding: '0 12px' }}>
-                          <div style={{ width: 28, height: 28, borderRadius: 8, border: `1px solid ${c.green}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⊞</div>
-                          <div style={{ fontSize: 11, fontWeight: 700, lineHeight: 1.3 }}>Full Project Map</div>
-                        </div>
 
                         {/* Add agent */}
                         <div style={{ minWidth: 90, height: 148, border: `1px dashed ${c.border}`, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, color: c.muted, background: 'transparent', cursor: 'pointer', flexShrink: 0 }}>
