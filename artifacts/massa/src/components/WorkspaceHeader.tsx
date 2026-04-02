@@ -13,22 +13,22 @@ function StatusPill({ status }: { status: ProjectStatus }) {
   const config: Record<ProjectStatus, { label: string; className: string; icon: React.ReactNode }> = {
     running: {
       label: "Running",
-      className: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
+      className: "bg-white/5 text-white border-white/10",
       icon: <Loader2 className="w-3 h-3 animate-spin" />,
     },
     "needs-review": {
       label: "Needs Review",
-      className: "bg-amber-500/10 text-amber-700 border-amber-500/20",
+      className: "bg-white/5 text-white border-white/10",
       icon: <AlertCircle className="w-3 h-3" />,
     },
     idle: {
       label: "Idle",
-      className: "bg-muted text-muted-foreground border-border",
+      className: "bg-white/5 text-white border-white/10",
       icon: <Circle className="w-3 h-3" />,
     },
     failed: {
       label: "Failed",
-      className: "bg-red-500/10 text-red-600 border-red-500/20",
+      className: "bg-white/5 text-white border-white/10",
       icon: <XCircle className="w-3 h-3" />,
     },
   };
