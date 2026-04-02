@@ -1,0 +1,126 @@
+'use client'
+
+import { useState } from 'react'
+
+type Build = {
+  id: string
+  title: string
+  status: 'running' | 'queued' | 'complete'
+}
+
+type Project = {
+  id: string
+  name: string
+  goal: string
+  builds: Build[]
+}
+
+const mockProjects: Project[] = [
+  {
+    id: '1',
+    name: 'Trading Bot',
+    goal: 'Automated trading system with dashboard',
+    builds: [
+      { id: 'b1', title: 'Core Engine', status: 'running' },
+      { id: 'b2', title: 'Risk Module', status: 'running' },
+      { id: 'b3', title: 'Dashboard UI', status: 'queued' },
+      { id: 'b4', title: 'Alerts System', status: 'complete' },
+    ],
+  },
+  {
+    id: '2',
+    name: 'Scraper',
+    goal: 'Multi-source data scraper',
+    builds: [
+      { id: 'b5', title: 'Crawler', status: 'running' },
+      { id: 'b6', title: 'Parser', status: 'queued' },
+    ],
+  },
+]
+
+export default function Page() {
+  const [expandedProject, setExpandedProject] = useState<string | null>(null)
+
+  return (
+    <div className="h-screen w-full flex flex-col p-6 gap-6">
+      <h1 className="text-xl font-semibold">MASSA</h1>
+
+      <div className="flex flex-col gap-6 overflow-auto">
+        {mockProjects.map((project) => (
+          <div key={project.id} className="flex gap-6">
+            
+            {/* PROJECT CARD */}
+            <div className="w-64 border rounded-xl p-4 flex flex-col gap-3">
+              <h2 className="font-semibold">{project.name}</h2>
+              <p className="text-sm opacity-70">{project.goal}</p>
+
+              <div className="text-xs opacity-60">
+                Builds: {project.builds.length}
+              </div>
+
+              <button
+                className="text-xs underline mt-2"
+                onClick={() =>
+                  setExpandedProject(
+                    expandedProject === project.id ? null : project.id
+                  )
+                }
+              >
+                {expandedProject === project.id
+                  ? 'Collapse'
+                  : 'Expand Project'}
+              </button>
+            </div>
+
+            {/* BUILDS */}
+            <div className="flex flex-wrap gap-4 flex-1">
+              {project.builds.map((build) => (
+                <div
+                  key={build.id}
+                  className="w-56 border rounded-xl p-3 flex flex-col gap-2"
+                >
+                  <h3 className="font-medium text-sm">{build.title}</h3>
+
+                  <div className="text-xs opacity-60">
+                    Status: {build.status}
+                  </div>
+
+                  <div className="h-2 bg-gray-200 rounded">
+                    <div
+                      className="h-full bg-black rounded"
+                      style={{
+                        width:
+                          build.status === 'complete'
+                            ? '100%'
+                            : build.status === 'running'
+                            ? '60%'
+                            : '20%',
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* EXPANDED VIEW */}
+      {expandedProject && (
+        <div className="fixed bottom-0 left-0 right-0 h-64 bg-white border-t p-6 overflow-auto">
+          <h2 className="font-semibold mb-4">Project Structure</h2>
+
+          <div className="text-sm">
+            <p>Project → Backend → Modules</p>
+            <ul className="ml-4 mt-2 list-disc">
+              <li>Core Engine</li>
+              <li>Risk Layer</li>
+              <li>Dashboard</li>
+              <li>Alerts</li>
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
