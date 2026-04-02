@@ -2,10 +2,6 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
 
 const KEYFRAMES = `
-@keyframes flowDash {
-  0% { stroke-dashoffset: 40; }
-  100% { stroke-dashoffset: 0; }
-}
 @keyframes fadeInRow {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -186,24 +182,8 @@ export function InsideMassa() {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0, position: 'relative' }}>
               {steps.map((step, i) => {
                 const isHovered = hoveredStep === i
-                const isActive = i === 0
                 return (
                   <div key={step.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                    {/* Connector SVG between nodes */}
-                    {i < steps.length - 1 && (
-                      <div style={{ position: 'absolute', top: 20, right: '-50%', width: '100%', height: 2, zIndex: 0, pointerEvents: 'none' }}>
-                        <svg width="100%" height="20" viewBox="0 0 100 20" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
-                          <line
-                            x1="0" y1="10" x2="100" y2="10"
-                            stroke={c.green}
-                            strokeWidth="1.5"
-                            strokeDasharray="6 4"
-                            strokeOpacity="0.45"
-                            style={{ animation: 'flowDash 1.2s linear infinite' }}
-                          />
-                        </svg>
-                      </div>
-                    )}
                     {/* Node */}
                     <div
                       onMouseEnter={() => setHoveredStep(i)}
