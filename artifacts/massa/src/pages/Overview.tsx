@@ -200,9 +200,6 @@ export function Overview() {
     blackGreen: isDark ? '#0a140a' : '#eaf5e8',
   }
 
-  const phase = getPhase(selectedProject.builds)
-  const phaseMeta = PHASE_META[phase]
-
   const readyBuildsCount = useMemo(
     () => selectedProject.builds.filter(b => b.status === 'queued').length,
     [selectedProject.builds]
@@ -557,24 +554,55 @@ export function Overview() {
         {/* RIGHT PANEL — Live Feed */}
         <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 14, display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden', borderRadius: 2 }}>
 
-          {/* Agent & Flow Summary Bar */}
+          {/* FLOW Metrics Panel */}
           {(() => {
             const allBuilds = projects.flatMap(p => p.builds)
-            const activeCount = allBuilds.filter(b => b.status === 'running').length
-            const avgProgress = activeCount > 0
-              ? Math.round(allBuilds.filter(b => b.status === 'running').reduce((s, b) => s + b.progress, 0) / activeCount)
-              : 0
-            const agentSet = new Set(allBuilds.filter(b => b.status === 'running').map(b => b.agent))
+            const totalProjects = projects.length
+            const runningBuilds = allBuilds.filter(b => b.status === 'running').length
+            const completedBuilds = allBuilds.filter(b => b.status === 'complete').length
+            const queuedBuilds = allBuilds.filter(b => b.status === 'queued').length
+            const failedBuilds = allBuilds.filter(b => b.status === 'failed').length
+
+            const kpis: { label: string; value: number; color: string; bg: string }[] = [
+              { label: 'Total Projects', value: totalProjects, color: c.text, bg: c.alt },
+              { label: 'Running', value: runningBuilds, color: c.green, bg: c.greenSoft },
+              { label: 'Completed', value: completedBuilds, color: '#7ef57a', bg: 'rgba(126,245,122,0.10)' },
+              { label: 'Queued', value: queuedBuilds, color: '#d0a838', bg: 'rgba(208,168,56,0.10)' },
+              { label: 'Failed', value: failedBuilds, color: '#ff6b6b', bg: 'rgba(255,107,107,0.10)' },
+            ]
+
             return (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.1, color: c.muted, marginRight: 2 }}>LIVE</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: phaseMeta.color, background: `${phaseMeta.color}18`, border: `1px solid ${phaseMeta.color}44`, padding: '3px 9px', borderRadius: 999 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: 999, background: phaseMeta.color, display: 'inline-block' }} />
-                  {phaseMeta.label}
-                </span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}33`, padding: '3px 9px', borderRadius: 999 }}>{activeCount} Build{activeCount !== 1 ? 's' : ''} Active</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#f59e0b', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', padding: '3px 9px', borderRadius: 999 }}>{avgProgress}% Avg Progress</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#a78bfa', background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.3)', padding: '3px 9px', borderRadius: 999 }}>{agentSet.size} Agent{agentSet.size !== 1 ? 's' : ''}</span>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.1, color: c.muted, marginBottom: 8 }}>FLOW</div>
+                {/* KPI tiles */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
+                  {kpis.map(kpi => (
+                    <div key={kpi.label} style={{ background: kpi.bg, border: `1px solid ${kpi.color}33`, borderRadius: 10, padding: '10px 12px' }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.8, color: c.muted, marginBottom: 3 }}>{kpi.label.toUpperCase()}</div>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: kpi.color, lineHeight: 1 }}>{kpi.value}</div>
+                    </div>
+                  ))}
+                </div>
+                {/* Per-project build summary */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {projects.map(p => {
+                    const running = p.builds.filter(b => b.status === 'running').length
+                    const done = p.builds.filter(b => b.status === 'complete').length
+                    const queued = p.builds.filter(b => b.status === 'queued').length
+                    const failed = p.builds.filter(b => b.status === 'failed').length
+                    const parts: string[] = []
+                    if (running > 0) parts.push(`${running} running`)
+                    if (done > 0) parts.push(`${done} done`)
+                    if (queued > 0) parts.push(`${queued} queued`)
+                    if (failed > 0) parts.push(`${failed} failed`)
+                    return (
+                      <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 8px', background: c.alt, borderRadius: 7, border: `1px solid ${c.border}` }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '50%' }}>{p.name}</span>
+                        <span style={{ fontSize: 10, color: c.muted, flexShrink: 0 }}>{parts.join(', ') || 'no builds'}</span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             )
           })()}
