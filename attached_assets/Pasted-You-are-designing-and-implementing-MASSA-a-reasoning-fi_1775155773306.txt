@@ -1,0 +1,271 @@
+You are designing and implementing MASSA, a reasoning-first AI command system.
+
+I need one clean, unified output that I can hand directly to a builder.
+
+Do not over-explain.
+Do not write like a consultant.
+Do not create bloated documentation.
+Keep the product language sharp, premium, and simple.
+
+MASSA PRODUCT TRUTH
+
+MASSA is not a chatbot.
+MASSA is not a prompt box.
+MASSA is not a terminal.
+MASSA is not a loose AI tool directory.
+
+MASSA is a command system that lets users dump rough ideas naturally, then upgrades the thinking, builds a structured execution packet, routes the work internally, and shows what is happening in a way normal people can understand.
+
+The surface experience must feel easy, intelligent, and premium.
+The complexity must stay underneath.
+
+LOCKED PHASE 1 SYSTEM
+
+Use this fixed architecture for Phase 1:
+
+* Claude = thinking layer
+* n8n = routing and automation layer
+* Claude Code = core build engine
+* Lovable or Replit = interface layer
+* APIs / databases / external services = execution layer
+
+Do not redesign this stack.
+Do not substitute Cursor or Codex into the core Phase 1 architecture.
+Do not let the user choose tools.
+MASSA decides internally.
+
+PHASE 1 CORE BEHAVIOR
+
+1. User writes naturally in a clean writing canvas.
+2. Completed sentences can be refined.
+3. On hover or subtle interaction, MASSA suggests 2 to 4 stronger ways to say that exact sentence.
+4. Suggestions improve clarity, precision, structure, and usefulness for downstream execution while preserving intent.
+5. User can accept or ignore refinements.
+6. User clicks a final action such as Architect & Build.
+7. Claude converts the final refined writing into a standardized build packet.
+8. n8n reads the packet and applies hardcoded routing rules.
+9. MASSA shows the user a clean execution view and project/build state.
+
+PRODUCT LAYOUT DIRECTION
+
+The layout should be project-centric, not chat-centric.
+
+Use this main structure:
+
+A. LEFT SIDEBAR
+
+* Dashboard
+* History
+* Automations
+* Marketing
+* Skills
+* APIs
+* Web Scraper
+* Inside MASSA
+
+B. MAIN DASHBOARD / PROJECT VIEW
+
+* project cards on the left side of each lane
+* build cards to the right of each project card
+* ability to add more build cards / agents
+* expand project action
+* expanded project reveals a cleaner tree or build map of what is being built
+
+C. RIGHT PANEL
+
+* live activity
+* current build state
+* active tasks
+* execution signals
+* lightweight system awareness, not raw logs
+
+INSIDE MASSA PAGE
+
+Inside MASSA is a sidebar destination.
+It is not a docs page and not a technical explanation page.
+It should be short, sharp, visual, and easy to scan.
+
+Purpose:
+Show what happens after the user submits an idea.
+Show how MASSA works.
+Show what systems are used and why.
+Show when the system switches from one layer to another.
+Make it feel like the user is looking inside the machine, not reading documentation.
+
+IMPORTANT:
+The current Inside MASSA page has too many words.
+Reduce the copy heavily.
+Use tighter language.
+Use fewer paragraphs.
+Prioritize cards, flows, labels, short descriptions, and visual hierarchy.
+
+INSIDE MASSA PAGE STRUCTURE
+
+1. HERO
+   Title:
+   Inside MASSA
+
+Short supporting line:
+See how MASSA interprets your idea, strengthens it, and routes it through the right systems.
+
+2. WORKFLOW ROW
+   Use 5 to 6 short steps:
+
+* Input
+* Refine
+* Classify
+* Packet
+* Route
+* Build
+
+Each step should have:
+
+* short title
+* one tight sentence only
+
+3. LLM / SYSTEM INFOGRAPHIC
+   Create a visual infographic for the systems we use.
+
+This should be one of the most important parts of the page.
+
+Show a clear visual row or connected cards like:
+Claude → Claude Code → Lovable / Replit → n8n
+
+Each node should have a very short label:
+
+* Claude = Think
+* Claude Code = Build
+* Lovable / Replit = Interface
+* n8n = Automate
+
+Under the infographic, add one short sentence:
+MASSA routes each request through different systems depending on what the work needs.
+
+4. SYSTEM CARDS
+   Create short cards for:
+
+* Claude
+* Claude Code
+* Lovable / Replit
+* n8n
+
+Each card should only show:
+
+* role
+* best used for
+* one short “why” line
+
+Keep each card concise.
+
+5. SWITCHING LOGIC / PROOF OF CONCEPT
+   Add a section showing simple examples of when MASSA switches systems.
+
+Use very short examples like:
+
+Example 1:
+Input: Build me an automated trading bot with alerts and a dashboard
+Uses: Claude, Claude Code, Lovable, n8n
+Why: backend logic + interface + automation
+
+Example 2:
+Input: Make me a landing page for my new app
+Uses: Claude, Lovable
+Why: front-end focused request
+
+Example 3:
+Input: Create a scraper that emails me a report every morning
+Uses: Claude, Claude Code, n8n
+Why: scraper logic + scheduling
+
+This section should feel visual and easy, not like a FAQ.
+
+COPY STYLE RULES
+
+* Use fewer words
+* No long paragraphs
+* No fluff
+* No obvious AI buzzwords
+* No documentation tone
+* No tutorial tone
+* No over-explaining
+* Make the product feel sharp and expensive
+* Short labels are better than long descriptions
+* Show, don’t lecture
+
+THEME + STYLE DIRECTION
+
+Use the old MASSA color direction:
+
+* black
+* green
+* clean contrast
+* premium dark mode
+
+Also support light mode.
+Light mode should still feel bold, not washed out.
+Use more black and green in light mode than typical soft SaaS products.
+Do not make light mode look weak or generic.
+
+VISUAL DIRECTION
+
+* premium
+* modern
+* confident
+* clean
+* more system OS than marketing website
+* simple cards, borders, spacing, and hierarchy
+* avoid excessive text blocks
+* avoid clutter
+* avoid generic dashboard widgets
+
+WHAT I NEED FROM YOU
+
+Produce a single unified implementation-ready response containing:
+
+1. PRODUCT SUMMARY
+   A short, sharp definition of MASSA.
+
+2. PHASE 1 SYSTEM LOGIC
+   A concise summary of how MASSA works.
+
+3. HARDCODED ROUTING SUMMARY
+   A clean summary of how requests are routed internally.
+
+4. DASHBOARD LAYOUT SPEC
+   Project-centric layout with sidebar, project cards, build cards, expand project, activity panel.
+
+5. INSIDE MASSA PAGE SPEC
+   A short, reduced-copy page spec with:
+
+* hero
+* workflow row
+* LLM/system infographic
+* system cards
+* switching logic examples
+
+6. COPY BLOCKS
+   Give the exact short copy for the Inside MASSA page.
+   Keep it concise.
+
+7. THEME / STYLE SPEC
+   Give the dark and light theme direction using black and green MASSA styling.
+
+8. IMPLEMENTATION OUTPUT
+   Return the final result as if it is a direct build prompt for a frontend AI builder.
+
+FINAL CONSTRAINTS
+
+* everything must be unified in one response
+* keep Inside MASSA much tighter and less wordy
+* preserve the locked architecture
+* keep the LLM infographic in the page
+* keep the switching logic examples
+* do not make the user choose tools
+* do not overcomplicate Phase 1
+* do not return code unless specifically asked
+* optimize for a user-friendly, premium AI operating system feel
+
+At the end, add one final section:
+SHORT VERSION FOR BUILDER
+
+This should be a compressed version of the full prompt, keeping only the essentials for implementation.
