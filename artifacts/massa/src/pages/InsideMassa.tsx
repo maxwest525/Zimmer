@@ -2,29 +2,13 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
 
 const KEYFRAMES = `
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(57,214,50,0.55); opacity: 1; }
-  50% { box-shadow: 0 0 0 8px rgba(57,214,50,0); opacity: 0.85; }
-}
-@keyframes pulseRing {
-  0% { transform: scale(1); opacity: 0.7; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
 @keyframes flowDash {
   0% { stroke-dashoffset: 40; }
   100% { stroke-dashoffset: 0; }
 }
-@keyframes glowBreathe {
-  0%, 100% { opacity: 0.45; }
-  50% { opacity: 1; }
-}
 @keyframes fadeInRow {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
-}
-@keyframes scanline {
-  0% { background-position: 0 0; }
-  100% { background-position: 0 4px; }
 }
 `
 
@@ -140,13 +124,6 @@ export function InsideMassa() {
     },
   ]
 
-  const systemColorMap: Record<string, string> = {
-    Claude: c.green,
-    'Claude Code': '#7ef57a',
-    Lovable: '#60a5fa',
-    n8n: '#d0d45b',
-  }
-
   return (
     <div style={{ minHeight: '100vh', background: c.bg, color: c.text, fontFamily: 'Inter, system-ui, sans-serif', padding: 16 }}>
 
@@ -233,17 +210,6 @@ export function InsideMassa() {
                       onMouseLeave={() => setHoveredStep(null)}
                       style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}
                     >
-                      {/* Pulse ring */}
-                      <div style={{
-                        position: 'absolute',
-                        width: 44,
-                        height: 44,
-                        borderRadius: '50%',
-                        border: `1.5px solid ${c.green}`,
-                        opacity: isHovered || isActive ? 0.7 : 0,
-                        animation: isHovered || isActive ? 'pulseRing 1.4s ease-out infinite' : 'none',
-                        pointerEvents: 'none',
-                      }} />
                       <div style={{
                         width: 40,
                         height: 40,
@@ -256,12 +222,8 @@ export function InsideMassa() {
                         fontSize: 13,
                         fontWeight: 800,
                         color: isHovered ? '#091109' : c.green,
-                        boxShadow: isHovered
-                          ? `0 0 18px 4px rgba(57,214,50,0.5)`
-                          : `0 0 8px 1px rgba(57,214,50,0.2)`,
-                        animation: isActive ? 'pulse 2s ease-in-out infinite' : 'none',
                         cursor: 'default',
-                        transition: 'background 0.2s, color 0.2s, box-shadow 0.2s',
+                        transition: 'background 0.2s, color 0.2s',
                         position: 'relative',
                         zIndex: 2,
                       }}>
@@ -294,28 +256,16 @@ export function InsideMassa() {
                   <div key={sys.name} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                     <div style={{
                       flex: 1,
-                      border: `1px solid ${sys.color}55`,
+                      border: `1px solid ${c.border}`,
                       borderRadius: 14,
                       padding: '16px 12px',
-                      background: isDark
-                        ? `radial-gradient(ellipse at 50% 0%, ${sys.color}18 0%, ${c.panel} 70%)`
-                        : `radial-gradient(ellipse at 50% 0%, ${sys.color}22 0%, #fff 70%)`,
+                      background: c.panel,
                       position: 'relative',
                       textAlign: 'center',
-                      boxShadow: `0 0 20px 0 ${sys.color}22`,
-                      transition: 'box-shadow 0.3s',
                     }}>
                       {/* Color accent bar */}
                       <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 48, height: 3, background: sys.color, borderRadius: '0 0 4px 4px' }} />
-                      {/* Glow halo behind icon */}
-                      <div style={{
-                        fontSize: 28,
-                        marginBottom: 6,
-                        marginTop: 4,
-                        display: 'block',
-                        filter: `drop-shadow(0 0 8px ${sys.color}99)`,
-                        animation: 'glowBreathe 3s ease-in-out infinite',
-                      }}>{sys.icon}</div>
+                      <div style={{ fontSize: 26, marginBottom: 6, marginTop: 4, display: 'block' }}>{sys.icon}</div>
                       <div style={{ fontSize: 10, fontWeight: 700, color: sys.color, letterSpacing: 1, marginBottom: 3 }}>{sys.label}</div>
                       <div style={{ fontWeight: 700, fontSize: 12 }}>{sys.name}</div>
                     </div>
@@ -356,49 +306,25 @@ export function InsideMassa() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
               {systems.map((sys) => (
                 <div key={sys.name} style={{
-                  borderRadius: 16,
-                  padding: 18,
-                  border: `1px solid ${sys.color}44`,
-                  background: isDark
-                    ? `linear-gradient(145deg, ${sys.color}12 0%, ${c.alt} 60%)`
-                    : `linear-gradient(145deg, ${sys.color}18 0%, #fff 60%)`,
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  boxShadow: `inset 0 1px 0 ${sys.color}33, 0 4px 24px ${sys.color}18`,
-                  position: 'relative',
-                  overflow: 'hidden',
+                  borderRadius: 14,
+                  padding: 16,
+                  border: `1px solid ${c.border}`,
+                  borderTop: `2px solid ${sys.color}`,
+                  background: c.alt,
                 }}>
-                  {/* Soft glow in corner */}
-                  <div style={{
-                    position: 'absolute',
-                    top: -20,
-                    right: -20,
-                    width: 70,
-                    height: 70,
-                    borderRadius: '50%',
-                    background: `radial-gradient(circle, ${sys.color}30 0%, transparent 70%)`,
-                    pointerEvents: 'none',
-                    animation: 'glowBreathe 3.5s ease-in-out infinite',
-                  }} />
-                  {/* Large icon */}
-                  <div style={{
-                    fontSize: 30,
-                    marginBottom: 10,
-                    display: 'block',
-                    filter: `drop-shadow(0 0 6px ${sys.color}88)`,
-                  }}>{sys.icon}</div>
+                  <div style={{ fontSize: 26, marginBottom: 10, display: 'block' }}>{sys.icon}</div>
                   <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 3 }}>{sys.name}</div>
                   <div style={{ fontSize: 11, color: sys.color, fontWeight: 700, marginBottom: 10, letterSpacing: 0.5 }}>{sys.role}</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 12 }}>
                     {sys.for.map(f => (
                       <span key={f} style={{
                         fontSize: 10,
-                        border: `1px solid ${sys.color}55`,
+                        border: `1px solid ${c.border}`,
                         padding: '2px 7px',
                         borderRadius: 999,
-                        color: sys.color,
-                        background: `${sys.color}14`,
-                        fontWeight: 600,
+                        color: c.muted,
+                        background: c.panel,
+                        fontWeight: 500,
                       }}>{f}</span>
                     ))}
                   </div>
@@ -459,19 +385,16 @@ export function InsideMassa() {
                         <div style={{ fontSize: 10, color: c.muted, marginBottom: 6, fontFamily: 'monospace', letterSpacing: 0.5 }}>ROUTING TO</div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                           {ex.uses.map(u => {
-                            const uColor = systemColorMap[u] || c.green
                             return (
                               <span key={u} style={{
                                 fontSize: 11,
-                                background: `${uColor}1a`,
-                                color: uColor,
-                                border: `1px solid ${uColor}55`,
+                                background: c.soft,
+                                color: c.text,
+                                border: `1px solid ${c.border}`,
                                 padding: '3px 9px',
                                 borderRadius: 999,
-                                fontWeight: 700,
+                                fontWeight: 600,
                                 fontFamily: 'monospace',
-                                boxShadow: `0 0 8px ${uColor}33`,
-                                animation: 'glowBreathe 2.5s ease-in-out infinite',
                               }}>{u}</span>
                             )
                           })}
