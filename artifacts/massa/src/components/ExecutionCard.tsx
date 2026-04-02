@@ -153,7 +153,7 @@ export function ExecutionCard({ card }: ExecutionCardProps) {
               {card.stack.map((s) => (
                 <span
                   key={s}
-                  className="px-2 py-0.5 rounded text-[10px] font-medium bg-accent text-accent-foreground border border-border"
+                  className="px-2 py-0.5 rounded text-[10px] font-medium bg-accent text-white border border-border"
                 >
                   {s}
                 </span>
