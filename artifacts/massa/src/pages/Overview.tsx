@@ -388,8 +388,6 @@ export function Overview() {
               </div>
             </div>
 
-            <div style={{ fontSize: 12, color: colors.muted }}>Secret Project</div>
-            <div style={{ marginTop: 6, fontSize: 14 }}>Max and Jon</div>
           </div>
         </div>
 

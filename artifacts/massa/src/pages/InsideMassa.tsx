@@ -127,12 +127,10 @@ export function InsideMassa() {
             })}
           </div>
           <div>
-            <div style={{ border: `1px solid ${c.border}`, background: c.greenDark, borderRadius: 10, padding: 10, marginBottom: 10 }}>
+            <div style={{ border: `1px solid ${c.border}`, background: c.greenDark, borderRadius: 10, padding: 10 }}>
               <div style={{ fontSize: 11, color: c.muted, marginBottom: 3 }}>Active Project</div>
               <div style={{ color: c.green, fontWeight: 700, fontSize: 13 }}>Massa Marketing Site</div>
             </div>
-            <div style={{ fontSize: 11, color: c.muted }}>Secret Project</div>
-            <div style={{ marginTop: 4, fontSize: 13 }}>Max and Jon</div>
           </div>
         </div>
 
