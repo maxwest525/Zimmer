@@ -236,7 +236,7 @@ export function InsideMassa() {
                   <div key={sys.name} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                     <div style={{
                       flex: 1,
-                      border: `1px solid ${c.border}`,
+                      border: `1px solid ${sys.color}66`,
                       borderRadius: 14,
                       padding: '16px 12px',
                       background: c.panel,
@@ -253,13 +253,7 @@ export function InsideMassa() {
                     {i < systems.length - 1 && (
                       <div style={{ padding: '0 4px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                         <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
-                          <line
-                            x1="2" y1="8" x2="26" y2="8"
-                            stroke={c.green}
-                            strokeWidth="1.5"
-                            strokeDasharray="5 3"
-                            style={{ animation: 'flowDash 0.9s linear infinite' }}
-                          />
+                          <line x1="2" y1="8" x2="26" y2="8" stroke={c.muted} strokeWidth="1.5" />
                           <polyline
                             points="22,4 28,8 22,12"
                             fill="none"
@@ -288,7 +282,7 @@ export function InsideMassa() {
                 <div key={sys.name} style={{
                   borderRadius: 14,
                   padding: 16,
-                  border: `1px solid ${c.border}`,
+                  border: `1px solid ${sys.color}66`,
                   borderTop: `2px solid ${sys.color}`,
                   background: c.alt,
                 }}>
