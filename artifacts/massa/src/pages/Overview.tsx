@@ -449,7 +449,7 @@ export function Overview() {
               const isSel = selectedProjectId === project.id
               return (
                 <div key={project.id}>
-                  {pi > 0 && <div style={{ height: 1, background: c.border, margin: '12px 0', opacity: 0.8 }} />}
+                  {pi > 0 && <div style={{ height: 2, background: c.border, margin: '12px 0' }} />}
                   <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 14, alignItems: 'start' }}>
 
                     {/* Project row */}
@@ -458,7 +458,7 @@ export function Overview() {
                       <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: isSel ? c.green : 'transparent', borderRadius: '8px 0 0 8px' }} />
                       <div style={{ paddingLeft: 16 }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                          <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: 0.1, color: isSel ? c.green : undefined }}>{project.name}</div>
+                          <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: 0.1, color: '#ffffff' }}>{project.name}</div>
                           {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
                         </div>
                         <div style={{ color: c.muted, fontSize: 11, marginBottom: 10, lineHeight: 1.4 }}>{project.goal}</div>
