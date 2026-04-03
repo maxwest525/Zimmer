@@ -79,13 +79,93 @@ function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: 
       <span style={{ width: 7, height: 7, borderRadius: 999, background: '#9a8030', display: 'inline-block', flexShrink: 0 }} /> Pending
     </span>
   )
-  if (status === 'complete') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#5080b8', background: 'rgba(80,128,184,0.10)', border: '1px solid rgba(80,128,184,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✓ Done</span>
-  )
+  if (status === 'complete') return null
   if (status === 'failed') return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#b85858', background: 'rgba(184,88,88,0.10)', border: '1px solid rgba(184,88,88,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✕ Failed</span>
   )
   return <span style={{ fontSize: fs, color: '#6a6d6a', background: 'rgba(106,109,106,0.08)', border: '1px solid rgba(106,109,106,0.15)', padding: pad, borderRadius: 999, fontWeight: 600 }}>Idle</span>
+}
+
+function getBuildType(stack: string[], title: string): 'ui' | 'backend' | 'database' | 'automation' {
+  const t = title.toLowerCase()
+  if (t.includes('ui') || t.includes('dashboard') || t.includes('homepage') || t.includes('site') || stack.includes('Lovable') || stack.includes('Replit')) return 'ui'
+  if (t.includes('alert') || t.includes('scheduler') || t.includes('automation') || stack.includes('n8n')) return 'automation'
+  if (t.includes('data') || t.includes('pipeline') || t.includes('schema')) return 'database'
+  return 'backend'
+}
+
+function PreviewThumbnail({ buildType, sc, size = 'normal' }: { buildType: 'ui' | 'backend' | 'database' | 'automation'; sc: string; size?: 'normal' | 'mini' }) {
+  const h = size === 'mini' ? 28 : 68
+  const w = size === 'mini' ? 40 : '100%'
+  const base = { width: w, height: h, borderRadius: size === 'mini' ? 4 : 8, overflow: 'hidden' as const, position: 'relative' as const, flexShrink: 0 }
+
+  if (buildType === 'ui') return (
+    <div style={{ ...base, background: `linear-gradient(135deg, ${sc}18, ${sc}08)`, border: `1px solid ${sc}30` }}>
+      <div style={{ position: 'absolute', top: size === 'mini' ? 3 : 6, left: size === 'mini' ? 3 : 8, right: size === 'mini' ? 3 : 8 }}>
+        <div style={{ height: size === 'mini' ? 2 : 4, background: `${sc}40`, borderRadius: 2, marginBottom: size === 'mini' ? 2 : 4, width: '60%' }} />
+        <div style={{ display: 'flex', gap: size === 'mini' ? 2 : 4 }}>
+          <div style={{ flex: 1, height: size === 'mini' ? 8 : 24, background: `${sc}20`, borderRadius: 2 }} />
+          <div style={{ flex: 2, height: size === 'mini' ? 8 : 24, background: `${sc}15`, borderRadius: 2 }} />
+        </div>
+        {size !== 'mini' && <div style={{ height: 8, background: `${sc}12`, borderRadius: 2, marginTop: 4, width: '40%' }} />}
+      </div>
+    </div>
+  )
+
+  if (buildType === 'backend') return (
+    <div style={{ ...base, background: `linear-gradient(135deg, ${sc}14, ${sc}06)`, border: `1px solid ${sc}30` }}>
+      <div style={{ position: 'absolute', top: size === 'mini' ? 3 : 8, left: size === 'mini' ? 3 : 8, right: size === 'mini' ? 3 : 8 }}>
+        {[0.7, 0.5, 0.85, 0.4].slice(0, size === 'mini' ? 2 : 4).map((w, i) => (
+          <div key={i} style={{ height: size === 'mini' ? 2 : 3, background: `${sc}${i === 0 ? '50' : '25'}`, borderRadius: 1, marginBottom: size === 'mini' ? 3 : 5, width: `${w * 100}%` }} />
+        ))}
+      </div>
+    </div>
+  )
+
+  if (buildType === 'database') return (
+    <div style={{ ...base, background: `linear-gradient(135deg, ${sc}14, ${sc}06)`, border: `1px solid ${sc}30` }}>
+      <div style={{ position: 'absolute', top: size === 'mini' ? 4 : 10, left: '50%', transform: 'translateX(-50%)' }}>
+        {[0, 1, 2].slice(0, size === 'mini' ? 2 : 3).map(i => (
+          <div key={i} style={{ width: size === 'mini' ? 20 : 40, height: size === 'mini' ? 5 : 10, background: `${sc}${30 - i * 8}`, borderRadius: size === 'mini' ? 2 : 3, marginBottom: size === 'mini' ? 1 : 2, border: `1px solid ${sc}20` }} />
+        ))}
+      </div>
+    </div>
+  )
+
+  return (
+    <div style={{ ...base, background: `linear-gradient(135deg, ${sc}14, ${sc}06)`, border: `1px solid ${sc}30` }}>
+      <div style={{ position: 'absolute', top: size === 'mini' ? 4 : 10, left: size === 'mini' ? 5 : 12, right: size === 'mini' ? 5 : 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: size === 'mini' ? 3 : 8 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ width: size === 'mini' ? 6 : 14, height: size === 'mini' ? 6 : 14, borderRadius: size === 'mini' ? 2 : 4, background: `${sc}${35 - i * 10}`, border: `1px solid ${sc}20` }} />
+          ))}
+        </div>
+        {size !== 'mini' && (
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+            {[0, 1].map(i => (
+              <div key={i} style={{ width: 16, height: 1, background: `${sc}40` }} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function getInlineStatus(build: { id: string; status: Status; progress: number; title: string; stack: string[] }): string {
+  if (build.status === 'running') {
+    if (build.progress < 30) return `Analyzing ${build.title.toLowerCase()}...`
+    if (build.progress < 60) return `Compiling ${build.stack[build.stack.length - 1] || build.title}...`
+    if (build.progress < 85) return `Building ${build.title.toLowerCase()}...`
+    return `Deploying to Replit...`
+  }
+  if (build.status === 'complete') {
+    const n = (build.id.charCodeAt(0) % 5) + 2
+    return `${n} files generated`
+  }
+  if (build.status === 'failed') return 'Build failed'
+  if (build.status === 'queued') return 'Waiting in queue'
+  return 'Ready to build'
 }
 
 const KEYWORDS = ['async', 'function', 'await', 'const', 'let', 'if', 'return', 'export', 'import', 'from', 'throw', 'new', 'type', 'interface']
@@ -591,7 +671,6 @@ export function Overview() {
                 return counts
               })()
 
-              /* Shared build cards renderer: column=true → vertical stack (card view), column=false → horizontal scroll (row view) */
               const buildCards = (column: boolean, wrap = false) => (
                 <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 10, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { overflowX: 'auto', paddingBottom: 6 }) }}>
                   {project.builds.map((build) => {
@@ -602,50 +681,57 @@ export function Overview() {
                     const isComplete = build.status === 'complete'
                     const isDragging = draggedBuild?.buildId === build.id
                     const isDragOver = dragOverId === build.id && draggedBuild?.buildId !== build.id
+                    const bt = getBuildType(build.stack, build.title)
+                    const statusText = getInlineStatus(build)
 
                     return (
                       <div key={build.id} draggable onDragStart={() => handleDragStart(build.id, project.id)} onDragOver={e => handleDragOver(e, build.id)} onDrop={e => handleDrop(e, build.id, project.id)} onDragEnd={handleDragEnd}
-                        style={{ ...(column ? { width: '100%' } : { minWidth: 176, maxWidth: 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : c.border}`, borderLeft: isFailed ? '1px solid #ff6b6b' : isRunning ? `1px solid ${sc}` : `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: '11px 11px', display: 'flex', flexDirection: column ? 'row' : 'column', justifyContent: 'space-between', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.75 : 1, position: 'relative', overflow: 'hidden', cursor: 'grab', transition: 'opacity 0.2s, border 0.2s' }}>
+                        onClick={() => setExpandedBuildId(build.id)}
+                        style={{ ...(column ? { width: '100%' } : { minWidth: 176, maxWidth: 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : isComplete ? `${sc}30` : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s' }}>
 
-                        {/* Skill color left pip (column) / top pip (row) */}
-                        {column
-                          ? <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: sc, borderRadius: '12px 0 0 12px' }} />
-                          : <div style={{ position: 'absolute', top: 0, left: 16, width: 28, height: 2, background: sc, borderRadius: '0 0 3px 3px' }} />
-                        }
-
-                        {/* Title + skill badge */}
-                        <div style={{ flex: column ? 1 : undefined, paddingLeft: column ? 8 : 0 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 5 }}>
-                            <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                            <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
+                        {isComplete && (
+                          <div style={{ position: 'absolute', top: column ? 6 : 6, right: 6, width: 16, height: 16, borderRadius: 999, background: `${sc}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                            <span style={{ fontSize: 9, color: sc }}>✓</span>
                           </div>
-                        </div>
+                        )}
 
-                        {/* Progress + actions */}
-                        <div style={{ ...(column ? { display: 'flex', alignItems: 'center', gap: 12, minWidth: 180 } : {}) }}>
-                          {!column && (
-                            <>
-                              <div style={{ height: 3, background: isDark ? '#1b1b1b' : '#dfe8de', borderRadius: 999, overflow: 'hidden', marginBottom: 3 }}>
-                                <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                              </div>
-                              <div style={{ fontSize: 10, color: c.muted, marginBottom: 7 }}>{build.progress}%</div>
-                            </>
-                          )}
-                          {column && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <div style={{ width: 80, height: 4, background: isDark ? '#1b1b1b' : '#dfe8de', borderRadius: 999, overflow: 'hidden' }}>
-                                <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                              </div>
-                              <span style={{ fontSize: 10, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
+                        {column ? (
+                          <>
+                            <div style={{ width: 50, flexShrink: 0, padding: 8, position: 'relative' }}>
+                              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: sc, borderRadius: '12px 0 0 12px' }} />
+                              <PreviewThumbnail buildType={bt} sc={sc} size="mini" />
                             </div>
-                          )}
-                          <button onClick={(e) => { e.stopPropagation(); setExpandedBuildId(build.id) }}
-                            style={{ ...(column ? {} : { width: '100%' }), border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 9, cursor: 'pointer', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}
-                            onMouseEnter={e => e.currentTarget.style.background = '#242424'}
-                            onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}>
-                            {isComplete ? 'View Build' : isFailed ? 'Failed' : isRunning ? (build.progress < 30 ? 'Thinking...' : build.progress < 80 ? 'Building...' : 'Deploying...') : build.status === 'queued' ? 'Queued' : 'Idle'}
-                          </button>
-                        </div>
+                            <div style={{ flex: 1, padding: '8px 10px 8px 4px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                                  <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
+                                  <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
+                                </div>
+                                <div style={{ fontSize: 10, color: isRunning ? sc : isFailed ? '#b85858' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
+                                <div style={{ width: 80, height: 3, background: isDark ? '#1b1b1b' : '#dfe8de', borderRadius: 999, overflow: 'hidden' }}>
+                                  <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
+                                </div>
+                                <span style={{ fontSize: 10, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <PreviewThumbnail buildType={bt} sc={sc} />
+                            <div style={{ padding: '8px 10px 10px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 4 }}>
+                                <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
+                                <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
+                              </div>
+                              <div style={{ height: 3, background: isDark ? '#1b1b1b' : '#dfe8de', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
+                                <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
+                              </div>
+                              <div style={{ fontSize: 10, color: isRunning ? sc : isFailed ? '#b85858' : c.muted, fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>{statusText}</div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     )
                   })}
@@ -670,35 +756,24 @@ export function Overview() {
                       onMouseLeave={() => setHoveredProjectId(null)}
                       style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 14, alignItems: 'start', position: 'relative' }}>
 
-                      {/* Project info panel */}
                       <div onClick={() => setSelectedProjectId(project.id)} style={{ background: isSel ? c.blackGreen : 'transparent', borderRadius: 8, padding: '12px 12px 12px 0', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: isSel ? `${c.green}88` : 'transparent', borderRadius: '8px 0 0 8px' }} />
                         <div style={{ paddingLeft: 16 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                             <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: 0.1, color: '#ffffff' }}>{project.name}</div>
                           </div>
-                          <div style={{ color: c.muted, fontSize: 11, marginBottom: 10, lineHeight: 1.4 }}>{project.goal}</div>
 
-                          {/* Mini build preview */}
-                          <div style={{ marginBottom: 10 }}>
-                            <div style={{ fontSize: 10, color: c.muted, marginBottom: 5, letterSpacing: 0.8 }}>BUILDS</div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                              {project.builds.slice(0, 3).map(b => {
-                                const sc = skillColor(b.stack)
-                                return (
-                                  <div key={b.id}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                                      <span style={{ fontSize: 10, color: c.muted }}>{b.title}</span>
-                                      <span style={{ fontSize: 10, color: sc, fontWeight: 600 }}>{b.progress}%</span>
-                                    </div>
-                                    <div style={{ height: 3, background: isDark ? '#1e1e1e' : '#ddd', borderRadius: 99, overflow: 'hidden' }}>
-                                      <div style={{ width: `${b.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                              {project.builds.length > 3 && <div style={{ fontSize: 10, color: c.muted }}>+{project.builds.length - 3} more</div>}
-                            </div>
+                          <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
+                            {project.builds.slice(0, 5).map(b => {
+                              const sc = skillColor(b.stack)
+                              const bt = getBuildType(b.stack, b.title)
+                              return <PreviewThumbnail key={b.id} buildType={bt} sc={sc} size="mini" />
+                            })}
+                            {project.builds.length > 5 && <div style={{ width: 40, height: 28, borderRadius: 4, background: `${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: c.muted, fontWeight: 600 }}>+{project.builds.length - 5}</div>}
+                          </div>
+
+                          <div style={{ fontSize: 10, color: c.muted, marginBottom: 10 }}>
+                            {project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done · {project.builds.filter(b => b.status === 'running').length} active
                           </div>
 
                           <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
@@ -726,10 +801,11 @@ export function Overview() {
                       {/* Left accent */}
                       <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: isSel ? c.green : 'transparent', borderRadius: '12px 0 0 12px' }} />
 
-                      {/* Card header */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: 0.1, color: '#ffffff' }}>{project.name}</div>
+                          {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
+                          <span style={{ fontSize: 10, color: c.muted }}>{project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done</span>
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
                           onMouseEnter={() => setHoveredArchBtn(project.id + '-card')}
@@ -738,11 +814,6 @@ export function Overview() {
                           {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
                         </button>
                       </div>
-
-                      <div style={{ color: c.muted, fontSize: 11, marginBottom: 14, lineHeight: 1.4 }}>{project.goal}</div>
-
-                      {/* Build cards — wrapping grid */}
-                      <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>BUILDS</div>
                       {buildCards(false, true)}
                     </div>
                   )}
@@ -1063,10 +1134,13 @@ export function Overview() {
                     <div key={build.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       {/* Vertical line up */}
                       <div style={{ width: 2, height: 20, background: c.border }} />
-                      <div style={{ border: `1px solid ${sc}66`, borderTop: `1px solid ${sc}`, background: isDark ? `${sc}0a` : `${sc}08`, borderRadius: 12, padding: 14, width: 160, cursor: 'pointer' }} onClick={() => { setExpandedBuildId(build.id); setExpandedProject(null) }}>
+                      <div style={{ border: `1px solid ${build.status === 'complete' ? `${sc}30` : build.status === 'failed' ? '#ff6b6b66' : `${sc}66`}`, borderTop: `2px solid ${build.status === 'complete' ? `${sc}60` : build.status === 'failed' ? '#ff6b6b' : sc}`, background: isDark ? `${sc}0a` : `${sc}08`, borderRadius: 12, padding: 14, width: 160, cursor: 'pointer', opacity: build.status === 'complete' ? 0.7 : 1, transition: 'opacity 0.2s' }} onClick={() => { setExpandedBuildId(build.id); setExpandedProject(null) }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                           <span style={{ fontSize: 11, color: '#ffffff', fontWeight: 700 }}>{ps}</span>
-                          <StatusBadge status={build.status} colors={c} />
+                          {build.status === 'running' && <span style={{ width: 7, height: 7, borderRadius: 999, background: sc, display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                          {build.status === 'complete' && <span style={{ fontSize: 10, color: sc }}>✓</span>}
+                          {build.status === 'failed' && <span style={{ fontSize: 10, color: '#b85858' }}>✕</span>}
+                          {build.status === 'queued' && <span style={{ width: 7, height: 7, borderRadius: 999, background: '#9a8030', display: 'inline-block', opacity: 0.6 }} />}
                         </div>
                         <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{build.title}</div>
                         <div style={{ fontSize: 11, color: c.muted, marginBottom: 8, lineHeight: 1.4 }}>{build.summary}</div>
@@ -1115,7 +1189,7 @@ export function Overview() {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                         <div style={{ fontWeight: 800, fontSize: 22 }}>{expandedBuild.build.title}</div>
-                        <StatusBadge status={expandedBuild.build.status} colors={c} size="lg" />
+                        {expandedBuild.build.status !== 'complete' && <StatusBadge status={expandedBuild.build.status} colors={c} size="lg" />}
                         <span style={{ fontSize: 11, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '2px 7px', borderRadius: 6, background: `${sc}14` }}>{ps}</span>
                       </div>
                       <div style={{ fontSize: 13, color: c.muted }}>{expandedBuild.project.name}</div>

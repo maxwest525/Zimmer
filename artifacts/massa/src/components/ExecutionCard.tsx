@@ -33,9 +33,9 @@ function StatusBadge({ status }: StatusBadgeProps) {
       icon: <Clock className="w-3 h-3" />,
     },
     completed: {
-      label: "Completed",
-      className: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-      icon: <CheckCircle2 className="w-3 h-3" />,
+      label: "",
+      className: "hidden",
+      icon: null,
     },
     failed: {
       label: "Failed",
@@ -96,8 +96,13 @@ interface ExecutionCardProps {
 export function ExecutionCard({ card }: ExecutionCardProps) {
   const [expanded, setExpanded] = useState(false);
 
+  const isCompleted = card.status === "completed";
+
   return (
-    <div className="border border-border rounded-lg bg-card overflow-hidden">
+    <div className={cn(
+      "border rounded-lg bg-card overflow-hidden transition-opacity duration-200",
+      isCompleted ? "border-blue-500/20 opacity-70" : "border-border"
+    )}>
       <div className="px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -105,7 +110,11 @@ export function ExecutionCard({ card }: ExecutionCardProps) {
               <h3 className="text-sm font-semibold text-foreground truncate">
                 {card.title}
               </h3>
-              <StatusBadge status={card.status} />
+              {isCompleted ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-400/60 shrink-0" />
+              ) : (
+                <StatusBadge status={card.status} />
+              )}
               {card.startedAt && (
                 <span className="text-[10px] text-muted-foreground ml-auto shrink-0">
                   {card.status === "queued" ? "Queued" : `Started ${card.startedAt}`}
