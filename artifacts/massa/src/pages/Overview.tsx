@@ -1149,10 +1149,20 @@ export function Overview() {
               onMouseLeave={() => setHoveredArchBtn(null)}
               style={{ border: '1px solid #2e2e2e', padding: '9px 12px', borderRadius: 9, color: c.text, background: hoveredArchBtn === 'claude-rec' ? '#242424' : '#1a1a1a', fontSize: 12, cursor: 'default', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>LLM: Sonnet 4.6 (Claude)</div>
             {/* Vague mode toggle */}
-            <button
-              onClick={() => setVagueMode(v => !v)}
-              title={vagueMode ? 'Vague mode on — MASSA will ask clarifying questions' : 'Enable vague mode to get clarifying questions'}
-              style={{ width: 32, height: 32, borderRadius: 999, border: vagueMode ? `1px solid ${c.green}` : '1px solid #2e2e2e', background: vagueMode ? c.greenSoft : '#1a1a1a', color: vagueMode ? c.green : c.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>?</button>
+            <div style={{ position: 'relative' }}
+              onMouseEnter={() => setHoveredArchBtn('vague-tip')}
+              onMouseLeave={() => setHoveredArchBtn(null)}
+            >
+              <button
+                onClick={() => setVagueMode(v => !v)}
+                style={{ width: 32, height: 32, borderRadius: 999, border: vagueMode ? `1px solid ${c.green}` : '1px solid #2e2e2e', background: vagueMode ? c.greenSoft : '#1a1a1a', color: vagueMode ? c.green : c.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>?</button>
+              {hoveredArchBtn === 'vague-tip' && (
+                <div style={{ position: 'absolute', bottom: '100%', right: 0, marginBottom: 8, background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#ccc', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.5)', zIndex: 10, pointerEvents: 'none' }}>
+                  <div style={{ fontWeight: 700, color: c.text, marginBottom: 4 }}>Vague Mode {vagueMode ? '(On)' : '(Off)'}</div>
+                  When enabled, MASSA will ask clarifying questions before building if your prompt is broad or ambiguous. Click to toggle.
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Projects header */}
