@@ -36,8 +36,8 @@ export function InsideMassa() {
     border: isDark ? '#1e1e1e' : '#cddecb',
     text: isDark ? '#f0f0f0' : '#0e120e',
     muted: isDark ? '#7a817a' : '#4e5e4e',
-    green: '#39d632',
-    soft: isDark ? 'rgba(57,214,50,0.13)' : 'rgba(57,214,50,0.10)',
+    green: '#2d8a32',
+    soft: isDark ? 'rgba(45,138,50,0.10)' : 'rgba(45,138,50,0.08)',
     greenDark: isDark ? '#091409' : '#e4f7e2',
     terminalBg: isDark ? '#0a0a0a' : '#f5f5f5',
     terminalBorder: isDark ? '#2a2a2a' : '#d0d0d0',
@@ -86,7 +86,7 @@ export function InsideMassa() {
       role: 'Build engine',
       for: ['Backend', 'APIs', 'Logic', 'Infrastructure'],
       why: 'Used for technical depth and code.',
-      color: '#7ef57a',
+      color: '#5aad58',
     },
     {
       name: 'Lovable / Replit',
@@ -94,7 +94,7 @@ export function InsideMassa() {
       role: 'Interface layer',
       for: ['Dashboards', 'Front-end', 'Control panels', 'UI'],
       why: 'Used when the output needs a visual surface.',
-      color: '#60a5fa',
+      color: '#5080b8',
       logoNames: ['Lovable', 'Replit'],
     },
     {
@@ -103,7 +103,7 @@ export function InsideMassa() {
       role: 'Automation layer',
       for: ['Routing', 'Triggers', 'Scheduling', 'Notifications'],
       why: 'Used to connect, schedule, and orchestrate.',
-      color: '#d0d45b',
+      color: '#9a9d48',
     },
   ]
 

@@ -24,12 +24,12 @@ type Project = {
 }
 
 const SKILL_COLORS: Record<string, string> = {
-  'n8n': '#a3c639',
-  'Lovable': '#60a5fa',
-  'Replit': '#60a5fa',
-  'Claude Code': '#7ef57a',
-  'APIs': '#d0a838',
-  'Claude': '#39d632',
+  'n8n': '#7a9430',
+  'Lovable': '#5080b8',
+  'Replit': '#5080b8',
+  'Claude Code': '#5aad58',
+  'APIs': '#9a8030',
+  'Claude': '#2d8a32',
 }
 
 function skillColor(stack: string[]): string {
@@ -57,34 +57,34 @@ function getPhase(builds: Build[]): Phase {
 }
 
 const PHASE_META: Record<Phase, { label: string; color: string; desc: string }> = {
-  thinking: { label: 'Thinking', color: '#a78bfa', desc: 'Claude is interpreting and planning the work' },
-  building: { label: 'Building', color: '#39d632', desc: 'Claude Code is executing the build' },
-  deploying: { label: 'Deploying', color: '#60a5fa', desc: 'Lovable / Replit is rendering the interface' },
-  done: { label: 'Complete', color: '#7ef57a', desc: 'All builds finished successfully' },
-  queued: { label: 'Queued', color: '#d0a838', desc: 'Waiting to start' },
+  thinking: { label: 'Thinking', color: '#7a6aad', desc: 'Claude is interpreting and planning the work' },
+  building: { label: 'Building', color: '#2d8a32', desc: 'Claude Code is executing the build' },
+  deploying: { label: 'Deploying', color: '#5080b8', desc: 'Lovable / Replit is rendering the interface' },
+  done: { label: 'Complete', color: '#5aad58', desc: 'All builds finished successfully' },
+  queued: { label: 'Queued', color: '#9a8030', desc: 'Waiting to start' },
 }
 
 function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: Record<string, string>; size?: 'sm' | 'lg' }) {
   const fs = size === 'lg' ? 13 : 11
   const pad = size === 'lg' ? '5px 12px' : '3px 8px'
   if (status === 'running') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#39d632', background: 'rgba(57,214,50,0.10)', border: '1px solid rgba(57,214,50,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
-      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#39d632', display: 'inline-block', flexShrink: 0 }} />
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#2d8a32', background: 'rgba(45,138,50,0.10)', border: '1px solid rgba(45,138,50,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
+      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#2d8a32', display: 'inline-block', flexShrink: 0 }} />
       Building
     </span>
   )
   if (status === 'queued') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#d0a838', background: 'rgba(208,168,56,0.10)', border: '1px solid rgba(208,168,56,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
-      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#d0a838', display: 'inline-block', flexShrink: 0 }} /> Pending
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#9a8030', background: 'rgba(154,128,48,0.10)', border: '1px solid rgba(154,128,48,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
+      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#9a8030', display: 'inline-block', flexShrink: 0 }} /> Pending
     </span>
   )
   if (status === 'complete') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#60a5fa', background: 'rgba(96,165,250,0.10)', border: '1px solid rgba(96,165,250,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✓ Done</span>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#5080b8', background: 'rgba(80,128,184,0.10)', border: '1px solid rgba(80,128,184,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✓ Done</span>
   )
   if (status === 'failed') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f87171', background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✕ Failed</span>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#b85858', background: 'rgba(184,88,88,0.10)', border: '1px solid rgba(184,88,88,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✕ Failed</span>
   )
-  return <span style={{ fontSize: fs, color: '#8c8f8c', background: 'rgba(140,143,140,0.10)', border: '1px solid rgba(140,143,140,0.20)', padding: pad, borderRadius: 999, fontWeight: 600 }}>Idle</span>
+  return <span style={{ fontSize: fs, color: '#6a6d6a', background: 'rgba(106,109,106,0.08)', border: '1px solid rgba(106,109,106,0.15)', padding: pad, borderRadius: 999, fontWeight: 600 }}>Idle</span>
 }
 
 const KEYWORDS = ['async', 'function', 'await', 'const', 'let', 'if', 'return', 'export', 'import', 'from', 'throw', 'new', 'type', 'interface']
@@ -200,8 +200,8 @@ export function Overview() {
     border: isDark ? '#1e1e1e' : '#d8e5d7',
     text: isDark ? '#f5f5f5' : '#101410',
     muted: isDark ? '#8c8f8c' : '#556155',
-    green: isDark ? '#38d430' : '#1a7a18',
-    greenSoft: isDark ? 'rgba(56,212,48,0.08)' : 'rgba(56,212,48,0.06)',
+    green: isDark ? '#2d8a32' : '#1a7a18',
+    greenSoft: isDark ? 'rgba(45,138,50,0.08)' : 'rgba(56,212,48,0.06)',
     blackGreen: isDark ? '#080f08' : '#f0f7f0',
   }
 
@@ -735,10 +735,10 @@ export function Overview() {
 
             const kpis: { label: string; value: number; color: string; bg: string }[] = [
               { label: 'Total Projects', value: totalProjects, color: c.text, bg: c.alt },
-              { label: 'Running', value: runningBuilds, color: '#39d632', bg: c.greenSoft },
-              { label: 'Completed', value: completedBuilds, color: '#60a5fa', bg: 'rgba(96,165,250,0.08)' },
-              { label: 'Queued', value: queuedBuilds, color: '#d0a838', bg: 'rgba(208,168,56,0.08)' },
-              { label: 'Failed', value: failedBuilds, color: '#f87171', bg: 'rgba(248,113,113,0.08)' },
+              { label: 'Running', value: runningBuilds, color: '#2d8a32', bg: c.greenSoft },
+              { label: 'Completed', value: completedBuilds, color: '#5080b8', bg: 'rgba(80,128,184,0.06)' },
+              { label: 'Queued', value: queuedBuilds, color: '#9a8030', bg: 'rgba(154,128,48,0.06)' },
+              { label: 'Failed', value: failedBuilds, color: '#b85858', bg: 'rgba(184,88,88,0.06)' },
             ]
 
             return (
@@ -782,7 +782,7 @@ export function Overview() {
             <div>
               <div style={{ fontSize: 10, color: '#ffffff', fontWeight: 700, letterSpacing: 0.8, marginBottom: 4 }}>READY BUILDS</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#d0a838' : c.text, lineHeight: 1 }}>{readyBuildsCount}</span>
+                <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#9a8030' : c.text, lineHeight: 1 }}>{readyBuildsCount}</span>
                 <span style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>queued</span>
               </div>
             </div>
@@ -790,7 +790,7 @@ export function Overview() {
               onClick={handleStartAll}
               disabled={readyBuildsCount === 0}
               style={{
-                background: readyBuildsCount > 0 ? '#d0a838' : (isDark ? '#1e1e1e' : '#e8e8e8'),
+                background: readyBuildsCount > 0 ? '#9a8030' : (isDark ? '#1e1e1e' : '#e8e8e8'),
                 color: readyBuildsCount > 0 ? '#081008' : c.muted,
                 border: `1px solid ${c.border}`,
                 borderRadius: 8,
@@ -840,7 +840,7 @@ export function Overview() {
           <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: '#ffffff', borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>CODE STREAM</span>
-              <span style={{ width: 6, height: 6, borderRadius: 999, background: '#39d632', display: 'inline-block' }} />
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: '#2d8a32', display: 'inline-block' }} />
             </div>
             <div
               ref={codeRef}
@@ -853,7 +853,7 @@ export function Overview() {
                 if (line.kind === 'qa') {
                   const isPass = line.qa === 'pass'
                   return (
-                    <div key={line.id} style={{ padding: '3px 12px', color: isPass ? '#7ef57a' : '#f59e0b', lineHeight: 1.5 }}>
+                    <div key={line.id} style={{ padding: '3px 12px', color: isPass ? '#5aad58' : '#b8801a', lineHeight: 1.5 }}>
                       {line.content}
                     </div>
                   )
