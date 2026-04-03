@@ -637,7 +637,7 @@ export function Overview() {
 
                       {/* Project info panel */}
                       <div onClick={() => setSelectedProjectId(project.id)} style={{ background: isSel ? c.blackGreen : 'transparent', borderRadius: 8, padding: '12px 12px 12px 0', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: isSel ? c.green : 'transparent', borderRadius: '8px 0 0 8px' }} />
+                        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: isSel ? `${c.green}88` : 'transparent', borderRadius: '8px 0 0 8px' }} />
                         <div style={{ paddingLeft: 16 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                             <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: 0.1, color: '#ffffff' }}>{project.name}</div>
