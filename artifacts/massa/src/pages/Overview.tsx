@@ -616,7 +616,7 @@ export function Overview() {
                           </div>
 
                           <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                            style={{ width: '100%', border: `1px solid #2a2a2a`, background: '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                            style={{ width: '100%', border: `1px solid ${c.green}40`, background: '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                             {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
                           </button>
                         </div>
@@ -643,7 +643,7 @@ export function Overview() {
                           {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                          style={{ border: `1px solid #2a2a2a`, background: '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                          style={{ border: `1px solid ${c.green}40`, background: '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                           {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
                         </button>
                       </div>
