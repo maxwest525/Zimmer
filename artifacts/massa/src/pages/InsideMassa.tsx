@@ -9,7 +9,19 @@ const KEYFRAMES = `
 }
 `
 
+function useIsMobileIM() {
+  const [m, setM] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false)
+  useEffect(() => {
+    const h = () => setM(window.innerWidth < 768)
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
+  return m
+}
+
 export function InsideMassa() {
+  const isMobile = useIsMobileIM()
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [, navigate] = useLocation()
   const [hoveredStep, setHoveredStep] = useState<number | null>(null)
 
@@ -131,6 +143,13 @@ export function InsideMassa() {
       {/* HEADER */}
       <div style={{ height: 56, border: `1px solid ${c.border}`, background: c.panel, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {isMobile && (
+            <button onClick={() => setMobileNavOpen(!mobileNavOpen)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ width: 20, height: 2, background: '#888' }} />
+              <div style={{ width: 20, height: 2, background: '#888' }} />
+              <div style={{ width: 20, height: 2, background: '#888' }} />
+            </button>
+          )}
           <div style={{ width: 28, height: 28, borderRadius: 7, background: c.green, color: '#091109', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14 }}>M</div>
           <span style={{ fontSize: 15, fontWeight: 700 }}>Massa <span style={{ color: c.green }}>AI</span></span>
         </div>
@@ -139,11 +158,26 @@ export function InsideMassa() {
         </div>
       </div>
 
+      {/* MOBILE NAV OVERLAY */}
+      {isMobile && mobileNavOpen && (
+        <div onClick={() => setMobileNavOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 50 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 260, height: '100%', background: c.panel, border: `1px solid ${c.border}`, padding: 16, overflowY: 'auto' }}>
+            <div style={{ fontSize: 10, letterSpacing: 1.3, color: c.muted, marginBottom: 10 }}>NAVIGATION</div>
+            {nav.map(item => (
+              <div key={item.label} onClick={() => { if (item.path) navigate(item.path); setMobileNavOpen(false) }}
+                style={{ padding: '10px 11px', borderRadius: 8, marginBottom: 4, background: item.label === 'Inside MASSA' ? c.soft : 'transparent', color: item.label === 'Inside MASSA' ? c.green : c.text, fontSize: 14, fontWeight: item.label === 'Inside MASSA' ? 600 : 400, cursor: item.path ? 'pointer' : 'default' }}>
+                {item.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 14, minHeight: 'calc(100vh - 98px)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '240px 1fr', gap: 14, minHeight: 'calc(100vh - 98px)' }}>
 
         {/* SIDEBAR */}
-        <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        {!isMobile && <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 10, letterSpacing: 1.3, color: c.muted, marginBottom: 10 }}>NAVIGATION</div>
             {nav.map((item) => {
@@ -162,10 +196,10 @@ export function InsideMassa() {
               <div style={{ color: c.green, fontWeight: 700, fontSize: 13 }}>Massa Marketing Site</div>
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* CONTENT */}
-        <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 28, overflow: 'auto' }}>
+        <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: isMobile ? 16 : 28, overflow: 'auto' }}>
 
           {/* HERO */}
           <div style={{ marginBottom: 36 }}>

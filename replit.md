@@ -91,6 +91,19 @@ Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used b
 
 Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
 
+### `artifacts/massa` (`@workspace/massa`)
+
+React + Vite frontend-only workspace for the MASSA AI command workspace. Dark-themed, desktop-first with full mobile/tablet responsive support.
+
+- Pages: `/` (Overview dashboard), `/inside` (Inside MASSA system explainer)
+- Responsive: `useScreenSize()` hook in Overview.tsx with breakpoints 768px (mobile) / 1024px (tablet)
+  - Desktop: 3-column layout (240px sidebar + center + 300px right panel)
+  - Tablet: 2-column layout (center + 260px right panel), hamburger menu
+  - Mobile: single column, hamburger menu, slide-out nav drawer, right panel hidden
+- InsideMassa.tsx has its own `useIsMobileIM()` hook for responsive behavior
+- Design: green `#2d8a32`, dark bg `#060606`, panel `#0d0d0d`, border `#1e1e1e`; all inline styles, no Tailwind
+- Features: project cards (row/card views), build cards, chat modal, arch map modal, attachment menus, code stream
+
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.

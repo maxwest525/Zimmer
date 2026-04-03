@@ -736,7 +736,19 @@ function renderCodeLine(code: string, isDark: boolean) {
   )
 }
 
+function useScreenSize() {
+  const [width, setWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1440)
+  useEffect(() => {
+    const handle = () => setWidth(window.innerWidth)
+    window.addEventListener('resize', handle)
+    return () => window.removeEventListener('resize', handle)
+  }, [])
+  return { isMobile: width < 768, isTablet: width >= 768 && width < 1024, isDesktop: width >= 1024, width }
+}
+
 export function Overview() {
+  const { isMobile, isTablet, isDesktop } = useScreenSize()
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [livePreviewProject, setLivePreviewProject] = useState<string | null>(null)
   const [chatProject, setChatProject] = useState<string | null>(null)
@@ -1143,20 +1155,57 @@ export function Overview() {
 
       {/* HEADER */}
       <div style={{ height: 60, border: `1px solid ${c.border}`, background: c.panel, display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative' }}>
+        {!isDesktop && (
+          <button onClick={() => setMobileNavOpen(!mobileNavOpen)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 6, display: 'flex', flexDirection: 'column', gap: 4, zIndex: 2 }}>
+            <div style={{ width: 20, height: 2, background: '#888' }} />
+            <div style={{ width: 20, height: 2, background: '#888' }} />
+            <div style={{ width: 20, height: 2, background: '#888' }} />
+          </button>
+        )}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: 6, color: '#ffffff' }}>MASSA</span>
-          <span style={{ background: c.green, color: '#081008', fontWeight: 800, fontSize: 20, padding: '3px 10px', borderRadius: 6 }}>AI</span>
+          <span style={{ fontSize: isMobile ? 22 : 28, fontWeight: 800, letterSpacing: 6, color: '#ffffff' }}>MASSA</span>
+          <span style={{ background: c.green, color: '#081008', fontWeight: 800, fontSize: isMobile ? 16 : 20, padding: '3px 10px', borderRadius: 6 }}>AI</span>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
           <div style={{ width: 32, height: 32, borderRadius: 999, background: c.greenSoft, color: c.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid ${c.border}`, fontSize: 13 }}>M</div>
         </div>
       </div>
 
-      {/* 3-COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: rightPanelCollapsed ? '240px minmax(0, 1fr) 0px' : '240px minmax(0, 1fr) 300px', gap: rightPanelCollapsed ? '12px 0px' : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
+      {/* MOBILE NAV OVERLAY */}
+      {!isDesktop && mobileNavOpen && (
+        <div onClick={() => setMobileNavOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 50 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 260, height: '100%', background: c.panel, border: `1px solid ${c.border}`, padding: 16, overflowY: 'auto' }}>
+            <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.muted, marginBottom: 10, fontWeight: 700 }}>NAVIGATION</div>
+            {[
+              { label: 'Dashboard', view: 'dashboard' as const, path: '/' },
+              { label: 'Chats', view: 'chats' as const, path: '' },
+              { label: 'History', view: null, path: '' },
+              { label: 'Automations', view: null, path: '' },
+              { label: 'Marketing', view: null, path: '' },
+              { label: 'Skills', view: null, path: '' },
+              { label: 'APIs', view: null, path: '' },
+              { label: 'Web Scraper', view: null, path: '' },
+              { label: 'Inside MASSA', view: null, path: '/inside' },
+            ].map(item => (
+              <div key={item.label}
+                onClick={() => {
+                  if (item.view) setActiveView(item.view)
+                  if (item.path) navigate(item.path)
+                  setMobileNavOpen(false)
+                }}
+                style={{ padding: '10px 12px', borderRadius: 8, cursor: 'pointer', color: '#ffffff', fontSize: 14, fontWeight: (item.view === activeView || (item.label === 'Dashboard' && activeView === 'dashboard')) ? 700 : 400, background: (item.view === activeView || (item.label === 'Dashboard' && activeView === 'dashboard')) ? c.greenSoft : 'transparent', marginBottom: 2 }}>
+                {item.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-        {/* LEFT SIDEBAR */}
-        <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2 }}>
+      {/* 3-COLUMN LAYOUT */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 0px' : 'minmax(0, 1fr) 260px') : (rightPanelCollapsed ? '240px minmax(0, 1fr) 0px' : '240px minmax(0, 1fr) 300px'), gap: isMobile ? 12 : (rightPanelCollapsed ? '12px 0px' : 12), minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
+
+        {/* LEFT SIDEBAR — hidden on mobile/tablet */}
+        {isDesktop && <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2 }}>
           <div>
             <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.muted, marginBottom: 10, fontWeight: 700 }}>NAVIGATION</div>
             {[
@@ -1188,11 +1237,11 @@ export function Overview() {
               <div style={{ color: c.green, fontWeight: 700, fontSize: 13 }}>{selectedProject.name}</div>
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* CENTER + RIGHT AREA */}
         {activeView === 'chats' ? (
-          <div style={{ gridColumn: '2 / -1' }}>
+          <div style={{ gridColumn: isDesktop ? '2 / -1' : '1 / -1' }}>
             <ChatView
               projects={projects}
               selectedBuildId={selectedChatBuildId}
@@ -1495,7 +1544,7 @@ export function Overview() {
                   {viewMode === 'row' ? (
                     /* ── ROW VIEW (default) ── */
                     <div
-                      style={{ display: 'grid', gridTemplateColumns: '220px minmax(0, 1fr)', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, background: c.alt, overflow: 'hidden' }}>
+                      style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px minmax(0, 1fr)', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: isMobile ? 10 : 14, background: c.alt, overflow: 'hidden' }}>
 
                       <div onClick={() => setSelectedProjectId(project.id)} style={{ background: isSel ? c.blackGreen : 'transparent', borderRadius: 8, padding: '12px 12px 12px 0', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: isSel ? `${c.green}88` : 'transparent', borderRadius: '8px 0 0 8px' }} />
@@ -1590,7 +1639,7 @@ export function Overview() {
         </div>
 
         {/* RIGHT PANEL — Live Feed */}
-        {rightPanelCollapsed && (
+        {!isMobile && rightPanelCollapsed && (
           <button
             onClick={() => setRightPanelCollapsed(false)}
             style={{
@@ -1626,6 +1675,7 @@ export function Overview() {
             <span style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>FEED</span>
           </button>
         )}
+        {isMobile ? null :
         <div style={{
           border: rightPanelCollapsed ? 'none' : `1px solid ${c.border}`,
           background: rightPanelCollapsed ? 'transparent' : c.panel,
@@ -1806,7 +1856,7 @@ export function Overview() {
               </div>
             )}
           </div>
-        </div>
+        </div>}
         </>}
       </div>
 
