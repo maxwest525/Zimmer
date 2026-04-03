@@ -1,0 +1,103 @@
+The dashboard still does not visually read as a terminal-inspired interface, especially the main prompt/search box.
+
+Do a SECOND PASS focused specifically on making the dashboard feel more like a modern terminal command center, while still keeping all functionality exactly the same.
+
+CRITICAL RULES
+- Do not change any functionality
+- Do not change handlers, logic, routes, data flow, tabs, or search behavior
+- Do not replace working components with new logic
+- This is a visual pass only
+
+MAIN ISSUE TO FIX
+Right now the UI only feels dark and slightly polished.
+It does NOT feel like a terminal.
+The prompt/search box especially still reads like a generic SaaS input.
+
+TERMINAL FEEL REQUIREMENTS
+
+1. PROMPT / SEARCH BOX MUST FEEL LIKE A COMMAND INPUT
+Keep the same functionality, but restyle it so it visually reads like a command console input.
+
+Make these changes:
+- Add a visible prompt prefix on the left, such as:
+  >
+  _
+  or a subtle terminal-style command marker
+- Make the prompt prefix feel intentional and integrated, not decorative
+- Use a darker inset field inside the outer container
+- Increase contrast between the command box and surrounding panels
+- Use a cleaner, sharper border treatment instead of a soft generic input look
+- Add a subtle active cursor / command-line feel on focus
+- Use monospace for the typed text or at least for the prefix and entered query
+- Make placeholder text feel command-like but still natural language
+
+Examples of placeholder tone:
+- > search carrier by company name
+- > lookup DOT number
+- > search MC number
+- > find carrier record
+
+2. MAKE THE COMMAND BOX LESS “FORM FIELD” AND MORE “CONTROL CONSOLE”
+The main prompt box should feel like the centerpiece of the dashboard.
+It should look like a real operator input bar, not a normal website search bar.
+
+Adjust:
+- stronger visual framing
+- slightly denser internal layout
+- more terminal-like contrast
+- sharper focus state
+- optional subtle inner shadow / inset treatment
+- reduced “soft consumer app” feel
+
+3. INTRODUCE MORE TERMINAL STRUCTURE INTO THE DASHBOARD
+Without changing layout, update the visual language so more modules feel like system panels.
+
+Examples:
+- panel headers can include small labels like SYSTEM, LIVE, QUERY, ACTIVE
+- use thin separators and structured spacing
+- allow selective monospace for technical values like DOT, MC, IDs, timestamps
+- make some data groupings feel more like output blocks
+
+4. SEGMENTED FILTERS SHOULD FEEL MORE LIKE MODE SELECTORS
+For Name / DOT / MC:
+- keep same behavior
+- restyle them so they feel like terminal mode toggles
+- active one should feel clearly armed / selected
+- use stronger selected contrast
+- darker inactive state
+- more precise border and highlight treatment
+
+5. TERMINAL LOOK, BUT MODERN
+Do not make this retro.
+Do not make it cheesy.
+Do not turn the app into a fake hacker movie.
+
+Do:
+- modern dark command-center aesthetic
+- restrained green accents
+- stronger structural contrast
+- precise borders
+- subtle glow only where needed
+- sharper, more intentional hierarchy
+
+Do not:
+- over-glow everything
+- add noisy effects
+- add fake scan lines
+- make the entire UI monospace
+- reduce readability
+
+6. VISUAL TARGET
+The dashboard should now feel like:
+- a premium operator console
+- a command-driven system
+- a modern terminal-inspired control surface
+
+not:
+- a normal dashboard with dark mode
+- a generic SaaS app with green accents
+
+PRIORITIZE THE MAIN PROMPT BOX
+The biggest visual issue is the prompt/search box.
+Fix that first.
+Make it unmistakably terminal-inspired while preserving full usability and existing behavior.

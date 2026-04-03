@@ -101,7 +101,8 @@ React + Vite frontend-only workspace for the MASSA AI command workspace. Dark-th
   - Tablet: 2-column layout (center + 260px right panel), hamburger menu
   - Mobile: single column, hamburger menu, slide-out nav drawer, right panel hidden
 - InsideMassa.tsx has its own `useIsMobileIM()` hook for responsive behavior
-- Design: green `#2d8a32`, dark bg `#060606`, panel `#0d0d0d`, border `#1e1e1e`; all inline styles, no Tailwind
+- Design: Terminal-inspired dark theme — bg `#0a0d10`, panel `#0a0d10`, terminal `#080a0e`, border `#14181e`/`#1c2028`, green accent `#34d399` with glow effects; monospace `JetBrains Mono` in UI chrome; `panel-header` CSS class for section labels; all inline styles, no Tailwind
+- Color palette: green `#34d399`, amber `#f59e0b`, red `#f87171`, blue `#60a5fa`, violet `#a78bfa`, text `#e8eaed`, muted `#6b7280`, dim `#4b5563`
 - Features: project cards (row/card views), build cards, chat modal, arch map modal, attachment menus, code stream
 
 ### `scripts` (`@workspace/scripts`)
