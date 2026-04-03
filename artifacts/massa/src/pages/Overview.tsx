@@ -740,6 +740,60 @@ export function Overview() {
   const [livePreviewProject, setLivePreviewProject] = useState<string | null>(null)
   const [expandedBuildId, setExpandedBuildId] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
+  const [buildModalTab, setBuildModalTab] = useState<'chat' | 'details'>('chat')
+  const [chatMessages, setChatMessages] = useState<Record<string, { id: string; role: 'user' | 'agent'; content: string; time: string }[]>>(() => {
+    const t = (h: number, m: number, s: number) => `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+    return {
+      'core-engine': [
+        { id: '1', role: 'agent', content: 'Starting work on the Core Engine. I\'ll set up the strategy loop, execution logic, and order handling.', time: t(14,22,10) },
+        { id: '2', role: 'user', content: 'Make sure the order handler supports both market and limit orders from the start.', time: t(14,23,4) },
+        { id: '3', role: 'agent', content: 'Got it. I\'ll implement an OrderType enum with MARKET and LIMIT variants. The execution pipeline will route through different handlers based on type.\n\n```typescript\nexport enum OrderType {\n  MARKET = "market",\n  LIMIT = "limit"\n}\n```', time: t(14,23,45) },
+        { id: '4', role: 'agent', content: 'Created src/core/engine.ts with the main strategy loop. It polls every 500ms, evaluates signals, and dispatches orders. Currently compiling APIs...', time: t(14,28,12) },
+        { id: '5', role: 'user', content: 'Can we add a kill switch that halts all trading if drawdown exceeds 5%?', time: t(14,30,1) },
+        { id: '6', role: 'agent', content: 'Adding a circuit breaker module now. It will monitor real-time P&L and freeze the engine if drawdown hits the threshold. I\'ll wire it into the main loop before order dispatch.', time: t(14,30,33) },
+      ],
+      'risk-module': [
+        { id: '1', role: 'agent', content: 'Initializing Risk Module. Waiting for Core Engine dependency to stabilize before wiring position sizing.', time: t(14,25,0) },
+        { id: '2', role: 'agent', content: 'Core Engine schema is available. Building position sizing logic based on account balance and volatility.', time: t(14,32,15) },
+        { id: '3', role: 'user', content: 'Use Kelly Criterion for position sizing. Max 2% risk per trade.', time: t(14,33,8) },
+        { id: '4', role: 'agent', content: 'Implementing Kelly Criterion with a 2% hard cap. I\'ll also add a configurable multiplier so you can scale it down (half-Kelly is common).\n\n```typescript\nconst kellyFraction = (winRate * avgWin - (1 - winRate) * avgLoss) / avgWin;\nconst position = Math.min(kellyFraction * multiplier, 0.02);\n```', time: t(14,34,2) },
+      ],
+      'dashboard-ui': [
+        { id: '1', role: 'agent', content: 'Setting up the Dashboard UI scaffold. Using React with a real-time WebSocket feed for live position updates.', time: t(14,26,0) },
+        { id: '2', role: 'user', content: 'I want a dark trading terminal look. Think Bloomberg-style with green accents.', time: t(14,27,12) },
+        { id: '3', role: 'agent', content: 'Perfect. I\'ll use a #0a0a0a base with #2d8a32 for positive P&L and accent elements. The layout will have a chart area top-center, order book on the right, and positions table below.', time: t(14,27,55) },
+      ],
+      'alerts': [
+        { id: '1', role: 'agent', content: 'Alerts module complete. Set up n8n workflows for Slack notifications on trade execution, daily P&L summary, and critical errors.', time: t(13,50,0) },
+        { id: '2', role: 'user', content: 'Add email alerts too for the daily summary.', time: t(13,52,30) },
+        { id: '3', role: 'agent', content: 'Done. Added SendGrid integration for daily email digest. It fires at market close with a summary of all positions, P&L, and any triggered stop losses.', time: t(13,53,15) },
+      ],
+      'backtester': [
+        { id: '1', role: 'agent', content: 'Backtester is queued. Once the Core Engine is stable, I\'ll build the historical simulation engine using the same strategy interface.', time: t(14,35,0) },
+      ],
+      'homepage': [
+        { id: '1', role: 'agent', content: 'Starting the MASSA homepage build. I\'ll create a hero section, feature cards, and a CTA flow.', time: t(14,20,0) },
+        { id: '2', role: 'user', content: 'Make the hero really impactful. "Build anything with AI agents, in parallel" as the main headline.', time: t(14,21,30) },
+        { id: '3', role: 'agent', content: 'Love it. Using that headline with a gradient text treatment and animated particle background. Below it I\'ll place three feature cards: Multi-Agent, Auto-Architect, and Live Deploy.', time: t(14,22,10) },
+        { id: '4', role: 'agent', content: 'Hero section is live. Working on the pricing comparison table and footer now. Progress at 71%.', time: t(14,40,5) },
+      ],
+      'api-settings': [
+        { id: '1', role: 'agent', content: 'API Settings page scaffolded. Waiting for Homepage to finalize the nav structure before I wire up the settings routes.', time: t(14,30,0) },
+        { id: '2', role: 'user', content: 'Each API provider should have its own card with a connection status indicator.', time: t(14,31,20) },
+        { id: '3', role: 'agent', content: 'Building provider cards with green/red status dots and a "Test Connection" button. Supporting OpenAI, Anthropic, and custom endpoints.', time: t(14,32,0) },
+      ],
+      'crawler': [
+        { id: '1', role: 'agent', content: 'Setting up the crawler pipeline. I\'ll use a queue-based architecture with configurable concurrency and retry logic.', time: t(14,24,0) },
+        { id: '2', role: 'user', content: 'Need to handle rate limiting gracefully. Some sites throttle after 100 requests/min.', time: t(14,25,30) },
+        { id: '3', role: 'agent', content: 'Adding adaptive rate limiting. The crawler will track response times and 429 status codes, then automatically throttle down. I\'ll also add a configurable delay between requests.', time: t(14,26,15) },
+      ],
+      'scheduler': [
+        { id: '1', role: 'agent', content: 'Scheduler is queued behind the Crawler. Once the data pipeline is working, I\'ll set up n8n workflows for daily exports and email delivery.', time: t(14,28,0) },
+      ],
+    }
+  })
+  const [chatInput, setChatInput] = useState('')
+  const chatEndRef = useRef<HTMLDivElement>(null)
   const [selectedProjectId, setSelectedProjectId] = useState('trading-bot')
   const [draggedBuild, setDraggedBuild] = useState<{ buildId: string; projectId: string } | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
@@ -812,6 +866,68 @@ export function Overview() {
     }, 1800)
     return () => clearInterval(t)
   }, [])
+
+  const agentResponses: Record<string, string[]> = {
+    'core-engine': [
+      'Understood. I\'ll update the strategy loop to handle that. Give me a moment to refactor the dispatch layer.',
+      'Good call. I\'ve added that to the engine config. The change will propagate to all downstream modules.',
+      'Working on it now. I\'ll push the update once the type checks pass.',
+    ],
+    'risk-module': [
+      'Adjusting the risk parameters now. I\'ll run a backtest simulation to validate the change.',
+      'That makes sense from a risk perspective. Updating the position sizing formula.',
+      'Noted. I\'ll tighten the safety constraints and add an alert threshold.',
+    ],
+    'dashboard-ui': [
+      'I\'ll update the layout to reflect that. Should have a preview ready in a minute.',
+      'Good feedback. Tweaking the component hierarchy and re-rendering the chart panel.',
+      'On it. I\'ll adjust the color scheme and spacing to match your vision.',
+    ],
+    'alerts': [
+      'Adding that notification channel now. I\'ll wire it into the existing n8n workflow.',
+      'Done. The alert trigger is configured and will fire on the conditions you specified.',
+    ],
+    'backtester': [
+      'I\'ll incorporate that into the simulation parameters once the engine stabilizes.',
+      'Noted. That will be part of the backtester\'s configuration panel.',
+    ],
+    'homepage': [
+      'Great idea. I\'ll update the hero section and push a new preview.',
+      'Adjusting the copy and layout now. The feature cards will reflect this.',
+    ],
+    'api-settings': [
+      'I\'ll add that provider to the settings panel with a test connection button.',
+      'Updating the API configuration flow. Give me a moment.',
+    ],
+    'crawler': [
+      'Adjusting the crawl pipeline. I\'ll add that to the retry logic.',
+      'Good point. I\'ll update the rate limiter to handle that edge case.',
+    ],
+    'scheduler': [
+      'I\'ll configure the schedule once the crawler pipeline is ready.',
+      'Noted. That will be part of the export workflow configuration.',
+    ],
+  }
+
+  const sendChatMessage = (buildId: string) => {
+    if (!chatInput.trim()) return
+    const now = new Date()
+    const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`
+    const userMsg = { id: `u-${Date.now()}`, role: 'user' as const, content: chatInput, time }
+    setChatMessages(prev => ({ ...prev, [buildId]: [...(prev[buildId] || []), userMsg] }))
+    setChatInput('')
+    setTimeout(() => {
+      const responses = agentResponses[buildId] || ['Understood. Working on that now.']
+      const response = responses[Math.floor(Math.random() * responses.length)]
+      const rNow = new Date()
+      const rTime = `${String(rNow.getHours()).padStart(2,'0')}:${String(rNow.getMinutes()).padStart(2,'0')}:${String(rNow.getSeconds()).padStart(2,'0')}`
+      setChatMessages(prev => ({ ...prev, [buildId]: [...(prev[buildId] || []), { id: `a-${Date.now()}`, role: 'agent', content: response, time: rTime }] }))
+    }, 800 + Math.random() * 1200)
+  }
+
+  useEffect(() => {
+    if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages, expandedBuildId])
 
   const selectedProject = projects.find(p => p.id === selectedProjectId) || projects[0]
   const expandedBuild = useMemo(() => {
@@ -1223,7 +1339,7 @@ export function Overview() {
 
                     return (
                       <div key={build.id} draggable onDragStart={() => handleDragStart(build.id, project.id)} onDragOver={e => handleDragOver(e, build.id)} onDrop={e => handleDrop(e, build.id, project.id)} onDragEnd={handleDragEnd}
-                        onClick={() => setExpandedBuildId(build.id)}
+                        onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(build.id) }}
                         style={{ ...(column ? { width: '100%' } : { minWidth: 176, maxWidth: 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : isComplete ? `${sc}30` : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s' }}>
 
                         {isComplete && (
@@ -1833,108 +1949,157 @@ export function Overview() {
 
       {/* BUILD DETAIL MODAL */}
       {expandedBuild && (
-        <div onClick={() => setExpandedBuildId(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', padding: 18, zIndex: 60 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 'min(860px, 100%)', maxHeight: '78vh', background: c.panel, border: '1px solid #333', borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: 24, overflow: 'auto', boxShadow: '0 -4px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
+        <div onClick={() => { setExpandedBuildId(null); setChatInput('') }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 60 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(860px, 100%)', height: 'min(78vh, 640px)', background: c.panel, border: '1px solid #333', borderRadius: 18, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
             {(() => {
               const sc = skillColor(expandedBuild.build.stack)
               const ps = primarySkill(expandedBuild.build.stack)
+              const msgs = chatMessages[expandedBuild.build.id] || []
               return (
                 <>
-                  <div style={{ height: 3, background: sc, borderRadius: 99, marginBottom: 20, width: 60 }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                        <div style={{ fontWeight: 800, fontSize: 22 }}>{expandedBuild.build.title}</div>
-                        {expandedBuild.build.status !== 'complete' && <StatusBadge status={expandedBuild.build.status} colors={c} size="lg" />}
-                        <span style={{ fontSize: 11, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '2px 7px', borderRadius: 6, background: `${sc}14` }}>{ps}</span>
-                      </div>
-                      <div style={{ fontSize: 13, color: c.muted }}>{expandedBuild.project.name}</div>
-                    </div>
-                    <button onClick={() => setExpandedBuildId(null)} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
-                  </div>
-
-                  {/* Progress */}
-                  <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12, color: c.muted }}>
-                      <span>Progress</span>
-                      <span style={{ fontWeight: 700, color: c.text }}>{expandedBuild.build.progress}%</span>
-                    </div>
-                    <div style={{ height: 7, background: isDark ? '#1b1b1b' : '#dfe8de', borderRadius: 999, overflow: 'hidden' }}>
-                      <div style={{ width: `${expandedBuild.build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                    </div>
-                  </div>
-
-                  {/* Agent + Stack */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-                    <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
-                      <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>AGENT</div>
-                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{expandedBuild.build.agent}</div>
-                      <div style={{ fontSize: 12, color: c.muted }}>{expandedBuild.build.agentRole}</div>
-                    </div>
-                    <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
-                      <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>STACK</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {expandedBuild.build.stack.map(s => <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '4px 10px', borderRadius: 999, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}><InlineCompanyLogo name={s} size={14} />{s}</span>)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Summary */}
-                  <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
-                    <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>SUMMARY</div>
-                    <div style={{ fontSize: 14, lineHeight: 1.6 }}>{expandedBuild.build.summary}</div>
-                  </div>
-
-                  {/* Activity */}
-                  <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
-                    <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 12 }}>ACTIVITY</div>
-                    {[
-                      { icon: '◎', label: '24 messages · 12 actions', sub: 'Agent communication log', details: [
-                        { time: '0:02', text: 'Agent initialized — reading project context' },
-                        { time: '0:05', text: 'Analyzed requirements, identified 3 sub-tasks' },
-                        { time: '0:12', text: 'Created file: src/core/engine.ts' },
-                        { time: '0:18', text: 'Installed dependencies: zod, drizzle-orm' },
-                        { time: '0:31', text: 'Wrote 142 lines across 4 files' },
-                        { time: '0:45', text: 'Running type check — 0 errors' },
-                        { time: '1:02', text: 'Refactored handler to async pattern' },
-                        { time: '1:18', text: 'Added error boundaries and validation' },
-                      ]},
-                      { icon: '◈', label: 'Checkpoint 3 min ago', sub: 'Last saved state', details: [
-                        { time: '3m ago', text: 'Auto-saved: 8 files changed, 412 additions' },
-                        { time: '7m ago', text: 'Auto-saved: schema migration applied' },
-                        { time: '12m ago', text: 'Manual save: pre-refactor snapshot' },
-                      ]},
-                      { icon: '◷', label: `${Math.round(expandedBuild.build.progress * 1.4)}s compute`, sub: 'Total active time', details: [
-                        { time: 'Thinking', text: `${Math.round(expandedBuild.build.progress * 0.3)}s — planning and analysis` },
-                        { time: 'Writing', text: `${Math.round(expandedBuild.build.progress * 0.7)}s — code generation` },
-                        { time: 'Checking', text: `${Math.round(expandedBuild.build.progress * 0.4)}s — type checks and linting` },
-                      ]},
-                    ].map((row, i, arr) => {
-                      const isOpen = expandedActivity === i
-                      return (
-                      <div key={i}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 0' }} onClick={() => setExpandedActivity(isOpen ? null : i)}>
-                          <span style={{ fontSize: 16, color: sc }}>{row.icon}</span>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 13, fontWeight: 600 }}>{row.label}</div>
-                            <div style={{ fontSize: 12, color: c.muted }}>{row.sub}</div>
-                          </div>
-                          <span style={{ fontSize: 11, color: c.muted, transition: 'transform 0.2s', transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>▸</span>
+                  <div style={{ padding: '20px 24px 0', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                          <div style={{ fontWeight: 800, fontSize: 20 }}>{expandedBuild.build.title}</div>
+                          {expandedBuild.build.status !== 'complete' && <StatusBadge status={expandedBuild.build.status} colors={c} size="lg" />}
+                          <span style={{ fontSize: 11, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '2px 7px', borderRadius: 6, background: `${sc}14` }}>{ps}</span>
                         </div>
-                        {isOpen && (
-                          <div style={{ marginLeft: 28, marginTop: 6, marginBottom: 4, borderLeft: `1px solid ${sc}33`, paddingLeft: 12 }}>
-                            {row.details.map((d, di) => (
-                              <div key={di} style={{ display: 'flex', gap: 10, marginBottom: 6, fontSize: 12 }}>
-                                <span style={{ color: sc, fontFamily: 'monospace', fontSize: 11, minWidth: 55, flexShrink: 0 }}>{d.time}</span>
-                                <span style={{ color: '#b0b0b0' }}>{d.text}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {i < arr.length - 1 && <div style={{ height: 1, background: c.border, opacity: 0.5, margin: '10px 0' }} />}
+                        <div style={{ fontSize: 12, color: c.muted }}>{expandedBuild.project.name} · {expandedBuild.build.agent} ({expandedBuild.build.agentRole})</div>
                       </div>
-                    )})}
+                      <button onClick={() => { setExpandedBuildId(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 2, background: '#111', borderRadius: 8, padding: 3, width: 'fit-content', marginBottom: 0 }}>
+                      {(['chat', 'details'] as const).map(tab => (
+                        <button key={tab} onClick={() => setBuildModalTab(tab)} style={{ border: 'none', background: buildModalTab === tab ? '#2a2a2a' : 'transparent', color: buildModalTab === tab ? '#fff' : c.muted, padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', textTransform: 'capitalize' }}>{tab}</button>
+                      ))}
+                    </div>
                   </div>
+
+                  {buildModalTab === 'chat' ? (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
+                        {msgs.map(msg => (
+                          <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 14 }}>
+                            {msg.role === 'agent' && (
+                              <div style={{ fontSize: 10, color: sc, fontWeight: 700, marginBottom: 3 }}>{expandedBuild.build.agent}</div>
+                            )}
+                            <div style={{ maxWidth: '75%', background: msg.role === 'user' ? '#1a2a1a' : c.alt, border: `1px solid ${msg.role === 'user' ? `${c.green}30` : c.border}`, borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px', padding: '10px 14px' }}>
+                              {msg.content.split('\n').map((line, li) => {
+                                if (line.startsWith('```')) {
+                                  return null
+                                }
+                                const prevLines = msg.content.split('\n')
+                                const isInCodeBlock = prevLines.slice(0, li).filter(l => l.startsWith('```')).length % 2 === 1
+                                if (isInCodeBlock) {
+                                  return <div key={li} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, background: '#0a0a0a', padding: '2px 8px', borderRadius: 4, color: '#b0b0b0', margin: '2px 0' }}>{line}</div>
+                                }
+                                return <div key={li} style={{ fontSize: 12, lineHeight: 1.6, color: msg.role === 'user' ? '#e0e0e0' : '#ccc' }}>{line}</div>
+                              })}
+                            </div>
+                            <div style={{ fontSize: 9, color: c.muted, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>{msg.time}</div>
+                          </div>
+                        ))}
+                        <div ref={chatEndRef} />
+                      </div>
+                      <div style={{ padding: '12px 24px 20px', borderTop: `1px solid ${c.border}`, flexShrink: 0 }}>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <input
+                            value={chatInput}
+                            onChange={e => setChatInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(expandedBuild.build.id) } }}
+                            placeholder={`Message ${expandedBuild.build.agent}...`}
+                            style={{ flex: 1, background: '#1a1a1a', border: '1px solid #2e2e2e', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
+                          />
+                          <button
+                            onClick={() => sendChatMessage(expandedBuild.build.id)}
+                            onMouseEnter={e => e.currentTarget.style.background = '#242424'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}
+                            style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}
+                          >Send</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px' }}>
+                      <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12, color: c.muted }}>
+                          <span>Progress</span>
+                          <span style={{ fontWeight: 700, color: c.text }}>{expandedBuild.build.progress}%</span>
+                        </div>
+                        <div style={{ height: 7, background: '#1b1b1b', borderRadius: 999, overflow: 'hidden' }}>
+                          <div style={{ width: `${expandedBuild.build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                        <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
+                          <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>AGENT</div>
+                          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{expandedBuild.build.agent}</div>
+                          <div style={{ fontSize: 12, color: c.muted }}>{expandedBuild.build.agentRole}</div>
+                        </div>
+                        <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
+                          <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>STACK</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {expandedBuild.build.stack.map(s => <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '4px 10px', borderRadius: 999, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}><InlineCompanyLogo name={s} size={14} />{s}</span>)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
+                        <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>SUMMARY</div>
+                        <div style={{ fontSize: 14, lineHeight: 1.6 }}>{expandedBuild.build.summary}</div>
+                      </div>
+
+                      <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
+                        <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 12 }}>ACTIVITY</div>
+                        {[
+                          { icon: '◎', label: `${msgs.length} messages · ${Math.floor(msgs.length * 0.5)} actions`, sub: 'Agent communication log', details: [
+                            { time: '0:02', text: 'Agent initialized — reading project context' },
+                            { time: '0:05', text: 'Analyzed requirements, identified 3 sub-tasks' },
+                            { time: '0:12', text: 'Created file: src/core/engine.ts' },
+                            { time: '0:18', text: 'Installed dependencies: zod, drizzle-orm' },
+                            { time: '0:31', text: 'Wrote 142 lines across 4 files' },
+                            { time: '0:45', text: 'Running type check — 0 errors' },
+                          ]},
+                          { icon: '◈', label: 'Checkpoint 3 min ago', sub: 'Last saved state', details: [
+                            { time: '3m ago', text: 'Auto-saved: 8 files changed, 412 additions' },
+                            { time: '7m ago', text: 'Auto-saved: schema migration applied' },
+                          ]},
+                          { icon: '◷', label: `${Math.round(expandedBuild.build.progress * 1.4)}s compute`, sub: 'Total active time', details: [
+                            { time: 'Thinking', text: `${Math.round(expandedBuild.build.progress * 0.3)}s — planning and analysis` },
+                            { time: 'Writing', text: `${Math.round(expandedBuild.build.progress * 0.7)}s — code generation` },
+                            { time: 'Checking', text: `${Math.round(expandedBuild.build.progress * 0.4)}s — type checks and linting` },
+                          ]},
+                        ].map((row, i, arr) => {
+                          const isOpen = expandedActivity === i
+                          return (
+                          <div key={i}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 0' }} onClick={() => setExpandedActivity(isOpen ? null : i)}>
+                              <span style={{ fontSize: 16, color: sc }}>{row.icon}</span>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 13, fontWeight: 600 }}>{row.label}</div>
+                                <div style={{ fontSize: 12, color: c.muted }}>{row.sub}</div>
+                              </div>
+                              <span style={{ fontSize: 11, color: c.muted, transition: 'transform 0.2s', transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>▸</span>
+                            </div>
+                            {isOpen && (
+                              <div style={{ marginLeft: 28, marginTop: 6, marginBottom: 4, borderLeft: `1px solid ${sc}33`, paddingLeft: 12 }}>
+                                {row.details.map((d, di) => (
+                                  <div key={di} style={{ display: 'flex', gap: 10, marginBottom: 6, fontSize: 12 }}>
+                                    <span style={{ color: sc, fontFamily: 'monospace', fontSize: 11, minWidth: 55, flexShrink: 0 }}>{d.time}</span>
+                                    <span style={{ color: '#b0b0b0' }}>{d.text}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {i < arr.length - 1 && <div style={{ height: 1, background: c.border, opacity: 0.5, margin: '10px 0' }} />}
+                          </div>
+                        )})}
+                      </div>
+                    </div>
+                  )}
                 </>
               )
             })()}
