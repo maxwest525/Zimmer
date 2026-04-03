@@ -1649,52 +1649,69 @@ export function Overview() {
               const getNodeColor = (label: string) => {
                 const matchBuild = expandProject.builds.find(b => b.title === label)
                 if (matchBuild) return skillColor(matchBuild.stack)
-                return c.muted
+                return '#555'
               }
               const getStatus = (label: string) => {
                 const matchBuild = expandProject.builds.find(b => b.title === label)
                 if (!matchBuild) return null
                 return matchBuild.status
               }
+              const nodeStyle = (label: string, isRoot?: boolean, isGroup?: boolean) => {
+                const isBuild = buildTitles.includes(label)
+                const nc = isRoot ? c.green : isGroup ? '#888' : getNodeColor(label)
+                return {
+                  background: isRoot ? `${c.green}12` : c.alt,
+                  border: `1px solid ${isRoot ? `${c.green}40` : isBuild ? `${nc}40` : c.border}`,
+                  borderRadius: 10,
+                  padding: isRoot ? '10px 20px' : '6px 14px',
+                  fontSize: isRoot ? 15 : 13,
+                  fontWeight: isRoot || isGroup ? 700 : 600,
+                  color: isRoot ? c.green : isBuild ? nc : '#ccc',
+                  cursor: isBuild ? 'pointer' : 'default',
+                  textAlign: 'center' as const,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  whiteSpace: 'nowrap' as const,
+                }
+              }
+              const statusDot = (label: string) => {
+                const status = getStatus(label)
+                if (!status) return null
+                const dotColor = status === 'complete' ? c.green : status === 'running' ? '#5080b8' : status === 'failed' ? '#b85858' : '#444'
+                return <div style={{ width: 6, height: 6, borderRadius: 99, background: dotColor, flexShrink: 0 }} />
+              }
               return (
-                <div style={{ display: 'flex', gap: 30, alignItems: 'flex-start' }}>
-                  <div style={{ border: `1px solid ${c.border}`, borderRadius: 14, padding: 14, minWidth: 200, background: c.alt }}>
-                    <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 15 }}>{tree.label}</div>
-                    <div style={{ color: c.muted, fontSize: 13 }}>{expandProject.goal}</div>
-                  </div>
-                  <div style={{ fontSize: 14, lineHeight: 2, fontFamily: 'monospace' }}>
-                    {tree.children.map((group, gi) => {
-                      const isLast = gi === tree.children.length - 1
-                      const prefix = isLast ? '\u2514\u2500\u2500 ' : '\u251C\u2500\u2500 '
-                      const childPrefix = isLast ? '    ' : '\u2502   '
-                      return (
-                        <div key={gi}>
-                          <div style={{ color: '#ccc', fontWeight: 600 }}>
-                            <span style={{ color: c.muted }}>{prefix}</span>{group.label}
-                          </div>
-                          {group.children?.map((child, ci) => {
-                            const isChildLast = ci === (group.children?.length || 0) - 1
-                            const cPrefix = isChildLast ? '\u2514\u2500\u2500 ' : '\u251C\u2500\u2500 '
-                            const nodeColor = getNodeColor(child)
-                            const status = getStatus(child)
-                            const isBuild = buildTitles.includes(child)
-                            return (
-                              <div key={ci} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span style={{ color: c.muted }}>{childPrefix}{cPrefix}</span>
-                                <span style={{ color: isBuild ? nodeColor : '#888', fontWeight: isBuild ? 600 : 400, cursor: isBuild ? 'pointer' : 'default' }}
-                                  onClick={() => { if (isBuild) { const b = expandProject.builds.find(b => b.title === child); if (b) { setExpandedBuildId(b.id); setExpandedProject(null) } } }}
-                                >{child}</span>
-                                {status && (
-                                  <span style={{ fontSize: 10, color: status === 'complete' ? c.green : status === 'running' ? '#5080b8' : '#555', fontWeight: 600 }}>
-                                    {status === 'complete' ? 'done' : status === 'running' ? 'building' : status === 'failed' ? 'failed' : 'queued'}
-                                  </span>
-                                )}
-                              </div>
-                            )
-                          })}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                  <div style={nodeStyle(tree.label, true)}>{tree.label}</div>
+                  <div style={{ width: 1, height: 20, background: c.border }} />
+                  <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 0, height: 1, background: c.border, left: `${100 / (tree.children.length * 2)}%`, right: `${100 / (tree.children.length * 2)}%` }} />
+                    <div style={{ display: 'flex', gap: 24 }}>
+                      {tree.children.map((group, gi) => (
+                        <div key={gi} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                          <div style={{ width: 1, height: 16, background: c.border }} />
+                          <div style={nodeStyle(group.label, false, true)}>{group.label}</div>
+                          {group.children && group.children.length > 0 && <>
+                            <div style={{ width: 1, height: 14, background: c.border }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                              {group.children.map((child, ci) => {
+                                const isBuild = buildTitles.includes(child)
+                                return (
+                                  <div key={ci}
+                                    style={nodeStyle(child)}
+                                    onClick={() => { if (isBuild) { const b = expandProject.builds.find(b => b.title === child); if (b) { setExpandedBuildId(b.id); setExpandedProject(null) } } }}
+                                  >
+                                    {statusDot(child)}
+                                    {child}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </>}
                         </div>
-                      )
-                    })}
+                      ))}
+                    </div>
                   </div>
                 </div>
               )
