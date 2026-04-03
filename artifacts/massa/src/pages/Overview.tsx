@@ -1010,12 +1010,6 @@ export function Overview() {
               onClick={() => setVagueMode(v => !v)}
               title={vagueMode ? 'Vague mode on — MASSA will ask clarifying questions' : 'Enable vague mode to get clarifying questions'}
               style={{ width: 32, height: 32, borderRadius: 999, border: vagueMode ? `1px solid ${c.green}` : '1px solid #2e2e2e', background: vagueMode ? c.greenSoft : '#1a1a1a', color: vagueMode ? c.green : c.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>?</button>
-            <div style={{ marginLeft: 'auto' }}>
-              <button
-                onMouseEnter={() => setHoveredArchBtn('run')}
-                onMouseLeave={() => setHoveredArchBtn(null)}
-                style={{ border: '1px solid #2e2e2e', background: hoveredArchBtn === 'run' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Run</button>
-            </div>
           </div>
 
           {/* Projects header */}
