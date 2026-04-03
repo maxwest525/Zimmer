@@ -283,6 +283,19 @@ export function Overview() {
 
   // Code stream
   type CodeLine = { id: number; kind: 'code' | 'qa'; content: string; file?: string; lineNo?: number; qa?: 'pass' | 'warn' }
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
+  const [flowHovered, setFlowHovered] = useState(false)
+  const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
+  const sectionHeader = (label: string, key: string, extra?: React.ReactNode) => (
+    <div
+      onClick={() => toggleSection(key)}
+      style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none' }}
+    >
+      <span style={{ fontSize: 8, color: '#ffffff', transform: collapsedSections[key] ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>&#9660;</span>
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.1, color: '#ffffff' }}>{label}</span>
+      {extra}
+    </div>
+  )
   const [codeLines, setCodeLines] = useState<CodeLine[]>([])
   const [codeHovered, setCodeHovered] = useState(false)
   const codeRef = useRef<HTMLDivElement>(null)
@@ -747,129 +760,144 @@ export function Overview() {
 
             return (
               <div>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.1, color: '#ffffff', marginBottom: 8 }}>FLOW</div>
-                {/* KPI tiles */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
-                  {kpis.map(kpi => (
-                    <div key={kpi.label} style={{ background: kpi.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: '10px 12px' }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.8, color: '#ffffff', marginBottom: 3 }}>{kpi.label.toUpperCase()}</div>
-                      <div style={{ fontSize: 24, fontWeight: 800, color: kpi.color, lineHeight: 1 }}>{kpi.value}</div>
+                {sectionHeader('FLOW', 'flow')}
+                {!collapsedSections.flow && (
+                  <div style={{ marginTop: 8 }}>
+                    <div
+                      onMouseEnter={() => setFlowHovered(true)}
+                      onMouseLeave={() => setFlowHovered(false)}
+                      style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}
+                    >
+                      {kpis.map(kpi => (
+                        <div key={kpi.label} style={{ background: kpi.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: '10px 12px' }}>
+                          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.8, color: '#ffffff', marginBottom: 3 }}>{kpi.label.toUpperCase()}</div>
+                          <div style={{ fontSize: 24, fontWeight: 800, color: kpi.color, lineHeight: 1 }}>{kpi.value}</div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                {/* Per-project build summary */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {projects.map(p => {
-                    const running = p.builds.filter(b => b.status === 'running').length
-                    const done = p.builds.filter(b => b.status === 'complete').length
-                    const queued = p.builds.filter(b => b.status === 'queued').length
-                    const failed = p.builds.filter(b => b.status === 'failed').length
-                    const parts: string[] = []
-                    if (running > 0) parts.push(`${running} running`)
-                    if (done > 0) parts.push(`${done} done`)
-                    if (queued > 0) parts.push(`${queued} queued`)
-                    if (failed > 0) parts.push(`${failed} failed`)
-                    return (
-                      <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 8px', background: c.alt, borderRadius: 7, border: `1px solid ${c.border}` }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '50%' }}>{p.name}</span>
-                        <span style={{ fontSize: 10, color: c.muted, flexShrink: 0 }}>{parts.join(', ') || 'no builds'}</span>
-                      </div>
-                    )
-                  })}
-                </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden', maxHeight: flowHovered ? 500 : 0, opacity: flowHovered ? 1 : 0, transition: 'max-height 0.3s ease, opacity 0.25s ease' }}>
+                      {projects.map(p => {
+                        const running = p.builds.filter(b => b.status === 'running').length
+                        const done = p.builds.filter(b => b.status === 'complete').length
+                        const queued = p.builds.filter(b => b.status === 'queued').length
+                        const failed = p.builds.filter(b => b.status === 'failed').length
+                        const parts: string[] = []
+                        if (running > 0) parts.push(`${running} running`)
+                        if (done > 0) parts.push(`${done} done`)
+                        if (queued > 0) parts.push(`${queued} queued`)
+                        if (failed > 0) parts.push(`${failed} failed`)
+                        return (
+                          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 8px', background: c.alt, borderRadius: 7, border: `1px solid ${c.border}` }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '50%' }}>{p.name}</span>
+                            <span style={{ fontSize: 10, color: c.muted, flexShrink: 0 }}>{parts.join(', ') || 'no builds'}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )
           })()}
 
           {/* Ready Builds KPI */}
-          <div style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <div>
-              <div style={{ fontSize: 10, color: '#ffffff', fontWeight: 700, letterSpacing: 0.8, marginBottom: 4 }}>READY BUILDS</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#9a8030' : c.text, lineHeight: 1 }}>{readyBuildsCount}</span>
-                <span style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>queued</span>
+          <div style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: 12 }}>
+            {sectionHeader('READY BUILDS', 'readyBuilds')}
+            {!collapsedSections.readyBuilds && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 8 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                    <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#9a8030' : c.text, lineHeight: 1 }}>{readyBuildsCount}</span>
+                    <span style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>queued</span>
+                  </div>
+                </div>
+                <button
+                  onClick={handleStartAll}
+                  disabled={readyBuildsCount === 0}
+                  style={{
+                    background: readyBuildsCount > 0 ? '#9a8030' : (isDark ? '#1e1e1e' : '#e8e8e8'),
+                    color: readyBuildsCount > 0 ? '#081008' : c.muted,
+                    border: `1px solid ${c.border}`,
+                    borderRadius: 8,
+                    padding: '7px 13px',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: readyBuildsCount > 0 ? 'pointer' : 'default',
+                    letterSpacing: 0.3,
+                    transition: 'all 0.15s',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Start All
+                </button>
               </div>
-            </div>
-            <button
-              onClick={handleStartAll}
-              disabled={readyBuildsCount === 0}
-              style={{
-                background: readyBuildsCount > 0 ? '#9a8030' : (isDark ? '#1e1e1e' : '#e8e8e8'),
-                color: readyBuildsCount > 0 ? '#081008' : c.muted,
-                border: `1px solid ${c.border}`,
-                borderRadius: 8,
-                padding: '7px 13px',
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: readyBuildsCount > 0 ? 'pointer' : 'default',
-                letterSpacing: 0.3,
-                transition: 'all 0.15s',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Start All
-            </button>
+            )}
           </div>
 
           {/* Build Activity Feed */}
           <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: '0 0 auto' }}>
-            <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: '#ffffff', borderBottom: `1px solid ${c.border}` }}>BUILD ACTIVITY</div>
-            <div
-              ref={feedRef}
-              onMouseEnter={() => setFeedHovered(true)}
-              onMouseLeave={() => setFeedHovered(false)}
-              style={{ position: 'relative', height: 210, overflowY: 'auto', scrollBehavior: 'smooth', padding: '8px 0 4px' }}
-            >
-              <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#0d0d0d' : '#ffffff'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
-              {feedEntries.map(entry => {
-                const pm = PHASE_META[entry.phase]
-                return (
-                  <div key={entry.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 12px', borderBottom: `1px solid ${c.border}33` }}>
-                    <span style={{ fontSize: 10, color: c.muted, fontVariantNumeric: 'tabular-nums', flexShrink: 0, marginTop: 1 }}>{entry.time}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: pm.color, background: `${pm.color}18`, border: `1px solid ${pm.color}44`, padding: '1px 6px', borderRadius: 999, flexShrink: 0, alignSelf: 'center' }}>{pm.label}</span>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.buildName}</div>
-                      <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.agent} — {entry.status}</div>
-                    </div>
-                  </div>
-                )
-              })}
-              {feedEntries.length === 0 && (
-                <div style={{ padding: '12px', fontSize: 12, color: c.muted }}>Waiting for activity…</div>
-              )}
+            <div style={{ padding: '8px 12px 6px', borderBottom: collapsedSections.buildActivity ? 'none' : `1px solid ${c.border}` }}>
+              {sectionHeader('BUILD ACTIVITY', 'buildActivity')}
             </div>
+            {!collapsedSections.buildActivity && (
+              <div
+                ref={feedRef}
+                onMouseEnter={() => setFeedHovered(true)}
+                onMouseLeave={() => setFeedHovered(false)}
+                style={{ position: 'relative', height: 210, overflowY: 'auto', scrollBehavior: 'smooth', padding: '8px 0 4px' }}
+              >
+                <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#0d0d0d' : '#ffffff'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
+                {feedEntries.map(entry => {
+                  const pm = PHASE_META[entry.phase]
+                  return (
+                    <div key={entry.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 12px', borderBottom: `1px solid ${c.border}33` }}>
+                      <span style={{ fontSize: 10, color: c.muted, fontVariantNumeric: 'tabular-nums', flexShrink: 0, marginTop: 1 }}>{entry.time}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: pm.color, background: `${pm.color}18`, border: `1px solid ${pm.color}44`, padding: '1px 6px', borderRadius: 999, flexShrink: 0, alignSelf: 'center' }}>{pm.label}</span>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.buildName}</div>
+                        <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.agent} — {entry.status}</div>
+                      </div>
+                    </div>
+                  )
+                })}
+                {feedEntries.length === 0 && (
+                  <div style={{ padding: '12px', fontSize: 12, color: c.muted }}>Waiting for activity…</div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Code Stream */}
-          <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-            <div style={{ padding: '8px 12px 6px', fontSize: 10, fontWeight: 700, letterSpacing: 1, color: '#ffffff', borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span>CODE STREAM</span>
-              <span style={{ width: 6, height: 6, borderRadius: 999, background: '#2d8a32', display: 'inline-block' }} />
+          <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: collapsedSections.codeStream ? 'none' : 1, minHeight: 0 }}>
+            <div style={{ padding: '8px 12px 6px', borderBottom: collapsedSections.codeStream ? 'none' : `1px solid ${c.border}` }}>
+              {sectionHeader('CODE STREAM', 'codeStream', <span style={{ width: 6, height: 6, borderRadius: 999, background: '#2d8a32', display: 'inline-block' }} />)}
             </div>
-            <div
-              ref={codeRef}
-              onMouseEnter={() => setCodeHovered(true)}
-              onMouseLeave={() => setCodeHovered(false)}
-              style={{ flex: 1, overflowY: 'auto', background: isDark ? '#1a1a1a' : '#f0f0f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
-            >
-              <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#1a1a1a' : '#f0f0f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
-              {codeLines.map(line => {
-                if (line.kind === 'qa') {
-                  const isPass = line.qa === 'pass'
+            {!collapsedSections.codeStream && (
+              <div
+                ref={codeRef}
+                onMouseEnter={() => setCodeHovered(true)}
+                onMouseLeave={() => setCodeHovered(false)}
+                style={{ flex: 1, overflowY: 'auto', background: isDark ? '#1a1a1a' : '#f0f0f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
+              >
+                <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#1a1a1a' : '#f0f0f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
+                {codeLines.map(line => {
+                  if (line.kind === 'qa') {
+                    const isPass = line.qa === 'pass'
+                    return (
+                      <div key={line.id} style={{ padding: '3px 12px', color: isPass ? '#5aad58' : '#b8801a', lineHeight: 1.5 }}>
+                        {line.content}
+                      </div>
+                    )
+                  }
                   return (
-                    <div key={line.id} style={{ padding: '3px 12px', color: isPass ? '#5aad58' : '#b8801a', lineHeight: 1.5 }}>
-                      {line.content}
+                    <div key={line.id} style={{ padding: '2px 12px', lineHeight: 1.5 }}>
+                      <span style={{ color: isDark ? '#555' : '#aaa' }}>{line.file}:{line.lineNo} </span>
+                      {renderCodeLine(line.content, isDark)}
                     </div>
                   )
-                }
-                return (
-                  <div key={line.id} style={{ padding: '2px 12px', lineHeight: 1.5 }}>
-                    <span style={{ color: isDark ? '#555' : '#aaa' }}>{line.file}:{line.lineNo} </span>
-                    {renderCodeLine(line.content, isDark)}
-                  </div>
-                )
-              })}
-            </div>
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
