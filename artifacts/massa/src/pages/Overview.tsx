@@ -738,6 +738,8 @@ function renderCodeLine(code: string, isDark: boolean) {
 export function Overview() {
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [livePreviewProject, setLivePreviewProject] = useState<string | null>(null)
+  const [chatProject, setChatProject] = useState<string | null>(null)
+  const [chatProjectBuildId, setChatProjectBuildId] = useState<string | null>(null)
   const [expandedBuildId, setExpandedBuildId] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
   const [buildModalTab, setBuildModalTab] = useState<'chat' | 'details'>('chat')
@@ -1437,17 +1439,23 @@ export function Overview() {
                           </div>
 
                           <div style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={(e) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }}
+                              onMouseEnter={() => setHoveredArchBtn(project.id + '-chat')}
+                              onMouseLeave={() => setHoveredArchBtn(null)}
+                              style={{ flex: 1, border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-chat' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                              Chat
+                            </button>
                             <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
                               onMouseEnter={() => setHoveredArchBtn(project.id)}
                               onMouseLeave={() => setHoveredArchBtn(null)}
                               style={{ flex: 1, border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
-                              {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
+                              Arch Map
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }}
                               onMouseEnter={() => setHoveredArchBtn(project.id + '-preview')}
                               onMouseLeave={() => setHoveredArchBtn(null)}
                               style={{ flex: 1, border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-preview' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
-                              Live Preview
+                              Preview
                             </button>
                           </div>
                         </div>
@@ -1473,17 +1481,23 @@ export function Overview() {
                           <span style={{ fontSize: 10, color: c.muted }}>{project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done</span>
                         </div>
                         <div style={{ display: 'flex', gap: 6 }}>
+                          <button onClick={(e) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }}
+                            onMouseEnter={() => setHoveredArchBtn(project.id + '-card-chat')}
+                            onMouseLeave={() => setHoveredArchBtn(null)}
+                            style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card-chat' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                            Chat
+                          </button>
                           <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
                             onMouseEnter={() => setHoveredArchBtn(project.id + '-card')}
                             onMouseLeave={() => setHoveredArchBtn(null)}
                             style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
-                            {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
+                            Arch Map
                           </button>
                           <button onClick={(e) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }}
                             onMouseEnter={() => setHoveredArchBtn(project.id + '-card-preview')}
                             onMouseLeave={() => setHoveredArchBtn(null)}
                             style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card-preview' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
-                            Live Preview
+                            Preview
                           </button>
                         </div>
                       </div>
@@ -1958,6 +1972,100 @@ export function Overview() {
           </div>
         </div>
       )}
+
+      {/* PROJECT CHAT MODAL */}
+      {chatProject && (() => {
+        const proj = projects.find(p => p.id === chatProject)
+        if (!proj) return null
+        const activeBuild = proj.builds.find(b => b.id === chatProjectBuildId) || proj.builds[0]
+        if (!activeBuild) return null
+        const msgs = chatMessages[activeBuild.id] || []
+        const sc = skillColor(activeBuild.stack)
+        return (
+          <div onClick={() => { setChatProject(null); setChatInput('') }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 55 }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: 'min(940px, 100%)', height: 'min(80vh, 680px)', background: c.panel, border: '1px solid #333', borderRadius: 18, display: 'flex', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
+              <div style={{ width: 220, borderRight: `1px solid ${c.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                <div style={{ padding: '16px 14px 12px', borderBottom: `1px solid ${c.border}` }}>
+                  <div style={{ fontSize: 11, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>PROJECT CHATS</div>
+                  <div style={{ fontWeight: 800, fontSize: 16 }}>{proj.name}</div>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+                  {proj.builds.map(b => {
+                    const bMsgs = chatMessages[b.id] || []
+                    const lastMsg = bMsgs[bMsgs.length - 1]
+                    const isActive = b.id === chatProjectBuildId
+                    const bsc = skillColor(b.stack)
+                    const agentReplied = lastMsg?.role === 'agent'
+                    return (
+                      <div key={b.id} onClick={() => setChatProjectBuildId(b.id)}
+                        style={{ padding: '10px 14px', cursor: 'pointer', background: isActive ? c.alt : 'transparent', borderLeft: isActive ? `2px solid ${bsc}` : '2px solid transparent', transition: 'all 0.15s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                          <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#2d8a32' : bMsgs.length > 0 ? '#9a8030' : '#444', flexShrink: 0 }} />
+                          <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? '#fff' : c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.title}</div>
+                        </div>
+                        <div style={{ fontSize: 10, color: c.muted, marginLeft: 11 }}>{b.agent}</div>
+                        {lastMsg && <div style={{ fontSize: 10, color: c.muted, marginLeft: 11, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lastMsg.content.slice(0, 50)}...</div>}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <div style={{ padding: '16px 20px 12px', borderBottom: `1px solid ${c.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ fontWeight: 800, fontSize: 16 }}>{activeBuild.title}</div>
+                      <span style={{ fontSize: 10, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '1px 6px', borderRadius: 5, background: `${sc}14` }}>{primarySkill(activeBuild.stack)}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: c.muted }}>{activeBuild.agent} · {activeBuild.agentRole}</div>
+                  </div>
+                  <button onClick={() => { setChatProject(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+                  {msgs.map(msg => (
+                    <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 14 }}>
+                      {msg.role === 'agent' && (
+                        <div style={{ fontSize: 10, color: sc, fontWeight: 700, marginBottom: 3 }}>{activeBuild.agent}</div>
+                      )}
+                      <div style={{ maxWidth: '75%', background: msg.role === 'user' ? '#1a2a1a' : c.alt, border: `1px solid ${msg.role === 'user' ? `${c.green}30` : c.border}`, borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px', padding: '10px 14px' }}>
+                        {msg.content.split('\n').map((line, li) => {
+                          if (line.startsWith('```')) return null
+                          const prevLines = msg.content.split('\n')
+                          const isInCodeBlock = prevLines.slice(0, li).filter(l => l.startsWith('```')).length % 2 === 1
+                          if (isInCodeBlock) {
+                            return <div key={li} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, background: '#0a0a0a', padding: '2px 8px', borderRadius: 4, color: '#b0b0b0', margin: '2px 0' }}>{line}</div>
+                          }
+                          return <div key={li} style={{ fontSize: 12, lineHeight: 1.6, color: msg.role === 'user' ? '#e0e0e0' : '#ccc' }}>{line}</div>
+                        })}
+                      </div>
+                      <div style={{ fontSize: 9, color: c.muted, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>{msg.time}</div>
+                    </div>
+                  ))}
+                  {msgs.length === 0 && <div style={{ color: c.muted, fontSize: 12 }}>No messages yet. Start a conversation with {activeBuild.agent}.</div>}
+                  <div ref={chatEndRef} />
+                </div>
+                <div style={{ padding: '12px 20px 18px', borderTop: `1px solid ${c.border}`, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      value={chatInput}
+                      onChange={e => setChatInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(activeBuild.id) } }}
+                      placeholder={`Message ${activeBuild.agent}...`}
+                      style={{ flex: 1, background: '#1a1a1a', border: '1px solid #2e2e2e', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
+                    />
+                    <button
+                      onClick={() => sendChatMessage(activeBuild.id)}
+                      onMouseEnter={e => e.currentTarget.style.background = '#242424'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}
+                      style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}
+                    >Send</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* BUILD DETAIL MODAL */}
       {expandedBuild && (
