@@ -1586,7 +1586,7 @@ export function Overview() {
       {/* ARCHITECTURE MAP MODAL */}
       {expandedProject && expandProject && (
         <div onClick={() => setExpandedProject(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 50 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 'min(900px, 100%)', maxHeight: '82vh', background: c.panel, border: `1px solid ${c.border}`, borderRadius: 18, padding: 24, overflow: 'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(900px, 100%)', maxHeight: '82vh', background: c.panel, border: '1px solid #333', borderRadius: 18, padding: 24, overflow: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
                 <div style={{ fontSize: 11, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>ARCHITECTURE MAP</div>
@@ -1732,7 +1732,7 @@ export function Overview() {
       {/* BUILD DETAIL MODAL */}
       {expandedBuild && (
         <div onClick={() => setExpandedBuildId(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', padding: 18, zIndex: 60 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 'min(860px, 100%)', maxHeight: '78vh', background: c.panel, border: `1px solid ${c.border}`, borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: 24, overflow: 'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(860px, 100%)', maxHeight: '78vh', background: c.panel, border: '1px solid #333', borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: 24, overflow: 'auto', boxShadow: '0 -4px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
             {(() => {
               const sc = skillColor(expandedBuild.build.stack)
               const ps = primarySkill(expandedBuild.build.stack)
