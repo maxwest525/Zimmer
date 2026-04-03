@@ -1052,12 +1052,11 @@ export function Overview() {
                   </svg>
                 </button>
               </div>
-              <div style={{ fontSize: 12, color: '#ffffff', cursor: 'pointer', border: '1px solid #2e2e2e', padding: '4px 10px', borderRadius: 9, background: '#1a1a1a', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}>Find Project</div>
             </div>
           </div>
 
           {/* Projects list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {projects.map((project, pi) => {
               const isSel = selectedProjectId === project.id
               const buildCards = (column: boolean, wrap = false) => (
@@ -1135,12 +1134,10 @@ export function Overview() {
 
               return (
                 <div key={project.id}>
-                  {pi > 0 && <div style={{ height: 2, background: c.border, margin: '12px 0' }} />}
-
                   {viewMode === 'row' ? (
                     /* ── ROW VIEW (default) ── */
                     <div
-                      style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 14, alignItems: 'start', position: 'relative' }}>
+                      style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, background: c.alt }}>
 
                       <div onClick={() => setSelectedProjectId(project.id)} style={{ background: isSel ? c.blackGreen : 'transparent', borderRadius: 8, padding: '12px 12px 12px 0', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: isSel ? `${c.green}88` : 'transparent', borderRadius: '8px 0 0 8px' }} />
