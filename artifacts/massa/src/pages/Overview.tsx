@@ -516,8 +516,8 @@ export function Overview() {
               const isSel = selectedProjectId === project.id
 
               /* Shared build cards renderer: column=true → vertical stack (card view), column=false → horizontal scroll (row view) */
-              const buildCards = (column: boolean) => (
-                <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 10, ...(column ? {} : { overflowX: 'auto', paddingBottom: 6 }) }}>
+              const buildCards = (column: boolean, wrap = false) => (
+                <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 10, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { overflowX: 'auto', paddingBottom: 6 }) }}>
                   {project.builds.map((build) => {
                     const sc = skillColor(build.stack)
                     const ps = primarySkill(build.stack)
@@ -666,7 +666,7 @@ export function Overview() {
 
                       {/* Build cards — wrapping grid */}
                       <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>BUILDS</div>
-                      {buildCards(true)}
+                      {buildCards(false, true)}
                     </div>
                   )}
                 </div>
