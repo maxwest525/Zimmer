@@ -1559,13 +1559,10 @@ export function Overview() {
                 {feedEntries.length > 0 && feedEntries.slice(0, 3).map(entry => {
                   const pm = PHASE_META[entry.phase]
                   return (
-                    <div key={`feed-${entry.id}`} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 12px', borderBottom: `1px solid ${c.border}33`, fontFamily: 'inherit' }}>
-                      <span style={{ fontSize: 10, color: c.muted, fontVariantNumeric: 'tabular-nums', flexShrink: 0, marginTop: 1 }}>{entry.time}</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: pm.color, background: `${pm.color}18`, border: `1px solid ${pm.color}44`, padding: '1px 6px', borderRadius: 999, flexShrink: 0, alignSelf: 'center' }}>{pm.label}</span>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.buildName}</div>
-                        <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.agent} — {entry.status}</div>
-                      </div>
+                    <div key={`feed-${entry.id}`} style={{ padding: '5px 12px', borderBottom: `1px solid ${c.border}33`, fontFamily: 'inherit', lineHeight: 1.6 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.buildName}</div>
+                      <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.agent} — {entry.status}</div>
+                      <div style={{ fontSize: 10, color: pm.color, fontVariantNumeric: 'tabular-nums' }}>{entry.time} - {pm.label}</div>
                     </div>
                   )
                 })}
