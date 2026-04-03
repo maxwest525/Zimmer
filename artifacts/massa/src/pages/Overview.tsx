@@ -494,6 +494,10 @@ export function Overview() {
             )
           })()}
 
+          <div style={{ textAlign: 'center', padding: '6px 0 2px 0', fontSize: 12, color: c.muted, letterSpacing: 0.5, fontWeight: 500 }}>
+            Ask us for anything
+          </div>
+
           {/* Action bar */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'center' }}>
             <button
