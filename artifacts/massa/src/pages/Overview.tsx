@@ -117,6 +117,10 @@ export function Overview() {
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
+  const [rawInput, setRawInput] = useState('')
+  const [vagueMode, setVagueMode] = useState(false)
+  const [showClarifyModal, setShowClarifyModal] = useState(false)
+  const [clarifyAnswers, setClarifyAnswers] = useState<Record<string, string>>({})
   const [, navigate] = useLocation()
 
   const [projects, setProjects] = useState<Project[]>([
@@ -448,22 +452,64 @@ export function Overview() {
           })()}
 
           {/* Input area */}
-          <div style={{ border: `1px solid #ffffff`, background: c.panel, borderRadius: 12, padding: 16, marginBottom: 12, minHeight: 130, position: 'relative' }}>
-            <div style={{ fontSize: 10, letterSpacing: 1.2, color: '#ffffff', marginBottom: 12, fontWeight: 700 }}>RAW INPUT</div>
-            <div style={{ color: '#ffffff', fontSize: 15, lineHeight: 1.6 }}>Describe what you want to build... Be as messy as you want. MASSA will turn it into the right execution.</div>
-            <div style={{ position: 'absolute', top: 12, right: 14, width: 6, height: 6, borderRadius: 999, background: c.green }} />
-          </div>
+          {(() => {
+            const suggestions = rawInput.trim().length > 10 ? [
+              rawInput.length < 60
+                ? `${rawInput.trim()} — with React frontend, Node.js backend, PostgreSQL, REST API, and deployment via Replit`
+                : rawInput.trim().replace(/\.$/, '') + ', structured as modular builds with clear agent routing per layer',
+              'Scope into 3 parallel builds: UI agent (Lovable), backend agent (Claude Code), and integration agent (n8n) — optimized for speed',
+            ] : []
+
+            return (
+              <div style={{ border: `1px solid #2a2a2a`, background: '#0e0e0e', borderRadius: 12, padding: 16, marginBottom: 12, position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ fontSize: 10, letterSpacing: 1.2, color: '#ffffff', fontWeight: 700 }}>RAW INPUT</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {rawInput.trim().length > 0 && <div style={{ fontSize: 10, color: c.muted }}>{rawInput.length} chars</div>}
+                    <div style={{ width: 6, height: 6, borderRadius: 999, background: c.green }} />
+                  </div>
+                </div>
+                <textarea
+                  value={rawInput}
+                  onChange={e => setRawInput(e.target.value)}
+                  placeholder="Describe what you want to build. Be as specific or as vague as you want — MASSA will handle the rest."
+                  style={{ width: '100%', minHeight: 90, background: 'transparent', border: 'none', outline: 'none', color: '#ffffff', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                />
+                {suggestions.length > 0 && (
+                  <div style={{ borderTop: `1px solid #1e1e1e`, marginTop: 10, paddingTop: 10 }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: c.muted, marginBottom: 6 }}>MASSA SUGGESTS</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {suggestions.map((s, i) => (
+                        <div key={i} onClick={() => setRawInput(s)}
+                          style={{ fontSize: 11, color: '#a0a0a0', background: '#151515', border: `1px solid #252525`, borderRadius: 7, padding: '6px 10px', cursor: 'pointer', lineHeight: 1.5, transition: 'background 0.15s' }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#1e1e1e')}
+                          onMouseLeave={e => (e.currentTarget.style.background = '#151515')}>
+                          <span style={{ color: c.green, fontWeight: 700, marginRight: 5 }}>+</span>{s}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
 
           {/* Action bar */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'center' }}>
             <button
               onMouseEnter={() => setHoveredArchBtn('arch-build')}
               onMouseLeave={() => setHoveredArchBtn(null)}
+              onClick={() => { if (vagueMode && rawInput.trim().length > 0) setShowClarifyModal(true) }}
               style={{ background: hoveredArchBtn === 'arch-build' ? '#242424' : '#1a1a1a', color: '#ffffff', border: '1px solid #2e2e2e', padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Architect &amp; Build</button>
             <div
               onMouseEnter={() => setHoveredArchBtn('claude-rec')}
               onMouseLeave={() => setHoveredArchBtn(null)}
               style={{ border: '1px solid #2e2e2e', padding: '9px 12px', borderRadius: 9, color: c.text, background: hoveredArchBtn === 'claude-rec' ? '#242424' : '#1a1a1a', fontSize: 12, cursor: 'default', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Claude recommended</div>
+            {/* Vague mode toggle */}
+            <button
+              onClick={() => setVagueMode(v => !v)}
+              title={vagueMode ? 'Vague mode on — MASSA will ask clarifying questions' : 'Enable vague mode to get clarifying questions'}
+              style={{ width: 32, height: 32, borderRadius: 999, border: vagueMode ? `1px solid ${c.green}` : '1px solid #2e2e2e', background: vagueMode ? c.greenSoft : '#1a1a1a', color: vagueMode ? c.green : c.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>?</button>
             <div style={{ marginLeft: 'auto' }}>
               <button
                 onMouseEnter={() => setHoveredArchBtn('run')}
@@ -971,6 +1017,63 @@ export function Overview() {
                 </>
               )
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* Clarify Modal */}
+      {showClarifyModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          onClick={e => { if (e.target === e.currentTarget) setShowClarifyModal(false) }}>
+          <div style={{ background: '#0f0f0f', border: '1px solid #2a2a2a', borderRadius: 16, padding: 28, width: '100%', maxWidth: 560, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 24px 60px rgba(0,0,0,0.7)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>Let's refine your build</div>
+                <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.5 }}>Answer a few quick questions so MASSA can build exactly what you need.</div>
+              </div>
+              <button onClick={() => setShowClarifyModal(false)} style={{ background: 'transparent', border: 'none', color: c.muted, cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 4 }}>✕</button>
+            </div>
+
+            {/* Original input preview */}
+            <div style={{ background: '#151515', border: '1px solid #222', borderRadius: 8, padding: '8px 12px', marginBottom: 20, marginTop: 14 }}>
+              <div style={{ fontSize: 9, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 3 }}>YOUR INPUT</div>
+              <div style={{ fontSize: 12, color: '#b0b0b0', lineHeight: 1.5 }}>{rawInput}</div>
+            </div>
+
+            {/* Questions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {[
+                { id: 'goal', label: "What's the main goal? What problem does this solve?", placeholder: 'e.g. Help our sales team track leads without switching tools' },
+                { id: 'user', label: 'Who is the end user — internal team, customers, or just you?', placeholder: 'e.g. Internal ops team of 5 people' },
+                { id: 'backend', label: 'Do you need a backend, database, or external integrations?', placeholder: 'e.g. Yes — needs Stripe, a database, and Slack notifications' },
+                { id: 'existing', label: 'Any existing systems, APIs, or codebases this connects to?', placeholder: 'e.g. Our existing CRM API at api.ourcompany.com' },
+                { id: 'constraints', label: 'Any timeline or hard constraints we should know about?', placeholder: 'e.g. Need an MVP in 2 weeks, no budget for paid APIs' },
+              ].map(q => (
+                <div key={q.id}>
+                  <div style={{ fontSize: 12, color: '#e0e0e0', fontWeight: 600, marginBottom: 6 }}>{q.label}</div>
+                  <textarea
+                    value={clarifyAnswers[q.id] || ''}
+                    onChange={e => setClarifyAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                    placeholder={q.placeholder}
+                    rows={2}
+                    style={{ width: '100%', background: '#151515', border: '1px solid #272727', borderRadius: 8, padding: '8px 10px', color: '#ffffff', fontSize: 12, lineHeight: 1.5, resize: 'vertical', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
+              <button
+                onClick={() => setShowClarifyModal(false)}
+                style={{ flex: 1, background: c.green, color: '#081008', border: 'none', borderRadius: 9, padding: '10px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                Build with answers
+              </button>
+              <button
+                onClick={() => setShowClarifyModal(false)}
+                style={{ background: '#1a1a1a', color: c.muted, border: '1px solid #2e2e2e', borderRadius: 9, padding: '10px 16px', fontSize: 12, cursor: 'pointer' }}>
+                Skip
+              </button>
+            </div>
           </div>
         </div>
       )}
