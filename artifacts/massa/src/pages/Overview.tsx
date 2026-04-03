@@ -117,6 +117,9 @@ export function Overview() {
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
+  const [hoveredProjectId, setHoveredProjectId] = useState<string | null>(null)
+  const hoverPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const tooltipRef = useRef<HTMLDivElement | null>(null)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const [rawInput, setRawInput] = useState('')
   const [vagueMode, setVagueMode] = useState(false)
@@ -575,6 +578,16 @@ export function Overview() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {projects.map((project, pi) => {
               const isSel = selectedProjectId === project.id
+              const statusCounts = (() => {
+                const counts: Record<string, number> = {}
+                for (const b of project.builds) {
+                  if (b.status === 'running') counts['running'] = (counts['running'] || 0) + 1
+                  else if (b.status === 'complete') counts['done'] = (counts['done'] || 0) + 1
+                  else if (b.status === 'queued') counts['queued'] = (counts['queued'] || 0) + 1
+                  else if (b.status === 'failed') counts['failed'] = (counts['failed'] || 0) + 1
+                }
+                return counts
+              })()
 
               /* Shared build cards renderer: column=true → vertical stack (card view), column=false → horizontal scroll (row view) */
               const buildCards = (column: boolean, wrap = false) => (
@@ -649,7 +662,11 @@ export function Overview() {
 
                   {viewMode === 'row' ? (
                     /* ── ROW VIEW (default) ── */
-                    <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 14, alignItems: 'start' }}>
+                    <div
+                      onMouseEnter={(e) => { hoverPosRef.current = { x: e.clientX, y: e.clientY }; setHoveredProjectId(project.id) }}
+                      onMouseMove={(e) => { hoverPosRef.current = { x: e.clientX, y: e.clientY }; if (tooltipRef.current) { const tt = tooltipRef.current; const tx = Math.min(e.clientX + 14, window.innerWidth - tt.offsetWidth - 8); const ty = Math.max(8, Math.min(e.clientY - 18, window.innerHeight - tt.offsetHeight - 8)); tt.style.left = tx + 'px'; tt.style.top = ty + 'px' } }}
+                      onMouseLeave={() => setHoveredProjectId(null)}
+                      style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 14, alignItems: 'start', position: 'relative' }}>
 
                       {/* Project info panel */}
                       <div onClick={() => setSelectedProjectId(project.id)} style={{ background: isSel ? c.blackGreen : 'transparent', borderRadius: 8, padding: '12px 12px 12px 0', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
@@ -705,6 +722,9 @@ export function Overview() {
                   ) : (
                     /* ── CARD VIEW ── */
                     <div onClick={() => setSelectedProjectId(project.id)}
+                      onMouseEnter={(e) => { hoverPosRef.current = { x: e.clientX, y: e.clientY }; setHoveredProjectId(project.id) }}
+                      onMouseMove={(e) => { hoverPosRef.current = { x: e.clientX, y: e.clientY }; if (tooltipRef.current) { const tt = tooltipRef.current; const tx = Math.min(e.clientX + 14, window.innerWidth - tt.offsetWidth - 8); const ty = Math.max(8, Math.min(e.clientY - 18, window.innerHeight - tt.offsetHeight - 8)); tt.style.left = tx + 'px'; tt.style.top = ty + 'px' } }}
+                      onMouseLeave={() => setHoveredProjectId(null)}
                       style={{ border: `1px solid ${isSel ? c.green : c.border}`, borderRadius: 12, padding: 16, cursor: 'pointer', background: isSel ? c.blackGreen : c.alt, position: 'relative', overflow: 'hidden' }}>
                       {/* Left accent */}
                       <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: isSel ? c.green : 'transparent', borderRadius: '12px 0 0 12px' }} />
@@ -729,6 +749,42 @@ export function Overview() {
                       {/* Build cards — wrapping grid */}
                       <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>BUILDS</div>
                       {buildCards(false, true)}
+                    </div>
+                  )}
+                  {hoveredProjectId === project.id && (
+                    <div ref={tooltipRef} style={{
+                      position: 'fixed',
+                      left: Math.min(hoverPosRef.current.x + 14, window.innerWidth - 200),
+                      top: Math.max(8, hoverPosRef.current.y - 18),
+                      zIndex: 9999,
+                      background: `${c.panel}f2`,
+                      border: `1px solid ${c.border}`,
+                      borderRadius: 10,
+                      padding: '8px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                      pointerEvents: 'none',
+                      backdropFilter: 'blur(8px)',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      <span style={{ fontWeight: 700, fontSize: 12, color: c.text }}>{project.name}</span>
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        {(['running', 'queued', 'done', 'failed'] as const).map(status => {
+                          const count = statusCounts[status]
+                          if (!count) return null
+                          const statusColor = status === 'running' ? c.green : status === 'done' ? '#5080b8' : status === 'queued' ? '#9a8030' : '#b85858'
+                          return (
+                            <span key={status} style={{ fontSize: 11, color: statusColor, fontWeight: 600 }}>
+                              {count} {status}
+                            </span>
+                          )
+                        })}
+                        {Object.keys(statusCounts).length === 0 && (
+                          <span style={{ fontSize: 11, color: c.muted, fontWeight: 600 }}>idle</span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
