@@ -117,6 +117,7 @@ export function Overview() {
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
+  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const [rawInput, setRawInput] = useState('')
   const [vagueMode, setVagueMode] = useState(false)
   const [showClarifyModal, setShowClarifyModal] = useState(false)
@@ -400,7 +401,7 @@ export function Overview() {
       </div>
 
       {/* 3-COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr 300px', gap: 12, minHeight: 'calc(100vh - 96px)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: rightPanelCollapsed ? '240px 1fr 0px' : '240px 1fr 300px', gap: rightPanelCollapsed ? '12px 0px' : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
 
         {/* LEFT SIDEBAR */}
         <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2 }}>
@@ -736,7 +737,82 @@ export function Overview() {
         </div>
 
         {/* RIGHT PANEL — Live Feed */}
-        <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 14, display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden', borderRadius: 2 }}>
+        {rightPanelCollapsed && (
+          <button
+            onClick={() => setRightPanelCollapsed(false)}
+            style={{
+              position: 'fixed',
+              right: 0,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 40,
+              background: c.panel,
+              border: `1px solid ${c.border}`,
+              borderRight: 'none',
+              borderRadius: '8px 0 0 8px',
+              padding: '16px 8px',
+              cursor: 'pointer',
+              color: c.text,
+              fontSize: 11,
+              fontWeight: 700,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              transition: 'color 0.15s, border-color 0.15s',
+              letterSpacing: 1,
+              writingMode: 'vertical-rl',
+              textOrientation: 'mixed',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
+            onMouseLeave={e => { e.currentTarget.style.color = c.text; e.currentTarget.style.borderColor = c.border }}
+            title="Show right panel"
+          >
+            <span style={{ fontSize: 14, writingMode: 'horizontal-tb' }}>‹</span>
+            <span style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>FEED</span>
+          </button>
+        )}
+        <div style={{
+          border: rightPanelCollapsed ? 'none' : `1px solid ${c.border}`,
+          background: rightPanelCollapsed ? 'transparent' : c.panel,
+          padding: rightPanelCollapsed ? 0 : 14,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          overflow: 'hidden',
+          borderRadius: 2,
+          position: 'relative',
+          opacity: rightPanelCollapsed ? 0 : 1,
+          transition: 'opacity 0.3s ease, padding 0.3s ease',
+          pointerEvents: rightPanelCollapsed ? 'none' : 'auto',
+        }}>
+          <button
+            onClick={() => setRightPanelCollapsed(true)}
+            style={{
+              background: c.alt,
+              border: `1px solid ${c.border}`,
+              borderRadius: 8,
+              padding: '6px 12px',
+              cursor: 'pointer',
+              color: c.text,
+              fontSize: 11,
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              lineHeight: 1,
+              transition: 'color 0.15s, background 0.15s, border-color 0.15s',
+              alignSelf: 'flex-end',
+              marginBottom: -4,
+              letterSpacing: 0.5,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = c.green; e.currentTarget.style.color = c.green }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.text }}
+            title="Collapse right panel"
+          >
+            HIDE <span style={{ fontSize: 14 }}>›</span>
+          </button>
 
           {/* FLOW Metrics Panel */}
           {(() => {
