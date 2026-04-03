@@ -95,7 +95,7 @@ function getBuildType(stack: string[], title: string): 'ui' | 'backend' | 'datab
 }
 
 function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId?: string; buildType: 'ui' | 'backend' | 'database' | 'automation'; sc: string; size?: 'normal' | 'mini' }) {
-  const h = size === 'mini' ? 34 : 100
+  const h = size === 'mini' ? 34 : 110
   const w = size === 'mini' ? 48 : '100%'
   const base = { width: w, height: h, borderRadius: size === 'mini' ? 4 : '8px 8px 0 0', overflow: 'hidden' as const, position: 'relative' as const, flexShrink: 0, background: '#080808' }
   const m = size === 'mini'
@@ -364,31 +364,61 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
 
   if (buildId === 'homepage') return (
     <div style={base}>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ height: f(8), background: '#0e0e0e', borderBottom: '1px solid #1a1a1a', display: 'flex', alignItems: 'center', padding: `0 ${f(6)}px`, justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: f(2) }}>
-            <div style={{ width: f(4), height: f(4), borderRadius: 1, background: sc }} />
-            <div style={{ height: f(2), width: f(16), background: '#444', borderRadius: 1 }} />
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#050505' }}>
+        <div style={{ height: f(9), background: '#0a0a0a', borderBottom: '1px solid #151515', display: 'flex', alignItems: 'center', padding: `0 ${f(6)}px`, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: f(3) }}>
+            <div style={{ fontSize: f(5), fontWeight: 800, color: '#fff', letterSpacing: f(2) }}>M</div>
+            {!m && <div style={{ fontSize: 4, fontWeight: 700, color: '#888', letterSpacing: 1.5 }}>MASSA</div>}
           </div>
-          {!m && <div style={{ display: 'flex', gap: 6 }}>
-            {['Features', 'Pricing', 'Docs'].map((_, i) => <div key={i} style={{ height: 2, width: 14, background: '#333', borderRadius: 1 }} />)}
-            <div style={{ height: 5, width: 18, background: sc, borderRadius: 2 }} />
+          {!m && <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {['Features', 'How It Works', 'Pricing', 'Docs'].map((t, i) => <div key={i} style={{ fontSize: 3.5, color: '#666' }}>{t}</div>)}
+            <div style={{ fontSize: 3.5, color: '#fff', background: sc, padding: '2px 6px', borderRadius: 2, fontWeight: 600 }}>Get Started</div>
           </div>}
         </div>
-        <div style={{ flex: 1, padding: f(6), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: f(4) }}>
-          <div style={{ height: f(3), width: m ? '70%' : '50%', background: '#333', borderRadius: 1 }} />
-          {!m && <>
-            <div style={{ height: 2, width: '35%', background: '#222', borderRadius: 1 }} />
-            <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
-              <div style={{ width: 24, height: 7, background: sc, borderRadius: 2 }} />
-              <div style={{ width: 24, height: 7, background: 'transparent', border: `1px solid ${sc}50`, borderRadius: 2 }} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: `0 ${f(8)}px` }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: m ? 4 : 8, fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: f(3) }}>{m ? 'Build with AI' : 'Build anything with'}</div>
+              {!m && <div style={{ fontSize: 8, fontWeight: 800, color: sc, lineHeight: 1.2, marginBottom: 4 }}>AI agents, in parallel</div>}
+              <div style={{ fontSize: f(3), color: '#555', lineHeight: 1.4, marginBottom: f(4), maxWidth: m ? '100%' : 70 }}>{m ? '' : 'Describe what you want. MASSA architects, builds, and deploys — running multiple agents simultaneously.'}</div>
+              {!m && <div style={{ display: 'flex', gap: 4 }}>
+                <div style={{ fontSize: 4, color: '#fff', background: sc, padding: '3px 8px', borderRadius: 3, fontWeight: 600 }}>Start Building</div>
+                <div style={{ fontSize: 4, color: '#999', background: 'transparent', border: '1px solid #333', padding: '3px 8px', borderRadius: 3 }}>Watch Demo</div>
+              </div>}
             </div>
-            <div style={{ display: 'flex', gap: 4, marginTop: 4, width: '90%' }}>
-              {[1,2,3].map(i => (
-                <div key={i} style={{ flex: 1, background: '#0e0e0e', borderRadius: 3, padding: 5, border: '1px solid #1a1a1a', textAlign: 'center' }}>
-                  <div style={{ width: 8, height: 8, borderRadius: 2, background: `${sc}20`, margin: '0 auto 3px', border: `1px solid ${sc}30` }} />
-                  <div style={{ height: 2, width: '60%', background: '#333', borderRadius: 1, margin: '0 auto 2px' }} />
-                  <div style={{ height: 1, width: '80%', background: '#1e1e1e', borderRadius: 1, margin: '0 auto' }} />
+            {!m && <div style={{ width: 60, height: 45, background: '#0a0a0a', borderRadius: 4, border: '1px solid #1a1a1a', padding: 4, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ fontSize: 3, color: '#444', marginBottom: 2 }}>Live Preview</div>
+              <div style={{ display: 'flex', gap: 2, marginBottom: 3 }}>
+                {[{ l: 'Agents', v: '4', c: sc }, { l: 'Builds', v: '12', c: '#5080b8' }].map((k, i) => (
+                  <div key={i} style={{ flex: 1, background: '#111', borderRadius: 2, padding: '2px 3px', border: '1px solid #1a1a1a' }}>
+                    <div style={{ fontSize: 2.5, color: '#444' }}>{k.l}</div>
+                    <div style={{ fontSize: 5, fontWeight: 700, color: k.c }}>{k.v}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: 14 }}>
+                {[3,5,4,7,6,8,5,7,9,6].map((v,i) => <div key={i} style={{ flex: 1, height: v*1.5, background: `${sc}${30+i*4}`, borderRadius: '1px 1px 0 0' }} />)}
+              </div>
+            </div>}
+          </div>
+          {!m && <>
+            <div style={{ padding: '0 8px 4px', display: 'flex', justifyContent: 'center', gap: 6 }}>
+              {['Claude', 'Lovable', 'Replit', 'n8n'].map((t, i) => (
+                <div key={i} style={{ fontSize: 3, color: '#333', display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <div style={{ width: 4, height: 4, borderRadius: 1, background: '#1a1a1a' }} />{t}
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: '6px 8px', display: 'flex', gap: 4 }}>
+              {[
+                { icon: '⚡', title: 'Parallel Builds', desc: 'Run multiple agents building simultaneously' },
+                { icon: '◎', title: 'Smart Routing', desc: 'Auto-assigns the right AI to each task' },
+                { icon: '◈', title: 'Live Monitoring', desc: 'Watch every build in real-time' },
+              ].map((feat, i) => (
+                <div key={i} style={{ flex: 1, background: '#0a0a0a', borderRadius: 3, padding: 5, border: '1px solid #151515' }}>
+                  <div style={{ fontSize: 6, marginBottom: 2 }}>{feat.icon}</div>
+                  <div style={{ fontSize: 4, fontWeight: 600, color: '#ccc', marginBottom: 1 }}>{feat.title}</div>
+                  <div style={{ fontSize: 3, color: '#555', lineHeight: 1.3 }}>{feat.desc}</div>
                 </div>
               ))}
             </div>
