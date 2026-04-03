@@ -575,11 +575,11 @@ export function Overview() {
 
                     return (
                       <div key={build.id} draggable onDragStart={() => handleDragStart(build.id, project.id)} onDragOver={e => handleDragOver(e, build.id)} onDrop={e => handleDrop(e, build.id, project.id)} onDragEnd={handleDragEnd}
-                        style={{ ...(column ? { width: '100%' } : { minWidth: 176, maxWidth: 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : c.border}`, borderLeft: isFailed ? '3px solid #ff6b6b' : isRunning ? `3px solid ${sc}` : `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: '11px 11px', display: 'flex', flexDirection: column ? 'row' : 'column', justifyContent: 'space-between', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.75 : 1, position: 'relative', overflow: 'hidden', cursor: 'grab', transition: 'opacity 0.2s, border 0.2s' }}>
+                        style={{ ...(column ? { width: '100%' } : { minWidth: 176, maxWidth: 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : c.border}`, borderLeft: isFailed ? '1px solid #ff6b6b' : isRunning ? `1px solid ${sc}` : `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: '11px 11px', display: 'flex', flexDirection: column ? 'row' : 'column', justifyContent: 'space-between', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.75 : 1, position: 'relative', overflow: 'hidden', cursor: 'grab', transition: 'opacity 0.2s, border 0.2s' }}>
 
                         {/* Skill color left pip (column) / top pip (row) */}
                         {column
-                          ? <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: sc, borderRadius: '12px 0 0 12px' }} />
+                          ? <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: sc, borderRadius: '12px 0 0 12px' }} />
                           : <div style={{ position: 'absolute', top: 0, left: 16, width: 28, height: 2, background: sc, borderRadius: '0 0 3px 3px' }} />
                         }
 
@@ -691,7 +691,7 @@ export function Overview() {
                     <div onClick={() => setSelectedProjectId(project.id)}
                       style={{ border: `1px solid ${isSel ? c.green : c.border}`, borderRadius: 12, padding: 16, cursor: 'pointer', background: isSel ? c.blackGreen : c.alt, position: 'relative', overflow: 'hidden' }}>
                       {/* Left accent */}
-                      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: isSel ? c.green : 'transparent', borderRadius: '12px 0 0 12px' }} />
+                      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: isSel ? c.green : 'transparent', borderRadius: '12px 0 0 12px' }} />
 
                       {/* Card header */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -885,7 +885,7 @@ export function Overview() {
 
             {/* Root node */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ border: `2px solid ${c.green}`, background: c.blackGreen, borderRadius: 12, padding: '12px 20px', marginBottom: 0, textAlign: 'center', minWidth: 200 }}>
+              <div style={{ border: `1px solid ${c.green}`, background: c.blackGreen, borderRadius: 12, padding: '12px 20px', marginBottom: 0, textAlign: 'center', minWidth: 200 }}>
                 <div style={{ fontSize: 10, color: c.green, fontWeight: 700, letterSpacing: 1, marginBottom: 3 }}>PROJECT</div>
                 <div style={{ fontWeight: 800, fontSize: 15 }}>{expandProject.name}</div>
               </div>
@@ -902,7 +902,7 @@ export function Overview() {
                     <div key={build.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       {/* Vertical line up */}
                       <div style={{ width: 2, height: 20, background: c.border }} />
-                      <div style={{ border: `1px solid ${sc}66`, borderTop: `3px solid ${sc}`, background: isDark ? `${sc}0a` : `${sc}08`, borderRadius: 12, padding: 14, width: 160, cursor: 'pointer' }} onClick={() => { setExpandedBuildId(build.id); setExpandedProject(null) }}>
+                      <div style={{ border: `1px solid ${sc}66`, borderTop: `1px solid ${sc}`, background: isDark ? `${sc}0a` : `${sc}08`, borderRadius: 12, padding: 14, width: 160, cursor: 'pointer' }} onClick={() => { setExpandedBuildId(build.id); setExpandedProject(null) }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                           <span style={{ fontSize: 11, color: '#ffffff', fontWeight: 700 }}>{ps}</span>
                           <StatusBadge status={build.status} colors={c} />

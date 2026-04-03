@@ -291,7 +291,7 @@ export function InsideMassa() {
                   borderRadius: 14,
                   padding: 16,
                   border: `1px solid ${sys.color}cc`,
-                  borderTop: `2px solid ${sys.color}`,
+                  borderTop: `1px solid ${sys.color}`,
                   background: c.alt,
                 }}>
                   <div style={{ marginBottom: 10 }}>
