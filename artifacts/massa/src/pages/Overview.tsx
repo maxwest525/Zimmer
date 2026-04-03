@@ -94,59 +94,222 @@ function getBuildType(stack: string[], title: string): 'ui' | 'backend' | 'datab
   return 'backend'
 }
 
-function PreviewThumbnail({ buildType, sc, size = 'normal' }: { buildType: 'ui' | 'backend' | 'database' | 'automation'; sc: string; size?: 'normal' | 'mini' }) {
-  const h = size === 'mini' ? 28 : 68
-  const w = size === 'mini' ? 40 : '100%'
-  const base = { width: w, height: h, borderRadius: size === 'mini' ? 4 : 8, overflow: 'hidden' as const, position: 'relative' as const, flexShrink: 0 }
+function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId?: string; buildType: 'ui' | 'backend' | 'database' | 'automation'; sc: string; size?: 'normal' | 'mini' }) {
+  const h = size === 'mini' ? 32 : 80
+  const w = size === 'mini' ? 44 : '100%'
+  const base = { width: w, height: h, borderRadius: size === 'mini' ? 4 : '8px 8px 0 0', overflow: 'hidden' as const, position: 'relative' as const, flexShrink: 0, background: '#0a0a0a' }
+  const m = size === 'mini'
+
+  if (buildId === 'dashboard-ui' || buildId === 'homepage') return (
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6 }}>
+        <div style={{ display: 'flex', gap: m ? 1 : 3, height: '100%' }}>
+          <div style={{ width: m ? 8 : 16, background: '#141414', borderRadius: m ? 1 : 3, display: 'flex', flexDirection: 'column', gap: m ? 1 : 2, padding: m ? 1 : 3 }}>
+            {[1,2,3,4].map(i => <div key={i} style={{ height: m ? 1 : 2, background: i === 1 ? `${sc}60` : '#222', borderRadius: 1 }} />)}
+          </div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: m ? 1 : 3 }}>
+            <div style={{ height: m ? 4 : 10, background: '#141414', borderRadius: m ? 1 : 2, display: 'flex', alignItems: 'center', padding: m ? '0 2px' : '0 4px', gap: m ? 2 : 4 }}>
+              <div style={{ height: m ? 1 : 2, width: '30%', background: '#333', borderRadius: 1 }} />
+              <div style={{ marginLeft: 'auto', height: m ? 2 : 4, width: m ? 4 : 10, background: `${sc}40`, borderRadius: 1 }} />
+            </div>
+            <div style={{ flex: 1, display: 'flex', gap: m ? 1 : 3 }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: m ? 1 : 2 }}>
+                {[{ c: `${sc}30`, h: '40%' }, { c: '#1a1a1a', h: '60%' }].map((b, i) => (
+                  <div key={i} style={{ height: b.h, background: b.c, borderRadius: m ? 1 : 2, position: 'relative', overflow: 'hidden' }}>
+                    {!m && i === 0 && <div style={{ position: 'absolute', bottom: 2, left: 3, right: 3, display: 'flex', gap: 2, alignItems: 'flex-end' }}>
+                      {[18, 24, 14, 22, 28, 16, 20].map((v, j) => <div key={j} style={{ flex: 1, height: v, background: `${sc}${40 + j * 5}`, borderRadius: '1px 1px 0 0' }} />)}
+                    </div>}
+                  </div>
+                ))}
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: m ? 1 : 2 }}>
+                {[1,2,3].map(i => (
+                  <div key={i} style={{ flex: 1, background: '#141414', borderRadius: m ? 1 : 2, padding: m ? 1 : 3 }}>
+                    {!m && <>
+                      <div style={{ height: 2, width: '50%', background: '#333', borderRadius: 1, marginBottom: 2 }} />
+                      <div style={{ height: 6, width: '70%', background: `${sc}20`, borderRadius: 1 }} />
+                    </>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  if (buildId === 'core-engine') return (
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6, fontFamily: 'monospace' }}>
+        <div style={{ height: '100%', background: '#0d0d0d', borderRadius: m ? 1 : 3, padding: m ? 2 : 5, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', gap: m ? 2 : 4, marginBottom: m ? 2 : 4 }}>
+            {['#ff5f56', '#ffbd2e', '#27c93f'].map(clr => <div key={clr} style={{ width: m ? 2 : 4, height: m ? 2 : 4, borderRadius: 99, background: clr }} />)}
+          </div>
+          {[
+            { kw: 'export', txt: ' class TradingEngine {', kwc: '#c586c0', tc: '#dcdcaa' },
+            { kw: '  async', txt: ' execute(order: Order) {', kwc: '#569cd6', tc: '#dcdcaa' },
+            { kw: '    const', txt: ' risk = await this.check()', kwc: '#569cd6', tc: '#9cdcfe' },
+            { kw: '    if', txt: ' (risk.approved) {', kwc: '#c586c0', tc: '#d4d4d4' },
+            { kw: '      return', txt: ' this.broker.send(order)', kwc: '#c586c0', tc: '#9cdcfe' },
+          ].slice(0, m ? 2 : 5).map((line, i) => (
+            <div key={i} style={{ display: 'flex', gap: m ? 1 : 3, marginBottom: m ? 1 : 2, fontSize: m ? 3 : 6, lineHeight: 1.4, whiteSpace: 'nowrap' }}>
+              <span style={{ color: '#555', minWidth: m ? 4 : 10, textAlign: 'right' }}>{i + 1}</span>
+              <span><span style={{ color: line.kwc }}>{line.kw}</span><span style={{ color: line.tc }}>{line.txt}</span></span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
+  if (buildId === 'risk-module') return (
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6 }}>
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: m ? 1 : 3 }}>
+          <div style={{ display: 'flex', gap: m ? 1 : 3 }}>
+            {[{ label: 'Max Loss', val: '2.5%', c: '#b85858' }, { label: 'Position', val: '15K', c: sc }, { label: 'Risk', val: 'LOW', c: '#2d8a32' }].map((kpi, i) => (
+              <div key={i} style={{ flex: 1, background: '#111', borderRadius: m ? 1 : 3, padding: m ? '1px 2px' : '4px 6px', border: '1px solid #1e1e1e' }}>
+                <div style={{ fontSize: m ? 2 : 5, color: '#666', marginBottom: m ? 0 : 1 }}>{kpi.label}</div>
+                <div style={{ fontSize: m ? 4 : 9, fontWeight: 700, color: kpi.c }}>{kpi.val}</div>
+              </div>
+            ))}
+          </div>
+          {!m && <div style={{ flex: 1, background: '#111', borderRadius: 3, padding: 4, border: '1px solid #1e1e1e', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ fontSize: 5, color: '#555', marginBottom: 2 }}>Exposure Monitor</div>
+            <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4, height: 22, display: 'flex', alignItems: 'flex-end', gap: 2 }}>
+              {[40, 55, 35, 60, 45, 70, 50, 65, 38, 52, 48, 58].map((v, i) => (
+                <div key={i} style={{ flex: 1, height: `${v}%`, background: v > 60 ? '#b8585866' : `${sc}50`, borderRadius: '1px 1px 0 0' }} />
+              ))}
+            </div>
+          </div>}
+        </div>
+      </div>
+    </div>
+  )
+
+  if (buildId === 'alerts') return (
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6, display: 'flex', flexDirection: 'column', gap: m ? 1 : 3 }}>
+        {[
+          { icon: '⚡', title: 'Price alert triggered', desc: 'BTC > $68,400', t: '2m ago', c: '#9a8030' },
+          { icon: '✓', title: 'Order filled', desc: 'Buy 0.5 ETH @ $3,240', t: '5m ago', c: '#2d8a32' },
+          { icon: '⚠', title: 'Risk limit warning', desc: 'Position 85% of max', t: '8m ago', c: '#b85858' },
+        ].slice(0, m ? 1 : 3).map((n, i) => (
+          <div key={i} style={{ background: '#111', borderRadius: m ? 1 : 3, padding: m ? 2 : '4px 6px', border: '1px solid #1e1e1e', display: 'flex', gap: m ? 2 : 5, alignItems: 'center' }}>
+            <div style={{ width: m ? 6 : 14, height: m ? 6 : 14, borderRadius: m ? 1 : 3, background: `${n.c}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: m ? 3 : 7, flexShrink: 0 }}>{n.icon}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: m ? 3 : 6, fontWeight: 600, color: '#ccc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{n.title}</div>
+              {!m && <div style={{ fontSize: 5, color: '#666' }}>{n.desc}</div>}
+            </div>
+            {!m && <div style={{ fontSize: 5, color: '#555', flexShrink: 0 }}>{n.t}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  if (buildId === 'backtester') return (
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6, display: 'flex', flexDirection: 'column', gap: m ? 1 : 3 }}>
+        {!m && <div style={{ display: 'flex', gap: 3 }}>
+          {[{ l: 'Return', v: '+34.2%', c: '#2d8a32' }, { l: 'Sharpe', v: '1.82', c: sc }, { l: 'Drawdown', v: '-8.1%', c: '#b85858' }].map((s, i) => (
+            <div key={i} style={{ flex: 1, background: '#111', borderRadius: 3, padding: '3px 5px', border: '1px solid #1e1e1e' }}>
+              <div style={{ fontSize: 5, color: '#555' }}>{s.l}</div>
+              <div style={{ fontSize: 8, fontWeight: 700, color: s.c }}>{s.v}</div>
+            </div>
+          ))}
+        </div>}
+        <div style={{ flex: 1, background: '#111', borderRadius: m ? 1 : 3, border: '1px solid #1e1e1e', position: 'relative', overflow: 'hidden', padding: m ? 1 : 4 }}>
+          {!m && <div style={{ fontSize: 5, color: '#555', marginBottom: 2 }}>Equity Curve</div>}
+          <svg viewBox="0 0 100 30" style={{ width: '100%', height: m ? '100%' : 'calc(100% - 10px)' }} preserveAspectRatio="none">
+            <polyline fill="none" stroke={sc} strokeWidth="1.2" points="0,28 8,25 16,22 24,24 32,18 40,20 48,15 56,12 64,14 72,8 80,10 88,5 96,3" />
+            <polyline fill={`${sc}15`} stroke="none" points="0,30 0,28 8,25 16,22 24,24 32,18 40,20 48,15 56,12 64,14 72,8 80,10 88,5 96,3 100,2 100,30" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  )
+
+  if (buildId === 'api-settings') return (
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6, display: 'flex', flexDirection: 'column', gap: m ? 1 : 3 }}>
+        {[
+          { name: 'Binance', status: 'Connected', c: '#2d8a32' },
+          { name: 'Coinbase', status: 'API Key Set', c: sc },
+          { name: 'Kraken', status: 'Not configured', c: '#555' },
+        ].slice(0, m ? 1 : 3).map((api, i) => (
+          <div key={i} style={{ background: '#111', borderRadius: m ? 1 : 3, padding: m ? 2 : '5px 6px', border: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: m ? 2 : 5 }}>
+              <div style={{ width: m ? 4 : 10, height: m ? 4 : 10, borderRadius: m ? 1 : 2, background: `${api.c}30`, border: `1px solid ${api.c}40` }} />
+              <div style={{ fontSize: m ? 3 : 7, fontWeight: 600, color: '#ccc' }}>{api.name}</div>
+            </div>
+            <div style={{ fontSize: m ? 2 : 5, color: api.c, fontWeight: 600 }}>{api.status}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  if (buildId === 'crawler') return (
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6, fontFamily: 'monospace' }}>
+        <div style={{ height: '100%', background: '#0d0d0d', borderRadius: m ? 1 : 3, padding: m ? 2 : 5, overflow: 'hidden' }}>
+          {[
+            { pre: '$ ', txt: 'crawl --target site.com', c: '#2d8a32' },
+            { pre: '→ ', txt: 'Fetching /products (1/48)', c: sc },
+            { pre: '→ ', txt: 'Parsed 234 items, 12 new', c: '#9a8030' },
+            { pre: '✓ ', txt: 'Batch saved to store', c: '#2d8a32' },
+          ].slice(0, m ? 1 : 4).map((line, i) => (
+            <div key={i} style={{ fontSize: m ? 3 : 6, marginBottom: m ? 1 : 3, color: line.c, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+              <span style={{ color: '#555' }}>{line.pre}</span>{line.txt}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
+  if (buildId === 'scheduler') return (
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6, display: 'flex', flexDirection: 'column', gap: m ? 1 : 3 }}>
+        {[
+          { time: '06:00', task: 'Daily crawl', status: 'Done', c: '#2d8a32' },
+          { time: '12:00', task: 'Export CSV', status: 'Pending', c: '#9a8030' },
+          { time: '18:00', task: 'Email report', status: 'Queued', c: '#555' },
+        ].slice(0, m ? 1 : 3).map((job, i) => (
+          <div key={i} style={{ background: '#111', borderRadius: m ? 1 : 3, padding: m ? 2 : '4px 6px', border: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', gap: m ? 2 : 6 }}>
+            <div style={{ fontSize: m ? 3 : 6, color: '#555', fontFamily: 'monospace', minWidth: m ? 8 : 22 }}>{job.time}</div>
+            <div style={{ fontSize: m ? 3 : 6, color: '#ccc', flex: 1 }}>{job.task}</div>
+            <div style={{ fontSize: m ? 2 : 5, color: job.c, fontWeight: 600 }}>{job.status}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   if (buildType === 'ui') return (
-    <div style={{ ...base, background: `linear-gradient(135deg, ${sc}18, ${sc}08)`, border: `1px solid ${sc}30` }}>
-      <div style={{ position: 'absolute', top: size === 'mini' ? 3 : 6, left: size === 'mini' ? 3 : 8, right: size === 'mini' ? 3 : 8 }}>
-        <div style={{ height: size === 'mini' ? 2 : 4, background: `${sc}40`, borderRadius: 2, marginBottom: size === 'mini' ? 2 : 4, width: '60%' }} />
-        <div style={{ display: 'flex', gap: size === 'mini' ? 2 : 4 }}>
-          <div style={{ flex: 1, height: size === 'mini' ? 8 : 24, background: `${sc}20`, borderRadius: 2 }} />
-          <div style={{ flex: 2, height: size === 'mini' ? 8 : 24, background: `${sc}15`, borderRadius: 2 }} />
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6 }}>
+        <div style={{ height: '100%', display: 'flex', gap: m ? 1 : 3 }}>
+          <div style={{ width: m ? 8 : 14, background: '#141414', borderRadius: m ? 1 : 3 }} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: m ? 1 : 2 }}>
+            <div style={{ height: m ? 4 : 8, background: '#141414', borderRadius: m ? 1 : 2 }} />
+            <div style={{ flex: 1, background: `${sc}10`, borderRadius: m ? 1 : 2 }} />
+          </div>
         </div>
-        {size !== 'mini' && <div style={{ height: 8, background: `${sc}12`, borderRadius: 2, marginTop: 4, width: '40%' }} />}
-      </div>
-    </div>
-  )
-
-  if (buildType === 'backend') return (
-    <div style={{ ...base, background: `linear-gradient(135deg, ${sc}14, ${sc}06)`, border: `1px solid ${sc}30` }}>
-      <div style={{ position: 'absolute', top: size === 'mini' ? 3 : 8, left: size === 'mini' ? 3 : 8, right: size === 'mini' ? 3 : 8 }}>
-        {[0.7, 0.5, 0.85, 0.4].slice(0, size === 'mini' ? 2 : 4).map((w, i) => (
-          <div key={i} style={{ height: size === 'mini' ? 2 : 3, background: `${sc}${i === 0 ? '50' : '25'}`, borderRadius: 1, marginBottom: size === 'mini' ? 3 : 5, width: `${w * 100}%` }} />
-        ))}
-      </div>
-    </div>
-  )
-
-  if (buildType === 'database') return (
-    <div style={{ ...base, background: `linear-gradient(135deg, ${sc}14, ${sc}06)`, border: `1px solid ${sc}30` }}>
-      <div style={{ position: 'absolute', top: size === 'mini' ? 4 : 10, left: '50%', transform: 'translateX(-50%)' }}>
-        {[0, 1, 2].slice(0, size === 'mini' ? 2 : 3).map(i => (
-          <div key={i} style={{ width: size === 'mini' ? 20 : 40, height: size === 'mini' ? 5 : 10, background: `${sc}${30 - i * 8}`, borderRadius: size === 'mini' ? 2 : 3, marginBottom: size === 'mini' ? 1 : 2, border: `1px solid ${sc}20` }} />
-        ))}
       </div>
     </div>
   )
 
   return (
-    <div style={{ ...base, background: `linear-gradient(135deg, ${sc}14, ${sc}06)`, border: `1px solid ${sc}30` }}>
-      <div style={{ position: 'absolute', top: size === 'mini' ? 4 : 10, left: size === 'mini' ? 5 : 12, right: size === 'mini' ? 5 : 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: size === 'mini' ? 3 : 8 }}>
-          {[0, 1, 2].map(i => (
-            <div key={i} style={{ width: size === 'mini' ? 6 : 14, height: size === 'mini' ? 6 : 14, borderRadius: size === 'mini' ? 2 : 4, background: `${sc}${35 - i * 10}`, border: `1px solid ${sc}20` }} />
+    <div style={base}>
+      <div style={{ position: 'absolute', inset: 0, padding: m ? 3 : 6, fontFamily: 'monospace' }}>
+        <div style={{ height: '100%', background: '#0d0d0d', borderRadius: m ? 1 : 3, padding: m ? 2 : 5 }}>
+          {[0.7, 0.5, 0.85, 0.4, 0.6].slice(0, m ? 2 : 5).map((w, i) => (
+            <div key={i} style={{ height: m ? 2 : 3, background: i === 0 ? `${sc}50` : '#222', borderRadius: 1, marginBottom: m ? 2 : 4, width: `${w * 100}%` }} />
           ))}
         </div>
-        {size !== 'mini' && (
-          <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-            {[0, 1].map(i => (
-              <div key={i} style={{ width: 16, height: 1, background: `${sc}40` }} />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   )
@@ -699,7 +862,7 @@ export function Overview() {
                           <>
                             <div style={{ width: 50, flexShrink: 0, padding: 8, position: 'relative' }}>
                               <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: sc, borderRadius: '12px 0 0 12px' }} />
-                              <PreviewThumbnail buildType={bt} sc={sc} size="mini" />
+                              <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} size="mini" />
                             </div>
                             <div style={{ flex: 1, padding: '8px 10px 8px 4px', display: 'flex', alignItems: 'center', gap: 12 }}>
                               <div style={{ flex: 1 }}>
@@ -719,7 +882,7 @@ export function Overview() {
                           </>
                         ) : (
                           <>
-                            <PreviewThumbnail buildType={bt} sc={sc} />
+                            <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
                             <div style={{ padding: '8px 10px 10px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 4 }}>
                                 <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
@@ -767,7 +930,7 @@ export function Overview() {
                             {project.builds.slice(0, 5).map(b => {
                               const sc = skillColor(b.stack)
                               const bt = getBuildType(b.stack, b.title)
-                              return <PreviewThumbnail key={b.id} buildType={bt} sc={sc} size="mini" />
+                              return <PreviewThumbnail key={b.id} buildId={b.id} buildType={bt} sc={sc} size="mini" />
                             })}
                             {project.builds.length > 5 && <div style={{ width: 40, height: 28, borderRadius: 4, background: `${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: c.muted, fontWeight: 600 }}>+{project.builds.length - 5}</div>}
                           </div>
