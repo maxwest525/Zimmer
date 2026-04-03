@@ -1048,7 +1048,6 @@ export function Overview() {
   // Code stream
   type CodeLine = { id: number; kind: 'code' | 'qa'; content: string; file?: string; lineNo?: number; qa?: 'pass' | 'warn' }
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
-  const [flowHovered, setFlowHovered] = useState(false)
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
   const sectionHeader = (label: string, key: string, extra?: React.ReactNode) => (
     <div
@@ -1802,59 +1801,51 @@ export function Overview() {
             )}
           </div>
 
-          {/* FLOW Metrics Panel */}
+          {/* ACTION REQUIRED Panel */}
           {(() => {
-            const allBuilds = projects.flatMap(p => p.builds)
-            const totalProjects = projects.length
-            const runningBuilds = allBuilds.filter(b => b.status === 'running').length
-            const completedBuilds = allBuilds.filter(b => b.status === 'complete').length
-            const queuedBuilds = allBuilds.filter(b => b.status === 'queued').length
-            const failedBuilds = allBuilds.filter(b => b.status === 'failed').length
-
-            const kpis: { label: string; value: number; color: string; bg: string }[] = [
-              { label: 'Total Projects', value: totalProjects, color: '#9ca3af', bg: '#080a0e' },
-              { label: 'Running', value: runningBuilds, color: '#34d399', bg: 'rgba(52,211,153,0.04)' },
-              { label: 'Completed', value: completedBuilds, color: '#60a5fa', bg: 'rgba(96,165,250,0.04)' },
-              { label: 'Queued', value: queuedBuilds, color: '#f59e0b', bg: 'rgba(245,158,11,0.04)' },
-              { label: 'Failed', value: failedBuilds, color: '#f87171', bg: 'rgba(248,113,113,0.04)' },
-            ]
+            const actionItems = projects.flatMap(p =>
+              p.builds
+                .filter(b => b.status === 'failed' || b.status === 'queued' || b.status === 'running')
+                .map(b => ({ ...b, projectName: p.name }))
+            )
+            const statusOrder: Record<string, number> = { failed: 0, running: 1, queued: 2 }
+            const sorted = [...actionItems].sort((a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3))
+            const statusColor: Record<string, string> = { failed: '#f87171', running: '#34d399', queued: '#f59e0b' }
+            const statusLabel: Record<string, string> = { failed: 'Failed', running: 'Running', queued: 'Queued' }
 
             return (
               <div>
-                {sectionHeader('FLOW', 'flow')}
-                {!collapsedSections.flow && (
-                  <div style={{ marginTop: 8 }}>
-                    <div
-                      onMouseEnter={() => setFlowHovered(true)}
-                      onMouseLeave={() => setFlowHovered(false)}
-                      style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 10 }}
-                    >
-                      {kpis.map(kpi => (
-                        <div key={kpi.label} style={{ background: kpi.bg, border: `1px solid #14181e`, borderRadius: 4, padding: '8px 10px' }}>
-                          <div className="panel-header" style={{ color: '#4b5563', marginBottom: 3, fontSize: 8 }}>{kpi.label.toUpperCase()}</div>
-                          <div style={{ fontSize: 22, fontWeight: 800, color: kpi.color, lineHeight: 1, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{kpi.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden', maxHeight: flowHovered ? 500 : 0, opacity: flowHovered ? 1 : 0, transition: 'max-height 0.3s ease, opacity 0.25s ease' }}>
-                      {projects.map(p => {
-                        const running = p.builds.filter(b => b.status === 'running').length
-                        const done = p.builds.filter(b => b.status === 'complete').length
-                        const queued = p.builds.filter(b => b.status === 'queued').length
-                        const failed = p.builds.filter(b => b.status === 'failed').length
-                        const parts: string[] = []
-                        if (running > 0) parts.push(`${running} running`)
-                        if (done > 0) parts.push(`${done} done`)
-                        if (queued > 0) parts.push(`${queued} queued`)
-                        if (failed > 0) parts.push(`${failed} failed`)
-                        return (
-                          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 8px', background: c.alt, borderRadius: 7, border: `1px solid ${c.border}` }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '50%' }}>{p.name}</span>
-                            <span style={{ fontSize: 10, color: c.muted, flexShrink: 0 }}>{parts.join(', ') || 'no builds'}</span>
+                {sectionHeader('ACTION REQUIRED', 'actionRequired', sorted.length > 0 ? <span style={{ fontSize: 9, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{sorted.length}</span> : undefined)}
+                {!collapsedSections.actionRequired && (
+                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {sorted.length === 0 ? (
+                      <div style={{ background: '#080a0e', border: '1px solid #14181e', borderRadius: 4, padding: '14px 12px', textAlign: 'center' }}>
+                        <span style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>✓ All clear</span>
+                        <div className="panel-header" style={{ color: '#4b5563', fontSize: 8, marginTop: 4 }}>NO BUILDS NEED ATTENTION</div>
+                      </div>
+                    ) : (
+                      sorted.map(item => (
+                        <div
+                          key={item.id}
+                          onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(item.id) }}
+                          style={{ background: '#080a0e', border: '1px solid #14181e', borderRadius: 4, padding: '8px 10px', cursor: 'pointer', transition: 'border-color 0.15s' }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = statusColor[item.status] || '#14181e')}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = '#14181e')}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{item.title}</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, color: statusColor[item.status], fontWeight: 600, flexShrink: 0 }}>
+                              <span style={{ width: 6, height: 6, borderRadius: 999, background: statusColor[item.status], display: 'inline-block', boxShadow: item.status === 'running' ? `0 0 4px ${statusColor[item.status]}80` : 'none' }} />
+                              {statusLabel[item.status]}
+                            </span>
                           </div>
-                        )
-                      })}
-                    </div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                            <span className="panel-header" style={{ fontSize: 8, color: '#4b5563' }}>{item.projectName}</span>
+                            <span style={{ fontSize: 8, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{item.agent}</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>
