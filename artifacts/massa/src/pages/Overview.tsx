@@ -737,6 +737,7 @@ function renderCodeLine(code: string, isDark: boolean) {
 
 export function Overview() {
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
+  const [livePreviewProject, setLivePreviewProject] = useState<string | null>(null)
   const [expandedBuildId, setExpandedBuildId] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
   const [selectedProjectId, setSelectedProjectId] = useState('trading-bot')
@@ -1006,6 +1007,7 @@ export function Overview() {
   const handleDragEnd = () => { setDraggedBuild(null); setDragOverId(null) }
 
   const expandProject = projects.find(p => p.id === expandedProject)
+  const previewProject = projects.find(p => p.id === livePreviewProject)
 
   return (
     <div style={{ minHeight: '100vh', background: c.bg, color: c.text, fontFamily: 'Inter, Arial, sans-serif', padding: 16 }}>
@@ -1306,12 +1308,20 @@ export function Overview() {
                             {project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done · {project.builds.filter(b => b.status === 'running').length} active
                           </div>
 
-                          <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                            onMouseEnter={() => setHoveredArchBtn(project.id)}
-                            onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ width: '100%', border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
-                            {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
-                          </button>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
+                              onMouseEnter={() => setHoveredArchBtn(project.id)}
+                              onMouseLeave={() => setHoveredArchBtn(null)}
+                              style={{ flex: 1, border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                              {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }}
+                              onMouseEnter={() => setHoveredArchBtn(project.id + '-preview')}
+                              onMouseLeave={() => setHoveredArchBtn(null)}
+                              style={{ flex: 1, border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-preview' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                              Live Preview
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -1334,12 +1344,20 @@ export function Overview() {
                           {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
                           <span style={{ fontSize: 10, color: c.muted }}>{project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done</span>
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                          onMouseEnter={() => setHoveredArchBtn(project.id + '-card')}
-                          onMouseLeave={() => setHoveredArchBtn(null)}
-                          style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
-                          {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
-                        </button>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
+                            onMouseEnter={() => setHoveredArchBtn(project.id + '-card')}
+                            onMouseLeave={() => setHoveredArchBtn(null)}
+                            style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                            {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }}
+                            onMouseEnter={() => setHoveredArchBtn(project.id + '-card-preview')}
+                            onMouseLeave={() => setHoveredArchBtn(null)}
+                            style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card-preview' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                            Live Preview
+                          </button>
+                        </div>
                       </div>
                       {buildCards(false, true)}
                     </div>
@@ -1681,6 +1699,135 @@ export function Overview() {
                     <span style={{ fontSize: 12, color: c.muted }}>{skill}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LIVE PREVIEW MODAL */}
+      {livePreviewProject && previewProject && (
+        <div onClick={() => setLivePreviewProject(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 50 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(940px, 100%)', maxHeight: '85vh', background: c.panel, border: '1px solid #333', borderRadius: 18, padding: 24, overflow: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: 11, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>LIVE PREVIEW</div>
+                <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>{previewProject.name}</div>
+                <div style={{ color: c.muted, fontSize: 13 }}>{previewProject.goal}</div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 8, height: 8, borderRadius: 99, background: '#2d8a32', animation: 'phase-pulse 2s ease-in-out infinite' }} />
+                <span style={{ fontSize: 11, color: '#2d8a32', fontWeight: 600 }}>Running</span>
+                <button onClick={() => setLivePreviewProject(null)} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s', marginLeft: 8 }}>Close</button>
+              </div>
+            </div>
+
+            <div style={{ flex: 1, background: '#0a0a0a', borderRadius: 12, border: `1px solid ${c.border}`, overflow: 'hidden', minHeight: 420 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderBottom: `1px solid ${c.border}`, background: '#111' }}>
+                <div style={{ display: 'flex', gap: 5 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: 99, background: '#b85858' }} />
+                  <div style={{ width: 10, height: 10, borderRadius: 99, background: '#9a8030' }} />
+                  <div style={{ width: 10, height: 10, borderRadius: 99, background: '#2d8a32' }} />
+                </div>
+                <div style={{ flex: 1, background: '#1a1a1a', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: c.muted, border: `1px solid ${c.border}` }}>
+                  {previewProject.id === 'trading-bot' ? 'https://app.tradingbot.io' : previewProject.id === 'massa-site' ? 'https://massa.ai' : 'https://scraper.massa.ai'}
+                </div>
+              </div>
+              <div style={{ padding: 0, height: 380, overflow: 'hidden', position: 'relative' }}>
+                {previewProject.id === 'trading-bot' && (
+                  <div style={{ padding: 16, height: '100%', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: '"JetBrains Mono", monospace' }}>
+                    <div style={{ display: 'flex', gap: 12, flex: '0 0 auto' }}>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>PORTFOLIO VALUE</div>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: '#2d8a32' }}>$127,843.92</div>
+                        <div style={{ fontSize: 11, color: '#2d8a32', marginTop: 2 }}>+3.42% today</div>
+                      </div>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>OPEN POSITIONS</div>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: c.text }}>7</div>
+                        <div style={{ fontSize: 11, color: '#5080b8', marginTop: 2 }}>4 long / 3 short</div>
+                      </div>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>24H P&L</div>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: '#2d8a32' }}>+$4,221</div>
+                        <div style={{ fontSize: 11, color: c.muted, marginTop: 2 }}>Win rate: 71%</div>
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}`, position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ fontSize: 10, color: c.muted, marginBottom: 8 }}>BTC/USDT</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                        <span style={{ fontSize: 20, fontWeight: 800 }}>$67,432.18</span>
+                        <span style={{ fontSize: 12, color: '#2d8a32' }}>+2.14%</span>
+                        <span style={{ fontSize: 11, color: c.muted }}>H: $68,100 L: $65,890</span>
+                      </div>
+                      <svg width="100%" height="120" viewBox="0 0 800 120" preserveAspectRatio="none">
+                        <defs><linearGradient id="pgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2d8a32" stopOpacity="0.3"/><stop offset="1" stopColor="#2d8a32" stopOpacity="0"/></linearGradient></defs>
+                        <path d="M0,80 Q50,75 100,70 T200,55 T300,65 T400,40 T500,50 T600,30 T700,25 T800,20" fill="none" stroke="#2d8a32" strokeWidth="2"/>
+                        <path d="M0,80 Q50,75 100,70 T200,55 T300,65 T400,40 T500,50 T600,30 T700,25 T800,20 L800,120 L0,120Z" fill="url(#pgrad)"/>
+                      </svg>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flex: '0 0 auto' }}>
+                      {['ETH/USDT', 'SOL/USDT', 'ARB/USDT'].map(pair => (
+                        <div key={pair} style={{ flex: 1, background: '#111', borderRadius: 6, padding: '8px 10px', border: `1px solid ${c.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: 11, fontWeight: 600 }}>{pair}</span>
+                          <span style={{ fontSize: 11, color: pair === 'ARB/USDT' ? '#b85858' : '#2d8a32' }}>{pair === 'ETH/USDT' ? '+1.8%' : pair === 'SOL/USDT' ? '+5.2%' : '-0.9%'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {previewProject.id === 'massa-site' && (
+                  <div style={{ height: '100%', overflow: 'hidden' }}>
+                    <div style={{ background: 'linear-gradient(180deg, #0a0f0a 0%, #060606 100%)', padding: '32px 40px', textAlign: 'center' }}>
+                      <div style={{ fontSize: 11, letterSpacing: 4, color: c.muted, marginBottom: 12 }}>M A S S A</div>
+                      <div style={{ fontSize: 28, fontWeight: 800, marginBottom: 8, background: 'linear-gradient(135deg, #fff 0%, #888 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Build anything with AI agents, in parallel</div>
+                      <div style={{ fontSize: 13, color: c.muted, maxWidth: 500, margin: '0 auto 20px' }}>Deploy multiple intelligent agents that architect, build, and ship production-ready software simultaneously.</div>
+                      <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+                        <div style={{ background: '#2d8a32', color: '#fff', padding: '10px 24px', borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Start Building</div>
+                        <div style={{ border: '1px solid #333', color: '#ccc', padding: '10px 24px', borderRadius: 8, fontWeight: 600, fontSize: 13 }}>View Demo</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 12, padding: '20px 40px' }}>
+                      {['Multi-Agent', 'Auto-Architect', 'Live Deploy'].map(f => (
+                        <div key={f} style={{ flex: 1, background: '#111', borderRadius: 10, padding: 16, border: `1px solid ${c.border}` }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>{f}</div>
+                          <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.5 }}>Intelligent system that handles complex workflows automatically.</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {previewProject.id === 'scraper' && (
+                  <div style={{ padding: 16, height: '100%', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: '"JetBrains Mono", monospace' }}>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>PAGES CRAWLED</div>
+                        <div style={{ fontSize: 22, fontWeight: 800 }}>12,847</div>
+                        <div style={{ fontSize: 11, color: '#5080b8', marginTop: 2 }}>142/min avg</div>
+                      </div>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>DATA EXTRACTED</div>
+                        <div style={{ fontSize: 22, fontWeight: 800 }}>3.2 GB</div>
+                        <div style={{ fontSize: 11, color: '#2d8a32', marginTop: 2 }}>98.7% success</div>
+                      </div>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>ACTIVE JOBS</div>
+                        <div style={{ fontSize: 22, fontWeight: 800 }}>3</div>
+                        <div style={{ fontSize: 11, color: '#9a8030', marginTop: 2 }}>2 queued</div>
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 10, border: `1px solid ${c.border}`, fontSize: 11, lineHeight: 1.8, color: '#888', overflow: 'hidden' }}>
+                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> GET https://api.example.com/products?page=142 <span style={{ color: '#555' }}>200 OK 234ms</span></div>
+                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> GET https://api.example.com/products?page=143 <span style={{ color: '#555' }}>200 OK 189ms</span></div>
+                      <div><span style={{ color: '#5080b8' }}>[PARSE]</span> Extracting 48 records from response...</div>
+                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> GET https://api.example.com/products?page=144 <span style={{ color: '#555' }}>200 OK 312ms</span></div>
+                      <div><span style={{ color: '#9a8030' }}>[WARN]</span> Rate limit approaching, throttling to 80/min</div>
+                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> Stored 48 records to PostgreSQL <span style={{ color: '#555' }}>batch_id: b-2847</span></div>
+                      <div><span style={{ color: '#5080b8' }}>[PARSE]</span> Extracting 52 records from response...</div>
+                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> GET https://api.example.com/products?page=145 <span style={{ color: '#555' }}>200 OK 198ms</span></div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
