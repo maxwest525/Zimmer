@@ -438,9 +438,9 @@ export function Overview() {
                   <div key={step.label} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1 }}>
                     <div style={{
                       width: 36, height: 36, borderRadius: 999,
-                      border: `1px solid ${step.active ? c.green : c.border}`,
-                      background: step.active ? c.greenSoft : c.alt,
-                      color: step.active ? c.green : c.muted,
+                      border: `1.5px solid ${step.active ? c.green : '#2e2e2e'}`,
+                      background: '#060606',
+                      color: step.active ? c.green : '#3a3a3a',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: 700, fontSize: 14,
                     }}>{i + 1}</div>
@@ -587,7 +587,7 @@ export function Overview() {
                         <div style={{ flex: column ? 1 : undefined, paddingLeft: column ? 8 : 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 5 }}>
                             <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                            <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '1px 5px', borderRadius: 4, background: `${sc}15`, flexShrink: 0 }}>{ps}</span>
+                            <span style={{ fontSize: 9, color: sc, fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
                           </div>
                           <StatusBadge status={build.status} colors={c} />
                         </div>
