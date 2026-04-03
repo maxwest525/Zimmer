@@ -1347,6 +1347,18 @@ export function Overview() {
                             <span style={{ fontSize: 9, color: sc }}>✓</span>
                           </div>
                         )}
+                        {(() => {
+                          const msgs = chatMessages[build.id]
+                          if (!msgs || msgs.length === 0) return null
+                          const lastMsg = msgs[msgs.length - 1]
+                          const agentReplied = lastMsg.role === 'agent'
+                          return (
+                            <div style={{ position: 'absolute', top: column ? 6 : 6, left: column ? 56 : 6, display: 'flex', alignItems: 'center', gap: 4, background: agentReplied ? 'rgba(45,138,50,0.15)' : 'rgba(154,128,48,0.15)', border: `1px solid ${agentReplied ? 'rgba(45,138,50,0.3)' : 'rgba(154,128,48,0.3)'}`, borderRadius: 6, padding: '2px 6px', zIndex: 2 }}>
+                              <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#2d8a32' : '#9a8030', ...(agentReplied ? {} : { animation: 'phase-pulse 2s ease-in-out infinite' }) }} />
+                              <span style={{ fontSize: 8, fontWeight: 700, color: agentReplied ? '#2d8a32' : '#9a8030' }}>{agentReplied ? 'Replied' : 'Waiting'}</span>
+                            </div>
+                          )
+                        })()}
 
                         {column ? (
                           <>
