@@ -814,6 +814,40 @@ export function Overview() {
             HIDE <span style={{ fontSize: 14 }}>›</span>
           </button>
 
+          {/* Ready Builds KPI */}
+          <div style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: 12 }}>
+            {sectionHeader('READY BUILDS', 'readyBuilds')}
+            {!collapsedSections.readyBuilds && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 8 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                    <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#9a8030' : c.text, lineHeight: 1 }}>{readyBuildsCount}</span>
+                    <span style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>queued</span>
+                  </div>
+                </div>
+                <button
+                  onClick={handleStartAll}
+                  disabled={readyBuildsCount === 0}
+                  style={{
+                    background: readyBuildsCount > 0 ? '#1a1a1a' : (isDark ? '#1e1e1e' : '#e8e8e8'),
+                    color: readyBuildsCount > 0 ? '#9a8030' : c.muted,
+                    border: `1px solid ${readyBuildsCount > 0 ? '#9a803044' : c.border}`,
+                    borderRadius: 8,
+                    padding: '7px 13px',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: readyBuildsCount > 0 ? 'pointer' : 'default',
+                    letterSpacing: 0.3,
+                    transition: 'all 0.15s',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Start All
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* FLOW Metrics Panel */}
           {(() => {
             const allBuilds = projects.flatMap(p => p.builds)
@@ -872,40 +906,6 @@ export function Overview() {
               </div>
             )
           })()}
-
-          {/* Ready Builds KPI */}
-          <div style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 12, padding: 12 }}>
-            {sectionHeader('READY BUILDS', 'readyBuilds')}
-            {!collapsedSections.readyBuilds && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 8 }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#9a8030' : c.text, lineHeight: 1 }}>{readyBuildsCount}</span>
-                    <span style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>queued</span>
-                  </div>
-                </div>
-                <button
-                  onClick={handleStartAll}
-                  disabled={readyBuildsCount === 0}
-                  style={{
-                    background: readyBuildsCount > 0 ? '#9a8030' : (isDark ? '#1e1e1e' : '#e8e8e8'),
-                    color: readyBuildsCount > 0 ? '#081008' : c.muted,
-                    border: `1px solid ${c.border}`,
-                    borderRadius: 8,
-                    padding: '7px 13px',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: readyBuildsCount > 0 ? 'pointer' : 'default',
-                    letterSpacing: 0.3,
-                    transition: 'all 0.15s',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Start All
-                </button>
-              </div>
-            )}
-          </div>
 
           {/* Build Activity Feed */}
           <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: '0 0 auto' }}>
