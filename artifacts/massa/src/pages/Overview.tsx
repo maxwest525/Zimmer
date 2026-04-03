@@ -476,7 +476,7 @@ export function Overview() {
             return (
               <div style={{ border: `1px solid #2a2a2a`, background: '#0e0e0e', borderRadius: 12, padding: 16, marginBottom: 12, position: 'relative' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <div style={{ fontSize: 10, letterSpacing: 1.2, color: '#ffffff', fontWeight: 700 }}>RAW INPUT</div>
+                  <div style={{ fontSize: 10, letterSpacing: 1.2, color: '#ffffff', fontWeight: 700 }}>Ask us for anything</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {rawInput.trim().length > 0 && <div style={{ fontSize: 10, color: c.muted }}>{rawInput.length} chars</div>}
                     <div style={{ width: 6, height: 6, borderRadius: 999, background: c.green }} />
@@ -507,9 +507,6 @@ export function Overview() {
             )
           })()}
 
-          <div style={{ textAlign: 'center', padding: '6px 0 2px 0', fontSize: 12, color: c.muted, letterSpacing: 0.5, fontWeight: 500 }}>
-            Ask us for anything
-          </div>
 
           {/* Action bar */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'center' }}>
