@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'wouter'
 import { InlineCompanyLogo } from '@/components/CompanyLogo'
+import { NodeGraph } from '@/components/NodeGraph'
+import { TimelineSwimlane } from '@/components/TimelineSwimlane'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -14,6 +16,7 @@ type Build = {
   stack: string[]
   agent: string
   agentRole?: string
+  dependsOn?: string[]
 }
 
 type Project = {
@@ -598,6 +601,7 @@ export function Overview() {
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
+  const [archTab, setArchTab] = useState<'graph' | 'timeline'>('graph')
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const [rawInput, setRawInput] = useState('')
   const [vagueMode, setVagueMode] = useState(false)
@@ -613,10 +617,10 @@ export function Overview() {
       status: 'running',
       builds: [
         { id: 'core-engine', title: 'Core Engine', summary: 'Strategy loop, execution logic, and order handling', status: 'running', progress: 58, stack: ['Claude', 'Claude Code', 'APIs'], agent: 'System Builder', agentRole: 'Backend Architect' },
-        { id: 'risk-module', title: 'Risk Module', summary: 'Position sizing, loss limits, and safety rules', status: 'running', progress: 46, stack: ['Claude', 'Claude Code'], agent: 'Risk Agent', agentRole: 'Safety Engineer' },
-        { id: 'dashboard-ui', title: 'Dashboard UI', summary: 'Bot controls, positions, and performance views', status: 'queued', progress: 14, stack: ['Claude', 'Lovable'], agent: 'UI Agent', agentRole: 'Frontend Designer' },
-        { id: 'alerts', title: 'Alerts', summary: 'Slack, email, and critical event notifications', status: 'complete', progress: 100, stack: ['Claude', 'n8n', 'APIs'], agent: 'Ops Agent', agentRole: 'DevOps Engineer' },
-        { id: 'backtester', title: 'Backtester', summary: 'Historical simulation engine and result reporter', status: 'queued', progress: 0, stack: ['Claude', 'Claude Code'], agent: 'Data Agent', agentRole: 'Data Engineer' },
+        { id: 'risk-module', title: 'Risk Module', summary: 'Position sizing, loss limits, and safety rules', status: 'running', progress: 46, stack: ['Claude', 'Claude Code'], agent: 'Risk Agent', agentRole: 'Safety Engineer', dependsOn: ['core-engine'] },
+        { id: 'dashboard-ui', title: 'Dashboard UI', summary: 'Bot controls, positions, and performance views', status: 'queued', progress: 14, stack: ['Claude', 'Lovable'], agent: 'UI Agent', agentRole: 'Frontend Designer', dependsOn: ['core-engine', 'risk-module'] },
+        { id: 'alerts', title: 'Alerts', summary: 'Slack, email, and critical event notifications', status: 'complete', progress: 100, stack: ['Claude', 'n8n', 'APIs'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['core-engine'] },
+        { id: 'backtester', title: 'Backtester', summary: 'Historical simulation engine and result reporter', status: 'queued', progress: 0, stack: ['Claude', 'Claude Code'], agent: 'Data Agent', agentRole: 'Data Engineer', dependsOn: ['core-engine'] },
       ],
     },
     {
@@ -626,7 +630,7 @@ export function Overview() {
       status: 'running',
       builds: [
         { id: 'homepage', title: 'Homepage', summary: 'Main marketing page and product explanation', status: 'running', progress: 71, stack: ['Claude', 'Lovable'], agent: 'UI Agent', agentRole: 'Frontend Designer' },
-        { id: 'api-settings', title: 'API Settings', summary: 'Provider cards, keys, and connection states', status: 'queued', progress: 24, stack: ['Claude', 'Replit'], agent: 'Settings Agent', agentRole: 'Integration Engineer' },
+        { id: 'api-settings', title: 'API Settings', summary: 'Provider cards, keys, and connection states', status: 'queued', progress: 24, stack: ['Claude', 'Replit'], agent: 'Settings Agent', agentRole: 'Integration Engineer', dependsOn: ['homepage'] },
       ],
     },
     {
@@ -636,7 +640,7 @@ export function Overview() {
       status: 'queued',
       builds: [
         { id: 'crawler', title: 'Crawler', summary: 'Fetch pipeline and retry handling', status: 'queued', progress: 12, stack: ['Claude', 'Claude Code'], agent: 'Crawler Agent', agentRole: 'Data Engineer' },
-        { id: 'scheduler', title: 'Scheduler', summary: 'Daily export and email delivery', status: 'queued', progress: 0, stack: ['Claude', 'n8n'], agent: 'Ops Agent', agentRole: 'DevOps Engineer' },
+        { id: 'scheduler', title: 'Scheduler', summary: 'Daily export and email delivery', status: 'queued', progress: 0, stack: ['Claude', 'n8n'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['crawler'] },
       ],
     },
   ])
@@ -1458,51 +1462,45 @@ export function Overview() {
               <button onClick={() => setExpandedProject(null)} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
             </div>
 
-            {/* Root node */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ border: `1px solid ${c.green}`, background: c.blackGreen, borderRadius: 12, padding: '12px 20px', marginBottom: 0, textAlign: 'center', minWidth: 200 }}>
-                <div style={{ fontSize: 10, color: c.green, fontWeight: 700, letterSpacing: 1, marginBottom: 3 }}>PROJECT</div>
-                <div style={{ fontWeight: 800, fontSize: 15 }}>{expandProject.name}</div>
-              </div>
-
-              {/* Connector */}
-              <div style={{ width: 2, height: 24, background: c.border }} />
-
-              {/* Layer groupings */}
-              <div style={{ display: 'flex', gap: 12, width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
-                {expandProject.builds.map((build, i) => {
-                  const sc = skillColor(build.stack)
-                  const ps = primarySkill(build.stack)
-                  return (
-                    <div key={build.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      {/* Vertical line up */}
-                      <div style={{ width: 2, height: 20, background: c.border }} />
-                      <div style={{ border: `1px solid ${build.status === 'complete' ? `${sc}30` : build.status === 'failed' ? '#ff6b6b66' : `${sc}66`}`, borderTop: `2px solid ${build.status === 'complete' ? `${sc}60` : build.status === 'failed' ? '#ff6b6b' : sc}`, background: isDark ? `${sc}0a` : `${sc}08`, borderRadius: 12, padding: 14, width: 160, cursor: 'pointer', opacity: build.status === 'complete' ? 0.7 : 1, transition: 'opacity 0.2s' }} onClick={() => { setExpandedBuildId(build.id); setExpandedProject(null) }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                          <span style={{ fontSize: 11, color: '#ffffff', fontWeight: 700 }}>{ps}</span>
-                          {build.status === 'running' && <span style={{ width: 7, height: 7, borderRadius: 999, background: sc, display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
-                          {build.status === 'complete' && <span style={{ fontSize: 10, color: sc }}>✓</span>}
-                          {build.status === 'failed' && <span style={{ fontSize: 10, color: '#b85858' }}>✕</span>}
-                          {build.status === 'queued' && <span style={{ width: 7, height: 7, borderRadius: 999, background: '#9a8030', display: 'inline-block', opacity: 0.6 }} />}
-                        </div>
-                        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{build.title}</div>
-                        <div style={{ fontSize: 11, color: c.muted, marginBottom: 8, lineHeight: 1.4 }}>{build.summary}</div>
-                        {/* Mini progress */}
-                        <div style={{ height: 3, background: isDark ? '#1e1e1e' : '#ddd', borderRadius: 99, overflow: 'hidden' }}>
-                          <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s' }} />
-                        </div>
-                        <div style={{ fontSize: 10, color: c.muted, marginTop: 3 }}>{build.progress}%</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
-                          {build.stack.map(s => <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '1px 5px', borderRadius: 4, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}><InlineCompanyLogo name={s} size={10} />{s}</span>)}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+            <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: isDark ? '#111' : '#eee', borderRadius: 8, padding: 3, width: 'fit-content' }}>
+              {(['graph', 'timeline'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setArchTab(tab)}
+                  style={{
+                    border: 'none',
+                    background: archTab === tab ? (isDark ? '#2a2a2a' : '#fff') : 'transparent',
+                    color: archTab === tab ? c.text : c.muted,
+                    padding: '6px 16px',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: archTab === tab ? 700 : 500,
+                    transition: 'all 0.15s',
+                    boxShadow: archTab === tab ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+                  }}
+                >
+                  {tab === 'graph' ? 'Graph' : 'Timeline'}
+                </button>
+              ))}
             </div>
 
-            {/* Legend */}
+            {archTab === 'graph' ? (
+              <NodeGraph
+                builds={expandProject.builds}
+                isDark={isDark}
+                colors={c}
+                onBuildClick={(id) => { setExpandedBuildId(id); setExpandedProject(null) }}
+              />
+            ) : (
+              <TimelineSwimlane
+                builds={expandProject.builds}
+                isDark={isDark}
+                colors={c}
+                onBuildClick={(id) => { setExpandedBuildId(id); setExpandedProject(null) }}
+              />
+            )}
+
             <div style={{ marginTop: 24, borderTop: `1px solid ${c.border}`, paddingTop: 16 }}>
               <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>SKILL LEGEND</div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
