@@ -1147,7 +1147,7 @@ export function Overview() {
             <div
               onMouseEnter={() => setHoveredArchBtn('claude-rec')}
               onMouseLeave={() => setHoveredArchBtn(null)}
-              style={{ border: '1px solid #2e2e2e', padding: '9px 12px', borderRadius: 9, color: c.text, background: hoveredArchBtn === 'claude-rec' ? '#242424' : '#1a1a1a', fontSize: 12, cursor: 'default', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Claude recommended</div>
+              style={{ border: '1px solid #2e2e2e', padding: '9px 12px', borderRadius: 9, color: c.text, background: hoveredArchBtn === 'claude-rec' ? '#242424' : '#1a1a1a', fontSize: 12, cursor: 'default', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>LLM: Sonnet 4.6 (Claude)</div>
             {/* Vague mode toggle */}
             <button
               onClick={() => setVagueMode(v => !v)}
