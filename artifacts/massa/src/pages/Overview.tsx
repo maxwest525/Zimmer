@@ -456,10 +456,19 @@ export function Overview() {
 
           {/* Action bar */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-            <button style={{ background: 'transparent', color: '#ffffff', border: `1px solid ${c.green}`, padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Architect &amp; Build</button>
-            <div style={{ border: `1px solid ${c.border}`, padding: '9px 12px', borderRadius: 9, color: c.text, background: c.alt, fontSize: 12 }}>Claude recommended</div>
+            <button
+              onMouseEnter={() => setHoveredArchBtn('arch-build')}
+              onMouseLeave={() => setHoveredArchBtn(null)}
+              style={{ background: hoveredArchBtn === 'arch-build' ? '#242424' : '#1a1a1a', color: '#ffffff', border: '1px solid #2e2e2e', padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Architect &amp; Build</button>
+            <div
+              onMouseEnter={() => setHoveredArchBtn('claude-rec')}
+              onMouseLeave={() => setHoveredArchBtn(null)}
+              style={{ border: '1px solid #2e2e2e', padding: '9px 12px', borderRadius: 9, color: c.text, background: hoveredArchBtn === 'claude-rec' ? '#242424' : '#1a1a1a', fontSize: 12, cursor: 'default', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Claude recommended</div>
             <div style={{ marginLeft: 'auto' }}>
-              <button style={{ border: `1px solid ${c.green}`, background: c.greenSoft, color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Run</button>
+              <button
+                onMouseEnter={() => setHoveredArchBtn('run')}
+                onMouseLeave={() => setHoveredArchBtn(null)}
+                style={{ border: '1px solid #2e2e2e', background: hoveredArchBtn === 'run' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Run</button>
             </div>
           </div>
 
