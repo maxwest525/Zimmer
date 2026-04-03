@@ -675,7 +675,6 @@ export function Overview() {
                         <div style={{ paddingLeft: 16 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                             <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: 0.1, color: '#ffffff' }}>{project.name}</div>
-                            {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
                           </div>
                           <div style={{ color: c.muted, fontSize: 11, marginBottom: 10, lineHeight: 1.4 }}>{project.goal}</div>
 
@@ -699,10 +698,6 @@ export function Overview() {
                               })}
                               {project.builds.length > 3 && <div style={{ fontSize: 10, color: c.muted }}>+{project.builds.length - 3} more</div>}
                             </div>
-                          </div>
-
-                          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-                            <StatusBadge status={project.status} colors={c} />
                           </div>
 
                           <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
@@ -734,8 +729,6 @@ export function Overview() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: 0.1, color: '#ffffff' }}>{project.name}</div>
-                          <StatusBadge status={project.status} colors={c} />
-                          {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
                           onMouseEnter={() => setHoveredArchBtn(project.id + '-card')}
