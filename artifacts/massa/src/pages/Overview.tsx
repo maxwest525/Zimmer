@@ -110,7 +110,6 @@ function renderCodeLine(code: string, isDark: boolean) {
 }
 
 export function Overview() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [expandedBuildId, setExpandedBuildId] = useState<string | null>(null)
   const [selectedProjectId, setSelectedProjectId] = useState('trading-bot')
@@ -188,7 +187,7 @@ export function Overview() {
     return null
   }, [projects, expandedBuildId])
 
-  const isDark = theme === 'dark'
+  const isDark = true
   const c = {
     bg: isDark ? '#060606' : '#f4f6f2',
     panel: isDark ? '#0d0d0d' : '#ffffff',
@@ -378,7 +377,6 @@ export function Overview() {
           <div style={{ fontSize: 16, fontWeight: 700 }}>Massa <span style={{ color: c.green }}>AI</span></div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={() => setTheme(isDark ? 'light' : 'dark')} style={{ background: 'transparent', color: c.text, border: `1px solid ${c.border}`, padding: '7px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>{isDark ? 'Light' : 'Dark'}</button>
           <div style={{ width: 32, height: 32, borderRadius: 999, background: c.greenSoft, color: c.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid ${c.border}`, fontSize: 13 }}>M</div>
         </div>
       </div>
@@ -457,10 +455,10 @@ export function Overview() {
 
           {/* Action bar */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-            <button style={{ background: 'transparent', color: c.green, border: `1px solid ${c.green}`, padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Architect &amp; Build</button>
+            <button style={{ background: 'transparent', color: '#ffffff', border: `1px solid ${c.green}`, padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Architect &amp; Build</button>
             <div style={{ border: `1px solid ${c.border}`, padding: '9px 12px', borderRadius: 9, color: c.text, background: c.alt, fontSize: 12 }}>Claude recommended</div>
             <div style={{ marginLeft: 'auto' }}>
-              <button style={{ border: `1px solid ${c.green}`, background: c.greenSoft, color: c.green, padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Run</button>
+              <button style={{ border: `1px solid ${c.green}`, background: c.greenSoft, color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Run</button>
             </div>
           </div>
 
@@ -498,7 +496,7 @@ export function Overview() {
                   </svg>
                 </button>
               </div>
-              <div style={{ fontSize: 12, color: c.muted, cursor: 'pointer', border: `1px solid ${c.border}`, padding: '4px 10px', borderRadius: 6 }}>Find Project</div>
+              <div style={{ fontSize: 12, color: '#ffffff', cursor: 'pointer', border: `1px solid ${c.border}`, padding: '4px 10px', borderRadius: 6 }}>Find Project</div>
             </div>
           </div>
 
@@ -618,7 +616,7 @@ export function Overview() {
                           </div>
 
                           <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                            style={{ width: '100%', border: `1px solid ${c.green}`, background: isSel ? c.greenSoft : 'transparent', color: isSel ? c.green : c.muted, padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                            style={{ width: '100%', border: `1px solid ${c.green}`, background: isSel ? c.greenSoft : 'transparent', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                             {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
                           </button>
                         </div>
@@ -645,7 +643,7 @@ export function Overview() {
                           {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                          style={{ border: `1px solid ${c.green}`, background: isSel ? c.greenSoft : 'transparent', color: isSel ? c.green : c.muted, padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                          style={{ border: `1px solid ${c.green}`, background: isSel ? c.greenSoft : 'transparent', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                           {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
                         </button>
                       </div>
