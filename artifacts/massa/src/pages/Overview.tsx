@@ -796,6 +796,7 @@ export function Overview() {
     }
   })
   const [chatInput, setChatInput] = useState('')
+  const [showAttachMenu, setShowAttachMenu] = useState<string | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const [selectedProjectId, setSelectedProjectId] = useState('trading-bot')
   const [draggedBuild, setDraggedBuild] = useState<{ buildId: string; projectId: string } | null>(null)
@@ -1257,6 +1258,34 @@ export function Overview() {
                   placeholder="Describe what you want to build. Be as specific or as vague as you want — MASSA will handle the rest."
                   style={{ width: '100%', minHeight: 90, background: 'transparent', border: 'none', outline: 'none', color: '#ffffff', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
                 />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', position: 'relative' }}>
+                  <button
+                    onClick={() => setShowAttachMenu(showAttachMenu === 'main' ? null : 'main')}
+                    onMouseEnter={e => e.currentTarget.style.background = '#222'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'main' ? '#fff' : '#555', cursor: 'pointer', padding: '4px 8px', borderRadius: 6, fontSize: 16, transition: 'color 0.15s, background 0.15s', display: 'flex', alignItems: 'center' }}
+                    title="Attach files"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                  </button>
+                  {showAttachMenu === 'main' && (
+                    <div style={{ position: 'absolute', bottom: 36, right: 0, background: '#1a1a1a', border: '1px solid #333', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
+                      {[
+                        { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, label: 'Photo Library' },
+                        { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>, label: 'Take Photo or Video' },
+                        { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
+                      ].map((item, i) => (
+                        <div key={i} onClick={() => setShowAttachMenu(null)}
+                          onMouseEnter={e => e.currentTarget.style.background = '#252525'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                          style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
+                          <span style={{ color: '#888', display: 'flex' }}>{item.icon}</span>
+                          {item.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {suggestions.length > 0 && (
                   <div style={{ borderTop: `1px solid #1e1e1e`, marginTop: 10, paddingTop: 10 }}>
                     <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: c.muted, marginBottom: 6 }}>MASSA SUGGESTS</div>
@@ -2096,7 +2125,33 @@ export function Overview() {
                   <div ref={chatEndRef} />
                 </div>
                 <div style={{ padding: '12px 20px 18px', borderTop: `1px solid ${c.border}`, flexShrink: 0 }}>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', position: 'relative' }}>
+                    <button
+                      onClick={() => setShowAttachMenu(showAttachMenu === 'projchat' ? null : 'projchat')}
+                      onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                      onMouseLeave={e => { if (showAttachMenu !== 'projchat') e.currentTarget.style.color = '#555' }}
+                      style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'projchat' ? '#fff' : '#555', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
+                      title="Attach files"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                    </button>
+                    {showAttachMenu === 'projchat' && (
+                      <div style={{ position: 'absolute', bottom: 44, left: 0, background: '#1a1a1a', border: '1px solid #333', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
+                        {[
+                          { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, label: 'Photo Library' },
+                          { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>, label: 'Take Photo or Video' },
+                          { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
+                        ].map((item, i) => (
+                          <div key={i} onClick={() => setShowAttachMenu(null)}
+                            onMouseEnter={e => e.currentTarget.style.background = '#252525'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
+                            <span style={{ color: '#888', display: 'flex' }}>{item.icon}</span>
+                            {item.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <input
                       value={chatInput}
                       onChange={e => setChatInput(e.target.value)}
@@ -2178,7 +2233,33 @@ export function Overview() {
                         <div ref={chatEndRef} />
                       </div>
                       <div style={{ padding: '12px 24px 20px', borderTop: `1px solid ${c.border}`, flexShrink: 0 }}>
-                        <div style={{ display: 'flex', gap: 8 }}>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', position: 'relative' }}>
+                          <button
+                            onClick={() => setShowAttachMenu(showAttachMenu === 'buildchat' ? null : 'buildchat')}
+                            onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                            onMouseLeave={e => { if (showAttachMenu !== 'buildchat') e.currentTarget.style.color = '#555' }}
+                            style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'buildchat' ? '#fff' : '#555', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
+                            title="Attach files"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                          </button>
+                          {showAttachMenu === 'buildchat' && (
+                            <div style={{ position: 'absolute', bottom: 44, left: 0, background: '#1a1a1a', border: '1px solid #333', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
+                              {[
+                                { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, label: 'Photo Library' },
+                                { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>, label: 'Take Photo or Video' },
+                                { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
+                              ].map((item, i) => (
+                                <div key={i} onClick={() => setShowAttachMenu(null)}
+                                  onMouseEnter={e => e.currentTarget.style.background = '#252525'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
+                                  <span style={{ color: '#888', display: 'flex' }}>{item.icon}</span>
+                                  {item.label}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                           <input
                             value={chatInput}
                             onChange={e => setChatInput(e.target.value)}
