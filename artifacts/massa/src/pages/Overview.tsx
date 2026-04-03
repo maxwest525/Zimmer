@@ -202,7 +202,7 @@ export function Overview() {
     muted: isDark ? '#8c8f8c' : '#556155',
     green: isDark ? '#2d8a32' : '#1a7a18',
     greenSoft: isDark ? 'rgba(45,138,50,0.08)' : 'rgba(56,212,48,0.06)',
-    blackGreen: isDark ? '#080f08' : '#f0f7f0',
+    blackGreen: isDark ? '#1a1a1a' : '#f0f0f0',
   }
 
   const readyBuildsCount = useMemo(
@@ -850,9 +850,9 @@ export function Overview() {
               ref={codeRef}
               onMouseEnter={() => setCodeHovered(true)}
               onMouseLeave={() => setCodeHovered(false)}
-              style={{ flex: 1, overflowY: 'auto', background: isDark ? '#080f08' : '#f0f7f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
+              style={{ flex: 1, overflowY: 'auto', background: isDark ? '#1a1a1a' : '#f0f0f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
             >
-              <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#080f08' : '#f0f7f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
+              <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#1a1a1a' : '#f0f0f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
               {codeLines.map(line => {
                 if (line.kind === 'qa') {
                   const isPass = line.qa === 'pass'
