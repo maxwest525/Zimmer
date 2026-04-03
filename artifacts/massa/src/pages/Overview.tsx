@@ -601,7 +601,7 @@ export function Overview() {
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
-  const [archTab, setArchTab] = useState<'graph' | 'timeline'>('graph')
+  const [archTab, setArchTab] = useState<'tree' | 'graph' | 'timeline'>('tree')
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const [rawInput, setRawInput] = useState('')
   const [vagueMode, setVagueMode] = useState(false)
@@ -1460,7 +1460,7 @@ export function Overview() {
             </div>
 
             <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: isDark ? '#111' : '#eee', borderRadius: 8, padding: 3, width: 'fit-content' }}>
-              {(['graph', 'timeline'] as const).map(tab => (
+              {(['tree', 'graph', 'timeline'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setArchTab(tab)}
@@ -1477,12 +1477,91 @@ export function Overview() {
                     boxShadow: archTab === tab ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
                   }}
                 >
-                  {tab === 'graph' ? 'Graph' : 'Timeline'}
+                  {tab === 'tree' ? 'Tree' : tab === 'graph' ? 'Graph' : 'Timeline'}
                 </button>
               ))}
             </div>
 
-            {archTab === 'graph' ? (
+            {archTab === 'tree' ? (() => {
+              const treeData: Record<string, { label: string; children: { label: string; children?: string[] }[] }> = {
+                'trading-bot': {
+                  label: 'Trading Bot',
+                  children: [
+                    { label: 'Backend', children: ['Core Engine', 'Risk Module', 'Exchange / API Logic'] },
+                    { label: 'Interface', children: ['Dashboard UI'] },
+                    { label: 'Operations', children: ['Alerts', 'Backtester', 'Monitoring'] },
+                  ]
+                },
+                'massa-site': {
+                  label: 'Massa Marketing Site',
+                  children: [
+                    { label: 'Pages', children: ['Homepage', 'Pricing', 'Documentation'] },
+                    { label: 'Infrastructure', children: ['API Settings', 'Auth Flow'] },
+                  ]
+                },
+                'scraper': {
+                  label: 'Web Scraper',
+                  children: [
+                    { label: 'Pipeline', children: ['Crawler', 'Parser', 'Data Store'] },
+                    { label: 'Operations', children: ['Scheduler', 'Email Export'] },
+                  ]
+                },
+              }
+              const tree = treeData[expandProject.id] || { label: expandProject.name, children: expandProject.builds.map(b => ({ label: b.title })) }
+              const buildTitles = expandProject.builds.map(b => b.title)
+              const getNodeColor = (label: string) => {
+                const matchBuild = expandProject.builds.find(b => b.title === label)
+                if (matchBuild) return skillColor(matchBuild.stack)
+                return c.muted
+              }
+              const getStatus = (label: string) => {
+                const matchBuild = expandProject.builds.find(b => b.title === label)
+                if (!matchBuild) return null
+                return matchBuild.status
+              }
+              return (
+                <div style={{ display: 'flex', gap: 30, alignItems: 'flex-start' }}>
+                  <div style={{ border: `1px solid ${c.border}`, borderRadius: 14, padding: 14, minWidth: 200, background: c.alt }}>
+                    <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 15 }}>{tree.label}</div>
+                    <div style={{ color: c.muted, fontSize: 13 }}>{expandProject.goal}</div>
+                  </div>
+                  <div style={{ fontSize: 14, lineHeight: 2, fontFamily: 'monospace' }}>
+                    {tree.children.map((group, gi) => {
+                      const isLast = gi === tree.children.length - 1
+                      const prefix = isLast ? '\u2514\u2500\u2500 ' : '\u251C\u2500\u2500 '
+                      const childPrefix = isLast ? '    ' : '\u2502   '
+                      return (
+                        <div key={gi}>
+                          <div style={{ color: '#ccc', fontWeight: 600 }}>
+                            <span style={{ color: c.muted }}>{prefix}</span>{group.label}
+                          </div>
+                          {group.children?.map((child, ci) => {
+                            const isChildLast = ci === (group.children?.length || 0) - 1
+                            const cPrefix = isChildLast ? '\u2514\u2500\u2500 ' : '\u251C\u2500\u2500 '
+                            const nodeColor = getNodeColor(child)
+                            const status = getStatus(child)
+                            const isBuild = buildTitles.includes(child)
+                            return (
+                              <div key={ci} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ color: c.muted }}>{childPrefix}{cPrefix}</span>
+                                <span style={{ color: isBuild ? nodeColor : '#888', fontWeight: isBuild ? 600 : 400, cursor: isBuild ? 'pointer' : 'default' }}
+                                  onClick={() => { if (isBuild) { const b = expandProject.builds.find(b => b.title === child); if (b) { setExpandedBuildId(b.id); setExpandedProject(null) } } }}
+                                >{child}</span>
+                                {status && (
+                                  <span style={{ fontSize: 10, color: status === 'complete' ? c.green : status === 'running' ? '#5080b8' : '#555', fontWeight: 600 }}>
+                                    {status === 'complete' ? 'done' : status === 'running' ? 'building' : status === 'failed' ? 'failed' : 'queued'}
+                                  </span>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })() : archTab === 'graph' ? (
               <NodeGraph
                 builds={expandProject.builds}
                 isDark={isDark}
