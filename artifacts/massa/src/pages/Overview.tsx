@@ -113,6 +113,7 @@ function renderCodeLine(code: string, isDark: boolean) {
 export function Overview() {
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [expandedBuildId, setExpandedBuildId] = useState<string | null>(null)
+  const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
   const [selectedProjectId, setSelectedProjectId] = useState('trading-bot')
   const [draggedBuild, setDraggedBuild] = useState<{ buildId: string; projectId: string } | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
@@ -1158,21 +1159,51 @@ export function Overview() {
                   <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
                     <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 12 }}>ACTIVITY</div>
                     {[
-                      { icon: '◎', label: '24 messages · 12 actions', sub: 'Agent communication log' },
-                      { icon: '◈', label: 'Checkpoint 3 min ago', sub: 'Last saved state' },
-                      { icon: '◷', label: `${Math.round(expandedBuild.build.progress * 1.4)}s compute`, sub: 'Total active time' },
-                    ].map((row, i, arr) => (
+                      { icon: '◎', label: '24 messages · 12 actions', sub: 'Agent communication log', details: [
+                        { time: '0:02', text: 'Agent initialized — reading project context' },
+                        { time: '0:05', text: 'Analyzed requirements, identified 3 sub-tasks' },
+                        { time: '0:12', text: 'Created file: src/core/engine.ts' },
+                        { time: '0:18', text: 'Installed dependencies: zod, drizzle-orm' },
+                        { time: '0:31', text: 'Wrote 142 lines across 4 files' },
+                        { time: '0:45', text: 'Running type check — 0 errors' },
+                        { time: '1:02', text: 'Refactored handler to async pattern' },
+                        { time: '1:18', text: 'Added error boundaries and validation' },
+                      ]},
+                      { icon: '◈', label: 'Checkpoint 3 min ago', sub: 'Last saved state', details: [
+                        { time: '3m ago', text: 'Auto-saved: 8 files changed, 412 additions' },
+                        { time: '7m ago', text: 'Auto-saved: schema migration applied' },
+                        { time: '12m ago', text: 'Manual save: pre-refactor snapshot' },
+                      ]},
+                      { icon: '◷', label: `${Math.round(expandedBuild.build.progress * 1.4)}s compute`, sub: 'Total active time', details: [
+                        { time: 'Thinking', text: `${Math.round(expandedBuild.build.progress * 0.3)}s — planning and analysis` },
+                        { time: 'Writing', text: `${Math.round(expandedBuild.build.progress * 0.7)}s — code generation` },
+                        { time: 'Checking', text: `${Math.round(expandedBuild.build.progress * 0.4)}s — type checks and linting` },
+                      ]},
+                    ].map((row, i, arr) => {
+                      const isOpen = expandedActivity === i
+                      return (
                       <div key={i}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 0' }} onClick={() => setExpandedActivity(isOpen ? null : i)}>
                           <span style={{ fontSize: 16, color: sc }}>{row.icon}</span>
-                          <div>
+                          <div style={{ flex: 1 }}>
                             <div style={{ fontSize: 13, fontWeight: 600 }}>{row.label}</div>
                             <div style={{ fontSize: 12, color: c.muted }}>{row.sub}</div>
                           </div>
+                          <span style={{ fontSize: 11, color: c.muted, transition: 'transform 0.2s', transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>▸</span>
                         </div>
+                        {isOpen && (
+                          <div style={{ marginLeft: 28, marginTop: 6, marginBottom: 4, borderLeft: `1px solid ${sc}33`, paddingLeft: 12 }}>
+                            {row.details.map((d, di) => (
+                              <div key={di} style={{ display: 'flex', gap: 10, marginBottom: 6, fontSize: 12 }}>
+                                <span style={{ color: sc, fontFamily: 'monospace', fontSize: 11, minWidth: 55, flexShrink: 0 }}>{d.time}</span>
+                                <span style={{ color: '#b0b0b0' }}>{d.text}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         {i < arr.length - 1 && <div style={{ height: 1, background: c.border, opacity: 0.5, margin: '10px 0' }} />}
                       </div>
-                    ))}
+                    )})}
                   </div>
                 </>
               )
