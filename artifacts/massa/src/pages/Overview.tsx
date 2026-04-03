@@ -3,6 +3,7 @@ import { useLocation } from 'wouter'
 import { InlineCompanyLogo } from '@/components/CompanyLogo'
 import { NodeGraph } from '@/components/NodeGraph'
 import { TimelineSwimlane } from '@/components/TimelineSwimlane'
+import { ChatView } from '@/components/ChatView'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -807,6 +808,8 @@ export function Overview() {
   const [vagueMode, setVagueMode] = useState(false)
   const [showClarifyModal, setShowClarifyModal] = useState(false)
   const [clarifyAnswers, setClarifyAnswers] = useState<Record<string, string>>({})
+  const [activeView, setActiveView] = useState<'dashboard' | 'chats'>('dashboard')
+  const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [, navigate] = useLocation()
 
   const [projects, setProjects] = useState<Project[]>([
@@ -1156,18 +1159,23 @@ export function Overview() {
           <div>
             <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.muted, marginBottom: 10, fontWeight: 700 }}>NAVIGATION</div>
             {[
-              { label: 'Dashboard', path: '/' },
-              { label: 'History', path: '' },
-              { label: 'Automations', path: '' },
-              { label: 'Marketing', path: '' },
-              { label: 'Skills', path: '' },
-              { label: 'APIs', path: '' },
-              { label: 'Web Scraper', path: '' },
-              { label: 'Inside MASSA', path: '/inside' },
+              { label: 'Dashboard', view: 'dashboard' as const, path: '/' },
+              { label: 'Chats', view: 'chats' as const, path: '' },
+              { label: 'History', view: null, path: '' },
+              { label: 'Automations', view: null, path: '' },
+              { label: 'Marketing', view: null, path: '' },
+              { label: 'Skills', view: null, path: '' },
+              { label: 'APIs', view: null, path: '' },
+              { label: 'Web Scraper', view: null, path: '' },
+              { label: 'Inside MASSA', view: null, path: '/inside' },
             ].map(item => {
-              const active = item.label === 'Dashboard'
+              const active = item.view ? activeView === item.view : false
+              const clickable = item.view !== null || item.path !== ''
               return (
-                <div key={item.label} onClick={() => item.path && navigate(item.path)} style={{ padding: '10px 11px', borderRadius: 8, marginBottom: 3, background: active ? c.greenSoft : 'transparent', color: active ? c.green : c.text, border: active ? `1px solid ${c.border}` : '1px solid transparent', fontSize: 14, fontWeight: active ? 600 : 400, cursor: item.path ? 'pointer' : 'default' }}>
+                <div key={item.label} onClick={() => {
+                  if (item.view) { setActiveView(item.view) }
+                  else if (item.path) { navigate(item.path) }
+                }} style={{ padding: '10px 11px', borderRadius: 8, marginBottom: 3, background: active ? c.greenSoft : 'transparent', color: active ? c.green : c.text, border: active ? `1px solid ${c.border}` : '1px solid transparent', fontSize: 14, fontWeight: active ? 600 : 400, cursor: clickable ? 'pointer' : 'default' }}>
                   {item.label}
                 </div>
               )
@@ -1181,6 +1189,18 @@ export function Overview() {
           </div>
         </div>
 
+        {/* CENTER + RIGHT AREA */}
+        {activeView === 'chats' ? (
+          <div style={{ gridColumn: '2 / -1' }}>
+            <ChatView
+              projects={projects}
+              selectedBuildId={selectedChatBuildId}
+              onSelectBuild={setSelectedChatBuildId}
+              messages={chatMessages}
+              onMessagesChange={setChatMessages}
+            />
+          </div>
+        ) : <>
         {/* CENTER MAIN */}
         <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 16, overflow: 'auto', borderRadius: 2 }}>
 
@@ -1382,6 +1402,13 @@ export function Overview() {
                                 </div>
                                 <span style={{ fontSize: 10, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
                               </div>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setActiveView('chats') }}
+                                title="Open chat"
+                                style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
+                                onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
+                                onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
+                              >💬</button>
                             </div>
                           </>
                         ) : (
@@ -1390,7 +1417,16 @@ export function Overview() {
                             <div style={{ padding: '8px 10px 10px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 4 }}>
                                 <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                                <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setActiveView('chats') }}
+                                    title="Open chat"
+                                    style={{ width: 20, height: 20, borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, flexShrink: 0, padding: 0, transition: 'color 0.15s, border-color 0.15s' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
+                                  >💬</button>
+                                  <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
+                                </div>
                               </div>
                               <div style={{ height: 3, background: isDark ? '#1b1b1b' : '#dfe8de', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
                                 <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
@@ -1728,6 +1764,7 @@ export function Overview() {
             )}
           </div>
         </div>
+        </>}
       </div>
 
       {/* ARCHITECTURE MAP MODAL */}
@@ -2087,7 +2124,10 @@ export function Overview() {
                         </div>
                         <div style={{ fontSize: 12, color: c.muted }}>{expandedBuild.project.name} · {expandedBuild.build.agent} ({expandedBuild.build.agentRole})</div>
                       </div>
-                      <button onClick={() => { setExpandedBuildId(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button onClick={() => { setSelectedChatBuildId(expandedBuild.build.id); setExpandedBuildId(null); setActiveView('chats') }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: `1px solid ${c.green}44`, background: '#1a1a1a', color: c.green, padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}>Open in Chats</button>
+                        <button onClick={() => { setExpandedBuildId(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
+                      </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: 2, background: '#111', borderRadius: 8, padding: 3, width: 'fit-content', marginBottom: 0 }}>
