@@ -598,13 +598,12 @@ export function Overview() {
                           : <div style={{ position: 'absolute', top: 0, left: 16, width: 28, height: 2, background: sc, borderRadius: '0 0 3px 3px' }} />
                         }
 
-                        {/* Title + skill badge + status */}
+                        {/* Title + skill badge */}
                         <div style={{ flex: column ? 1 : undefined, paddingLeft: column ? 8 : 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 5 }}>
                             <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
                             <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
                           </div>
-                          <StatusBadge status={build.status} colors={c} />
                         </div>
 
                         {/* Progress + actions */}
@@ -629,7 +628,7 @@ export function Overview() {
                             style={{ ...(column ? {} : { width: '100%' }), border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 9, cursor: 'pointer', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}
                             onMouseEnter={e => e.currentTarget.style.background = '#242424'}
                             onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}>
-                            View Build
+                            {isComplete ? 'View Build' : isFailed ? 'Failed' : isRunning ? (build.progress < 30 ? 'Thinking...' : build.progress < 80 ? 'Building...' : 'Deploying...') : build.status === 'queued' ? 'Queued' : 'Idle'}
                           </button>
                         </div>
                       </div>
