@@ -389,12 +389,12 @@ export function Overview() {
       `}</style>
 
       {/* HEADER */}
-      <div style={{ height: 60, border: `1px solid ${c.border}`, background: c.panel, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: c.green, color: '#081008', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15 }}>M</div>
-          <div style={{ fontSize: 16, fontWeight: 700 }}>Massa <span style={{ color: c.green }}>AI</span></div>
+      <div style={{ height: 60, border: `1px solid ${c.border}`, background: c.panel, display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative' }}>
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: 6, color: '#ffffff' }}>MASSA</span>
+          <span style={{ background: c.green, color: '#081008', fontWeight: 800, fontSize: 14, padding: '4px 10px', borderRadius: 6, marginLeft: 2 }}>AI</span>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
           <div style={{ width: 32, height: 32, borderRadius: 999, background: c.greenSoft, color: c.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid ${c.border}`, fontSize: 13 }}>M</div>
         </div>
       </div>
