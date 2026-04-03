@@ -1152,7 +1152,7 @@ export function Overview() {
       </div>
 
       {/* 3-COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: rightPanelCollapsed ? '240px 1fr 0px' : '240px 1fr 300px', gap: rightPanelCollapsed ? '12px 0px' : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: rightPanelCollapsed ? '240px minmax(0, 1fr) 0px' : '240px minmax(0, 1fr) 300px', gap: rightPanelCollapsed ? '12px 0px' : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
 
         {/* LEFT SIDEBAR */}
         <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2 }}>
@@ -1202,7 +1202,7 @@ export function Overview() {
           </div>
         ) : <>
         {/* CENTER MAIN */}
-        <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 16, overflow: 'auto', borderRadius: 2 }}>
+        <div style={{ border: `1px solid ${c.border}`, background: c.panel, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
 
           {/* Pizza tracker — flow steps */}
           {(() => {
@@ -1452,7 +1452,7 @@ export function Overview() {
                   {viewMode === 'row' ? (
                     /* ── ROW VIEW (default) ── */
                     <div
-                      style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, background: c.alt }}>
+                      style={{ display: 'grid', gridTemplateColumns: '220px minmax(0, 1fr)', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, background: c.alt, overflow: 'hidden' }}>
 
                       <div onClick={() => setSelectedProjectId(project.id)} style={{ background: isSel ? c.blackGreen : 'transparent', borderRadius: 8, padding: '12px 12px 12px 0', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
                         <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: isSel ? `${c.green}88` : 'transparent', borderRadius: '8px 0 0 8px' }} />
@@ -1498,7 +1498,7 @@ export function Overview() {
                       </div>
 
                       {/* Builds strip (horizontal scroll) */}
-                      <div>
+                      <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 7 }}>BUILDS</div>
                         {buildCards(false)}
                       </div>
