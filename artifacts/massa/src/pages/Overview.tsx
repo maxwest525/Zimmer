@@ -116,6 +116,7 @@ export function Overview() {
   const [draggedBuild, setDraggedBuild] = useState<{ buildId: string; projectId: string } | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
+  const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
   const [, navigate] = useLocation()
 
   const [projects, setProjects] = useState<Project[]>([
@@ -616,7 +617,9 @@ export function Overview() {
                           </div>
 
                           <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                            style={{ width: '100%', border: `1px solid ${c.green}40`, background: '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                            onMouseEnter={() => setHoveredArchBtn(project.id)}
+                            onMouseLeave={() => setHoveredArchBtn(null)}
+                            style={{ width: '100%', border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
                             {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
                           </button>
                         </div>
@@ -643,7 +646,9 @@ export function Overview() {
                           {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
                         </div>
                         <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                          style={{ border: `1px solid ${c.green}40`, background: '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                          onMouseEnter={() => setHoveredArchBtn(project.id + '-card')}
+                          onMouseLeave={() => setHoveredArchBtn(null)}
+                          style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
                           {expandedProject === project.id ? 'Close Map' : 'Architecture Map'}
                         </button>
                       </div>
