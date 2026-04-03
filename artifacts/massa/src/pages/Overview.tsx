@@ -68,7 +68,7 @@ function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: 
   const fs = size === 'lg' ? 13 : 11
   const pad = size === 'lg' ? '5px 12px' : '3px 8px'
   if (status === 'running') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#2d8a32', background: 'rgba(45,138,50,0.10)', border: '1px solid rgba(45,138,50,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#ffffff', background: 'rgba(45,138,50,0.10)', border: '1px solid rgba(45,138,50,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
       <span style={{ width: 7, height: 7, borderRadius: 999, background: '#2d8a32', display: 'inline-block', flexShrink: 0 }} />
       Building
     </span>
@@ -440,11 +440,11 @@ export function Overview() {
                       width: 36, height: 36, borderRadius: 999,
                       border: `1.5px solid ${step.active ? c.green : '#2e2e2e'}`,
                       background: '#060606',
-                      color: step.active ? c.green : '#3a3a3a',
+                      color: '#ffffff',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: 700, fontSize: 14,
                     }}>{i + 1}</div>
-                    <div style={{ fontSize: 11, color: step.active ? c.text : c.muted, fontWeight: step.active ? 600 : 400 }}>{step.label}</div>
+                    <div style={{ fontSize: 11, color: '#ffffff', fontWeight: step.active ? 600 : 400 }}>{step.label}</div>
                   </div>
                 ))}
               </div>
@@ -591,7 +591,7 @@ export function Overview() {
                         <div style={{ flex: column ? 1 : undefined, paddingLeft: column ? 8 : 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 5 }}>
                             <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                            <span style={{ fontSize: 9, color: sc, fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
+                            <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
                           </div>
                           <StatusBadge status={build.status} colors={c} />
                         </div>
