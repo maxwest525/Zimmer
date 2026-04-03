@@ -1000,7 +1000,7 @@ export function Overview() {
               onMouseEnter={() => setHoveredArchBtn('arch-build')}
               onMouseLeave={() => setHoveredArchBtn(null)}
               onClick={() => { if (vagueMode && rawInput.trim().length > 0) setShowClarifyModal(true) }}
-              style={{ background: hoveredArchBtn === 'arch-build' ? '#242424' : '#1a1a1a', color: '#ffffff', border: '1px solid #2e2e2e', padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Architect &amp; Build</button>
+              style={{ background: hoveredArchBtn === 'arch-build' ? '#242424' : '#1a1a1a', color: '#ffffff', border: '1px solid #2e2e2e', padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Build and Run Prompt</button>
             <div
               onMouseEnter={() => setHoveredArchBtn('claude-rec')}
               onMouseLeave={() => setHoveredArchBtn(null)}
