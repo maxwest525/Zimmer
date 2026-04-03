@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'wouter'
+import { InlineCompanyLogo } from '@/components/CompanyLogo'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -1081,7 +1082,7 @@ export function Overview() {
                         </div>
                         <div style={{ fontSize: 10, color: c.muted, marginTop: 3 }}>{build.progress}%</div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
-                          {build.stack.map(s => <span key={s} style={{ fontSize: 9, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '1px 5px', borderRadius: 4, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}>{s}</span>)}
+                          {build.stack.map(s => <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '1px 5px', borderRadius: 4, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}><InlineCompanyLogo name={s} size={10} />{s}</span>)}
                         </div>
                       </div>
                     </div>
@@ -1149,7 +1150,7 @@ export function Overview() {
                     <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
                       <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>STACK</div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {expandedBuild.build.stack.map(s => <span key={s} style={{ fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '4px 10px', borderRadius: 999, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}>{s}</span>)}
+                        {expandedBuild.build.stack.map(s => <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '4px 10px', borderRadius: 999, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}><InlineCompanyLogo name={s} size={14} />{s}</span>)}
                       </div>
                     </div>
                   </div>
