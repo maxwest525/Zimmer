@@ -26,7 +26,7 @@ function ActivityItemRow({ item }: ActivityItemProps) {
       <div className="flex-1 min-w-0">
         <div className="text-xs text-foreground leading-snug">{item.label}</div>
         {item.projectName && (
-          <div className="text-[10px] text-emerald-600/80 font-medium mt-0.5 truncate">
+          <div className="text-[10px] text-emerald-400/80 font-medium mt-0.5 truncate">
             {item.projectName}
           </div>
         )}
@@ -57,8 +57,8 @@ export function ActivitySidebar({ items, isGlobal }: ActivitySidebarProps) {
             {isGlobal ? "All Activity" : "Activity"}
           </span>
           {items.some((i) => i.status === "running") && (
-            <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+            <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_4px_rgba(52,211,153,0.5)]" />
               Live
             </span>
           )}

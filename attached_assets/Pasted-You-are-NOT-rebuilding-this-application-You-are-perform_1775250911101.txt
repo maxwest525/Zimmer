@@ -1,0 +1,135 @@
+You are NOT rebuilding this application.
+
+You are performing a visual overhaul ONLY.
+
+CRITICAL RULES
+- Do NOT change any functionality
+- Do NOT change layout structure in a way that affects behavior
+- Do NOT remove or replace components
+- Do NOT alter logic, APIs, or data flow
+- Do NOT restructure pages
+- Do NOT break responsiveness
+
+You are ONLY updating:
+- styling
+- theme
+- component appearance
+- visual hierarchy
+- spacing (light adjustments only)
+- interaction polish
+
+GOAL
+
+Transform the current UI into a modern terminal-inspired command center while preserving usability and readability.
+
+This should feel like:
+- a premium AI operating system
+- a clean command interface
+- a modern cyber-terminal
+- NOT a gimmicky hacker screen
+
+STYLE DIRECTION
+
+- Keep existing layout and structure exactly the same
+- Apply a layered dark theme (not pure black)
+- Introduce terminal-inspired accents:
+  - controlled green highlights
+  - subtle glow on focus/active elements
+  - structured output-style panels where appropriate
+
+- Maintain high readability:
+  - keep primary UI text in sans-serif
+  - use monospace ONLY for:
+    - IDs (DOT, MC, etc)
+    - system outputs
+    - logs or structured data
+
+- Avoid:
+  - neon overload
+  - full monospace UI
+  - retro terminal gimmicks
+  - heavy visual noise
+
+COMPONENT TRANSFORMATION RULES
+
+Apply these changes to EXISTING components:
+
+1. PANELS / CARDS
+- Convert into “terminal panels”
+- Slightly darker layered background
+- Add subtle border or edge glow
+- Increase depth slightly (not heavy shadows)
+- Keep padding similar, only refine
+
+2. INPUTS (SEARCH BARS, FORMS)
+- Keep exact functionality
+- Restyle to feel like command inputs
+- Add subtle prompt-style indicator on focus
+- Slightly increase height and padding for clarity
+- Improve contrast and focus states
+
+3. BUTTONS
+- Keep all actions the same
+- Update styling to:
+  - clean dark base
+  - subtle green or accent glow on hover
+  - clearer active states
+- No large redesign, only polish
+
+4. TABS / SEGMENTED CONTROLS (LIKE NAME / DOT / MC)
+- Keep same behavior
+- Restyle as modern segmented controls
+- Active state:
+  - slightly brighter
+  - subtle accent highlight
+- Keep spacing and layout intact
+
+5. DATA DISPLAY
+- Improve readability of tables and results
+- Use:
+  - better spacing
+  - subtle separators
+  - clearer hierarchy
+- Use monospace ONLY where it improves clarity
+
+6. STATUS / SYSTEM FEEDBACK
+- Introduce subtle system-style labels where helpful:
+  - status indicators
+  - small “system” or “live” tags
+- Keep minimal and clean
+
+7. HOVER + INTERACTION
+- Add:
+  - soft glow on hover
+  - slight elevation
+  - smooth transitions
+- No flashy animations
+
+8. COLORS
+- Background: deep charcoal (not black)
+- Panels: slightly lighter layered dark
+- Primary accent: controlled green
+- Secondary accents: blue / amber / red for states
+- Text: off-white and muted gray
+
+9. GLOBAL FEEL
+Everything should feel:
+- sharper
+- more premium
+- more intentional
+- easier to scan
+- more “alive” but not distracting
+
+DO NOT:
+- redesign layouts
+- move components around significantly
+- introduce new complex UI systems
+- replace working elements with new patterns
+
+FINAL CHECK
+
+Before finishing, ensure:
+- every original feature still exists and works
+- no flows are broken
+- readability is improved, not reduced
+- UI feels upgraded, not different for the sake of different

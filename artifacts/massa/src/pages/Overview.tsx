@@ -29,12 +29,12 @@ type Project = {
 }
 
 const SKILL_COLORS: Record<string, string> = {
-  'n8n': '#7a9430',
-  'Lovable': '#5080b8',
-  'Replit': '#5080b8',
-  'Claude Code': '#5aad58',
-  'APIs': '#9a8030',
-  'Claude': '#2d8a32',
+  'n8n': '#a3b535',
+  'Lovable': '#60a5fa',
+  'Replit': '#60a5fa',
+  'Claude Code': '#4ade80',
+  'APIs': '#f59e0b',
+  'Claude': '#34d399',
 }
 
 function skillColor(stack: string[]): string {
@@ -62,32 +62,32 @@ function getPhase(builds: Build[]): Phase {
 }
 
 const PHASE_META: Record<Phase, { label: string; color: string; desc: string }> = {
-  thinking: { label: 'Thinking', color: '#7a6aad', desc: 'Claude is interpreting and planning the work' },
-  building: { label: 'Building', color: '#2d8a32', desc: 'Claude Code is executing the build' },
-  deploying: { label: 'Deploying', color: '#5080b8', desc: 'Lovable / Replit is rendering the interface' },
-  done: { label: 'Complete', color: '#5aad58', desc: 'All builds finished successfully' },
-  queued: { label: 'Queued', color: '#9a8030', desc: 'Waiting to start' },
+  thinking: { label: 'Thinking', color: '#a78bfa', desc: 'Claude is interpreting and planning the work' },
+  building: { label: 'Building', color: '#34d399', desc: 'Claude Code is executing the build' },
+  deploying: { label: 'Deploying', color: '#60a5fa', desc: 'Lovable / Replit is rendering the interface' },
+  done: { label: 'Complete', color: '#4ade80', desc: 'All builds finished successfully' },
+  queued: { label: 'Queued', color: '#f59e0b', desc: 'Waiting to start' },
 }
 
 function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: Record<string, string>; size?: 'sm' | 'lg' }) {
   const fs = size === 'lg' ? 13 : 11
   const pad = size === 'lg' ? '5px 12px' : '3px 8px'
   if (status === 'running') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#ffffff', background: 'rgba(45,138,50,0.10)', border: '1px solid rgba(45,138,50,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
-      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#2d8a32', display: 'inline-block', flexShrink: 0 }} />
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#e8eaed', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', padding: pad, borderRadius: 999, fontWeight: 600, boxShadow: '0 0 6px rgba(52,211,153,0.15)' }}>
+      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#34d399', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />
       Building
     </span>
   )
   if (status === 'queued') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#9a8030', background: 'rgba(154,128,48,0.10)', border: '1px solid rgba(154,128,48,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
-      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#9a8030', display: 'inline-block', flexShrink: 0 }} /> Pending
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f59e0b', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
+      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#f59e0b', display: 'inline-block', flexShrink: 0 }} /> Pending
     </span>
   )
   if (status === 'complete') return null
   if (status === 'failed') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#b85858', background: 'rgba(184,88,88,0.10)', border: '1px solid rgba(184,88,88,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✕ Failed</span>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f87171', background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✕ Failed</span>
   )
-  return <span style={{ fontSize: fs, color: '#6a6d6a', background: 'rgba(106,109,106,0.08)', border: '1px solid rgba(106,109,106,0.15)', padding: pad, borderRadius: 999, fontWeight: 600 }}>Idle</span>
+  return <span style={{ fontSize: fs, color: '#6b7280', background: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', padding: pad, borderRadius: 999, fontWeight: 600 }}>Idle</span>
 }
 
 function getBuildType(stack: string[], title: string): 'ui' | 'backend' | 'database' | 'automation' {
@@ -127,7 +127,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                 {['1m', '5m', '1H', '4H', '1D'].map((tf, i) => <div key={i} style={{ fontSize: 3, color: i === 2 ? '#fff' : '#444', padding: '1px 3px', background: i === 2 ? `${sc}30` : 'transparent', borderRadius: 2 }}>{tf}</div>)}
               </div>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 3, alignItems: 'center' }}>
-                <div style={{ width: 4, height: 4, borderRadius: 99, background: '#2d8a32' }} />
+                <div style={{ width: 4, height: 4, borderRadius: 99, background: '#34d399' }} />
                 <div style={{ fontSize: 3, color: '#888' }}>Live</div>
                 <div style={{ width: 16, height: 5, borderRadius: 2, background: `${sc}30`, border: `1px solid ${sc}50` }} />
               </div>
@@ -136,10 +136,10 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
           <div style={{ flex: 1, padding: f(4), display: 'flex', flexDirection: 'column', gap: f(3) }}>
             <div style={{ display: 'flex', gap: f(3) }}>
               {[
-                { label: 'Total P&L', val: '+$12,840', c: '#2d8a32', delta: '+2.4%' },
+                { label: 'Total P&L', val: '+$12,840', c: '#34d399', delta: '+2.4%' },
                 { label: 'Open Positions', val: '4', c: sc, delta: '' },
-                { label: 'Win Rate', val: '68%', c: '#5080b8', delta: '+3.1%' },
-                { label: 'Daily Volume', val: '$48.2K', c: '#9a8030', delta: '' },
+                { label: 'Win Rate', val: '68%', c: '#60a5fa', delta: '+3.1%' },
+                { label: 'Daily Volume', val: '$48.2K', c: '#f59e0b', delta: '' },
               ].slice(0, m ? 2 : 4).map((kpi, i) => (
                 <div key={i} style={{ flex: 1, background: '#111', borderRadius: f(2), padding: f(3), border: '1px solid #1a1a1a' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -155,15 +155,15 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
                   <div style={{ fontSize: 4, color: '#888', fontWeight: 600 }}>BTC/USDT</div>
                   <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                    <span style={{ fontSize: 5, fontWeight: 700, color: '#2d8a32' }}>$68,412</span>
-                    <span style={{ fontSize: 3, color: '#2d8a32' }}>+1.8%</span>
+                    <span style={{ fontSize: 5, fontWeight: 700, color: '#34d399' }}>$68,412</span>
+                    <span style={{ fontSize: 3, color: '#34d399' }}>+1.8%</span>
                   </div>
                 </div>
                 <svg viewBox="0 0 140 40" style={{ width: '100%', flex: 1 }} preserveAspectRatio="none">
                   {[15,18,12,20,16,22,19,25,21,28,24,30,26,32,22,28,25,35,30,27,29,33,31,26,28].map((v, i) => {
                     const x = i * 5.5 + 2; const o = v - 3; const c2 = v + 2
                     const isGreen = c2 > o
-                    return <g key={i}><line x1={x} y1={40-v+2} x2={x} y2={40-v-4} stroke={isGreen ? '#2d8a32' : '#b85858'} strokeWidth="0.4" /><rect x={x-1.2} y={40-Math.max(o,c2)} width="2.4" height={Math.abs(c2-o)||1} fill={isGreen ? '#2d8a3290' : '#b8585890'} /></g>
+                    return <g key={i}><line x1={x} y1={40-v+2} x2={x} y2={40-v-4} stroke={isGreen ? '#34d399' : '#f87171'} strokeWidth="0.4" /><rect x={x-1.2} y={40-Math.max(o,c2)} width="2.4" height={Math.abs(c2-o)||1} fill={isGreen ? '#34d39990' : '#f8717190'} /></g>
                   })}
                   {[2,4,1,6,3,5,7,2,4,6,3,5,8,3,5,4,6,3,5,7,4,6,5,3,4].map((v, i) => (
                     <rect key={`v${i}`} x={i * 5.5 + 0.8} y={40-v*0.5} width="2.4" height={v*0.5} fill={`${sc}20`} />
@@ -177,14 +177,14 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                     <span>Pair</span><span>Side</span><span>Size</span><span>P&L</span>
                   </div>
                   {[
-                    { pair: 'BTC/USD', side: 'Long', size: '0.5', pnl: '+$420', c: '#2d8a32' },
-                    { pair: 'ETH/USD', side: 'Short', size: '2.0', pnl: '-$85', c: '#b85858' },
-                    { pair: 'SOL/USD', side: 'Long', size: '15', pnl: '+$162', c: '#2d8a32' },
-                    { pair: 'AVAX', side: 'Long', size: '40', pnl: '+$34', c: '#2d8a32' },
+                    { pair: 'BTC/USD', side: 'Long', size: '0.5', pnl: '+$420', c: '#34d399' },
+                    { pair: 'ETH/USD', side: 'Short', size: '2.0', pnl: '-$85', c: '#f87171' },
+                    { pair: 'SOL/USD', side: 'Long', size: '15', pnl: '+$162', c: '#34d399' },
+                    { pair: 'AVAX', side: 'Long', size: '40', pnl: '+$34', c: '#34d399' },
                   ].map((pos, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 4, marginBottom: 2, padding: '1px 0' }}>
                       <span style={{ color: '#999', minWidth: 20 }}>{pos.pair}</span>
-                      <span style={{ color: pos.side === 'Long' ? '#2d8a3280' : '#b8585880', fontSize: 3, minWidth: 14 }}>{pos.side}</span>
+                      <span style={{ color: pos.side === 'Long' ? '#34d39980' : '#f8717180', fontSize: 3, minWidth: 14 }}>{pos.side}</span>
                       <span style={{ color: '#555', fontSize: 3, minWidth: 10 }}>{pos.size}</span>
                       <span style={{ color: pos.c, fontWeight: 600, minWidth: 16, textAlign: 'right' }}>{pos.pnl}</span>
                     </div>
@@ -196,9 +196,9 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                     <div style={{ flex: 1 }}>
                       {[95,80,65,45,30].map((w, i) => (
                         <div key={i} style={{ position: 'relative', height: 4, marginBottom: 1 }}>
-                          <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: `${w}%`, background: '#2d8a3215', borderRadius: 1 }} />
+                          <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: `${w}%`, background: '#34d39915', borderRadius: 1 }} />
                           <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', fontSize: 3, padding: '0 1px' }}>
-                            <span style={{ color: '#2d8a32' }}>{(68412 - i * 12).toLocaleString()}</span>
+                            <span style={{ color: '#34d399' }}>{(68412 - i * 12).toLocaleString()}</span>
                             <span style={{ color: '#444' }}>{(w * 0.02).toFixed(2)}</span>
                           </div>
                         </div>
@@ -207,9 +207,9 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                     <div style={{ flex: 1 }}>
                       {[40,60,75,55,85].map((w, i) => (
                         <div key={i} style={{ position: 'relative', height: 4, marginBottom: 1 }}>
-                          <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${w}%`, background: '#b8585815', borderRadius: 1 }} />
+                          <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${w}%`, background: '#f8717115', borderRadius: 1 }} />
                           <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', fontSize: 3, padding: '0 1px' }}>
-                            <span style={{ color: '#b85858' }}>{(68424 + i * 12).toLocaleString()}</span>
+                            <span style={{ color: '#f87171' }}>{(68424 + i * 12).toLocaleString()}</span>
                             <span style={{ color: '#444' }}>{(w * 0.018).toFixed(2)}</span>
                           </div>
                         </div>
@@ -286,8 +286,8 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             </div>}
           </div>
           {!m && <div style={{ height: 14, background: '#161616', borderTop: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', padding: '0 6px', gap: 8 }}>
-            <div style={{ fontSize: 3.5, color: '#2d8a32' }}>0 errors</div>
-            <div style={{ fontSize: 3.5, color: '#9a8030' }}>2 warnings</div>
+            <div style={{ fontSize: 3.5, color: '#34d399' }}>0 errors</div>
+            <div style={{ fontSize: 3.5, color: '#f59e0b' }}>2 warnings</div>
             <div style={{ marginLeft: 'auto', fontSize: 3.5, color: '#555' }}>Ln 21, Col 34</div>
             <div style={{ fontSize: 3.5, color: '#555' }}>UTF-8</div>
             <div style={{ fontSize: 3.5, color: '#555' }}>TS</div>
@@ -302,10 +302,10 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
       <div style={{ position: 'absolute', inset: 0, padding: f(4), display: 'flex', flexDirection: 'column', gap: f(3) }}>
         <div style={{ display: 'flex', gap: f(3) }}>
           {[
-            { label: 'Max Drawdown', val: '-2.5%', c: '#b85858' },
+            { label: 'Max Drawdown', val: '-2.5%', c: '#f87171' },
             { label: 'Position Limit', val: '$15,000', c: sc },
-            { label: 'Risk Score', val: 'LOW', c: '#2d8a32' },
-            ...(!m ? [{ label: 'Leverage', val: '3x', c: '#9a8030' }] : []),
+            { label: 'Risk Score', val: 'LOW', c: '#34d399' },
+            ...(!m ? [{ label: 'Leverage', val: '3x', c: '#f59e0b' }] : []),
           ].slice(0, m ? 2 : 4).map((kpi, i) => (
             <div key={i} style={{ flex: 1, background: '#0e0e0e', borderRadius: f(3), padding: f(3), border: '1px solid #1a1a1a' }}>
               <div style={{ fontSize: f(4), color: '#555', marginBottom: f(1) }}>{kpi.label}</div>
@@ -319,14 +319,14 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               <div style={{ fontSize: 4, color: '#555', marginBottom: 3 }}>Portfolio Exposure by Asset</div>
               <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 28 }}>
                 {[
-                  { label: 'BTC', v: 85, c: '#9a8030' },
-                  { label: 'ETH', v: 60, c: '#5080b8' },
+                  { label: 'BTC', v: 85, c: '#f59e0b' },
+                  { label: 'ETH', v: 60, c: '#60a5fa' },
                   { label: 'SOL', v: 40, c: '#7a6aad' },
-                  { label: 'AVAX', v: 25, c: '#2d8a32' },
+                  { label: 'AVAX', v: 25, c: '#34d399' },
                   { label: 'LINK', v: 15, c: sc },
                 ].map((bar, i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                    <div style={{ width: '80%', height: `${bar.v}%`, background: bar.v > 70 ? `${bar.c}` : `${bar.c}80`, borderRadius: '1px 1px 0 0', border: bar.v > 70 ? '1px solid #b8585850' : 'none' }} />
+                    <div style={{ width: '80%', height: `${bar.v}%`, background: bar.v > 70 ? `${bar.c}` : `${bar.c}80`, borderRadius: '1px 1px 0 0', border: bar.v > 70 ? '1px solid #f8717150' : 'none' }} />
                     <div style={{ fontSize: 3, color: '#555' }}>{bar.label}</div>
                   </div>
                 ))}
@@ -341,7 +341,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                 { rule: 'Position sizing: within limit', ok: true },
               ].map((r, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 2, fontSize: 4 }}>
-                  <div style={{ width: 4, height: 4, borderRadius: 1, background: r.ok ? '#2d8a3240' : '#b8585840', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 3, color: r.ok ? '#2d8a32' : '#b85858' }}>{r.ok ? '✓' : '!'}</div>
+                  <div style={{ width: 4, height: 4, borderRadius: 1, background: r.ok ? '#34d39940' : '#f8717140', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 3, color: r.ok ? '#34d399' : '#f87171' }}>{r.ok ? '✓' : '!'}</div>
                   <span style={{ color: '#888' }}>{r.rule}</span>
                 </div>
               ))}
@@ -365,10 +365,10 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
         </div>}
         <div style={{ flex: 1, padding: f(4), display: 'flex', flexDirection: 'column', gap: f(2) }}>
           {[
-            { icon: '⚡', title: 'BTC price crossed $68,400', desc: 'Triggered: Long entry signal on BTC/USDT', t: '2m ago', c: '#9a8030', channel: 'Slack + Email' },
-            { icon: '✓', title: 'Order filled: Buy 0.5 ETH', desc: 'Limit order filled at $3,241.50 on Binance', t: '5m ago', c: '#2d8a32', channel: 'Slack' },
-            { icon: '⚠', title: 'Risk: exposure at 85% of limit', desc: 'Total exposure $12,750 / $15,000 max', t: '8m ago', c: '#b85858', channel: 'Email + SMS' },
-            { icon: '◷', title: 'Stop-loss moved to breakeven', desc: 'SOL/USDT position trailing stop updated', t: '12m ago', c: '#5080b8', channel: 'Slack' },
+            { icon: '⚡', title: 'BTC price crossed $68,400', desc: 'Triggered: Long entry signal on BTC/USDT', t: '2m ago', c: '#f59e0b', channel: 'Slack + Email' },
+            { icon: '✓', title: 'Order filled: Buy 0.5 ETH', desc: 'Limit order filled at $3,241.50 on Binance', t: '5m ago', c: '#34d399', channel: 'Slack' },
+            { icon: '⚠', title: 'Risk: exposure at 85% of limit', desc: 'Total exposure $12,750 / $15,000 max', t: '8m ago', c: '#f87171', channel: 'Email + SMS' },
+            { icon: '◷', title: 'Stop-loss moved to breakeven', desc: 'SOL/USDT position trailing stop updated', t: '12m ago', c: '#60a5fa', channel: 'Slack' },
           ].slice(0, m ? 2 : 4).map((n, i) => (
             <div key={i} style={{ background: '#0e0e0e', borderRadius: f(3), padding: f(3), border: '1px solid #1a1a1a', display: 'flex', gap: f(4), alignItems: 'flex-start' }}>
               <div style={{ width: f(10), height: f(10), borderRadius: f(3), background: `${n.c}15`, border: `1px solid ${n.c}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: f(5), flexShrink: 0, marginTop: f(1) }}>{n.icon}</div>
@@ -392,10 +392,10 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
       <div style={{ position: 'absolute', inset: 0, padding: f(4), display: 'flex', flexDirection: 'column', gap: f(3) }}>
         <div style={{ display: 'flex', gap: f(3) }}>
           {[
-            { l: 'Total Return', v: '+34.2%', c: '#2d8a32' },
+            { l: 'Total Return', v: '+34.2%', c: '#34d399' },
             { l: 'Sharpe Ratio', v: '1.82', c: sc },
-            { l: 'Max Drawdown', v: '-8.1%', c: '#b85858' },
-            ...(!m ? [{ l: 'Win Rate', v: '64%', c: '#5080b8' }] : []),
+            { l: 'Max Drawdown', v: '-8.1%', c: '#f87171' },
+            ...(!m ? [{ l: 'Win Rate', v: '64%', c: '#60a5fa' }] : []),
           ].slice(0, m ? 2 : 4).map((s, i) => (
             <div key={i} style={{ flex: 1, background: '#0e0e0e', borderRadius: f(3), padding: f(3), border: '1px solid #1a1a1a' }}>
               <div style={{ fontSize: f(4), color: '#555' }}>{s.l}</div>
@@ -413,17 +413,17 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               <defs><linearGradient id="eq" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={sc} stopOpacity="0.3" /><stop offset="100%" stopColor={sc} stopOpacity="0.02" /></linearGradient></defs>
               <polyline fill="url(#eq)" stroke="none" points="0,35 0,30 6,28 12,29 18,26 24,27 30,24 36,22 42,23 48,20 54,18 60,19 66,16 72,17 78,14 84,12 90,13 96,10 102,8 108,6 114,4 120,3 120,35" />
               <polyline fill="none" stroke={sc} strokeWidth="0.8" points="0,30 6,28 12,29 18,26 24,27 30,24 36,22 42,23 48,20 54,18 60,19 66,16 72,17 78,14 84,12 90,13 96,10 102,8 108,6 114,4 120,3" />
-              {!m && <polyline fill="none" stroke="#b8585840" strokeWidth="0.5" strokeDasharray="2,2" points="0,30 6,30 12,28 18,29 24,27 30,28 36,26 42,27 48,25 54,24 60,25 66,23 72,24 78,22 84,21 90,22 96,20 102,19 108,18 114,17 120,16" />}
+              {!m && <polyline fill="none" stroke="#f8717140" strokeWidth="0.5" strokeDasharray="2,2" points="0,30 6,30 12,28 18,29 24,27 30,28 36,26 42,27 48,25 54,24 60,25 66,23 72,24 78,22 84,21 90,22 96,20 102,19 108,18 114,17 120,16" />}
             </svg>
           </div>
           {!m && <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
             <div style={{ flex: 1, background: '#0e0e0e', borderRadius: 3, border: '1px solid #1a1a1a', padding: 4 }}>
               <div style={{ fontSize: 4, color: '#555', marginBottom: 3 }}>Trade Log (Last 5)</div>
               {[
-                { pair: 'BTC Long', result: '+4.2%', c: '#2d8a32' },
-                { pair: 'ETH Short', result: '-1.1%', c: '#b85858' },
-                { pair: 'SOL Long', result: '+2.8%', c: '#2d8a32' },
-                { pair: 'BTC Short', result: '+1.5%', c: '#2d8a32' },
+                { pair: 'BTC Long', result: '+4.2%', c: '#34d399' },
+                { pair: 'ETH Short', result: '-1.1%', c: '#f87171' },
+                { pair: 'SOL Long', result: '+2.8%', c: '#34d399' },
+                { pair: 'BTC Short', result: '+1.5%', c: '#34d399' },
               ].map((t, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 4, marginBottom: 2 }}>
                   <span style={{ color: '#888' }}>{t.pair}</span>
@@ -434,7 +434,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             <div style={{ height: 18, background: '#0e0e0e', borderRadius: 3, border: '1px solid #1a1a1a', padding: 4 }}>
               <div style={{ fontSize: 4, color: '#555', marginBottom: 2 }}>Monthly Returns</div>
               <div style={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: 8 }}>
-                {[5,8,-2,6,9,4].map((v,i) => <div key={i} style={{ flex: 1, height: Math.abs(v), background: v > 0 ? '#2d8a3260' : '#b8585860', borderRadius: '1px 1px 0 0' }} />)}
+                {[5,8,-2,6,9,4].map((v,i) => <div key={i} style={{ flex: 1, height: Math.abs(v), background: v > 0 ? '#34d39960' : '#f8717160', borderRadius: '1px 1px 0 0' }} />)}
               </div>
             </div>
           </div>}
@@ -464,13 +464,13 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               <div style={{ fontSize: f(3), color: '#555', lineHeight: 1.4, marginBottom: f(4), maxWidth: m ? '100%' : 70 }}>{m ? '' : 'Describe what you want. MASSA architects, builds, and deploys — running multiple agents simultaneously.'}</div>
               {!m && <div style={{ display: 'flex', gap: 4 }}>
                 <div style={{ fontSize: 4, color: '#fff', background: sc, padding: '3px 8px', borderRadius: 3, fontWeight: 600 }}>Start Building</div>
-                <div style={{ fontSize: 4, color: '#999', background: 'transparent', border: '1px solid #333', padding: '3px 8px', borderRadius: 3 }}>Watch Demo</div>
+                <div style={{ fontSize: 4, color: '#999', background: 'transparent', border: '1px solid #252830', padding: '3px 8px', borderRadius: 3 }}>Watch Demo</div>
               </div>}
             </div>
             {!m && <div style={{ width: 60, height: 45, background: '#0a0a0a', borderRadius: 4, border: '1px solid #1a1a1a', padding: 4, position: 'relative', overflow: 'hidden' }}>
               <div style={{ fontSize: 3, color: '#444', marginBottom: 2 }}>Live Preview</div>
               <div style={{ display: 'flex', gap: 2, marginBottom: 3 }}>
-                {[{ l: 'Agents', v: '4', c: sc }, { l: 'Builds', v: '12', c: '#5080b8' }].map((k, i) => (
+                {[{ l: 'Agents', v: '4', c: sc }, { l: 'Builds', v: '12', c: '#60a5fa' }].map((k, i) => (
                   <div key={i} style={{ flex: 1, background: '#111', borderRadius: 2, padding: '2px 3px', border: '1px solid #1a1a1a' }}>
                     <div style={{ fontSize: 2.5, color: '#444' }}>{k.l}</div>
                     <div style={{ fontSize: 5, fontWeight: 700, color: k.c }}>{k.v}</div>
@@ -486,7 +486,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             <div style={{ padding: '0 8px 4px', display: 'flex', justifyContent: 'center', gap: 6 }}>
               {['Claude', 'Lovable', 'Replit', 'n8n'].map((t, i) => (
                 <div key={i} style={{ fontSize: 3, color: '#333', display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <div style={{ width: 4, height: 4, borderRadius: 1, background: '#1a1a1a' }} />{t}
+                  <div style={{ width: 4, height: 4, borderRadius: 1, background: '#151920' }} />{t}
                 </div>
               ))}
             </div>
@@ -518,7 +518,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
         </div>}
         <div style={{ flex: 1, padding: f(4), display: 'flex', flexDirection: 'column', gap: f(3) }}>
           {[
-            { name: 'Binance', status: 'Connected', c: '#2d8a32', keys: '••••R4xK', latency: '42ms' },
+            { name: 'Binance', status: 'Connected', c: '#34d399', keys: '••••R4xK', latency: '42ms' },
             { name: 'Coinbase Pro', status: 'API Key Set', c: sc, keys: '••••9mPq', latency: '68ms' },
             { name: 'Kraken', status: 'Not configured', c: '#444', keys: '—', latency: '—' },
           ].slice(0, m ? 2 : 3).map((api, i) => (
@@ -549,7 +549,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               <div style={{ fontSize: 4, color: '#888', marginLeft: 6 }}>~/massa/crawler</div>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 4, alignItems: 'center' }}>
                 <div style={{ fontSize: 3, color: '#555' }}>PID 4821</div>
-                <div style={{ fontSize: 3, color: '#2d8a32', background: '#2d8a3215', padding: '1px 3px', borderRadius: 2 }}>Running</div>
+                <div style={{ fontSize: 3, color: '#34d399', background: '#34d39915', padding: '1px 3px', borderRadius: 2 }}>Running</div>
               </div>
             </>}
           </div>
@@ -561,10 +561,10 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             ].map((stat, i) => (
               <div key={i} style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 3, color: '#555', marginBottom: 1 }}>
-                  <span>{stat.l}</span><span style={{ color: i === 2 ? '#2d8a32' : '#888' }}>{stat.v}</span>
+                  <span>{stat.l}</span><span style={{ color: i === 2 ? '#34d399' : '#888' }}>{stat.v}</span>
                 </div>
-                <div style={{ height: 2, background: '#1a1a1a', borderRadius: 1 }}>
-                  <div style={{ height: '100%', width: `${stat.pct}%`, background: i === 2 ? '#2d8a32' : sc, borderRadius: 1 }} />
+                <div style={{ height: 2, background: '#151920', borderRadius: 1 }}>
+                  <div style={{ height: '100%', width: `${stat.pct}%`, background: i === 2 ? '#34d399' : sc, borderRadius: 1 }} />
                 </div>
               </div>
             ))}
@@ -579,14 +579,14 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               { pre: '', txt: '', c: '' },
               { pre: '  → ', txt: 'GET /api/products?page=1 (200 OK, 142ms)', c: sc },
               { pre: '  → ', txt: 'GET /api/products?page=2 (200 OK, 156ms)', c: sc },
-              { pre: '  ✓ ', txt: 'Parsed 234 items, 12 new entries', c: '#2d8a32' },
-              { pre: '  ✓ ', txt: 'Price deltas: 18 items changed (+4.2% avg)', c: '#9a8030' },
+              { pre: '  ✓ ', txt: 'Parsed 234 items, 12 new entries', c: '#34d399' },
+              { pre: '  ✓ ', txt: 'Price deltas: 18 items changed (+4.2% avg)', c: '#f59e0b' },
               { pre: '  → ', txt: 'GET /api/categories?page=1 (200 OK, 98ms)', c: sc },
-              { pre: '  ✓ ', txt: 'Batch INSERT INTO products (412 rows, 89ms)', c: '#2d8a32' },
+              { pre: '  ✓ ', txt: 'Batch INSERT INTO products (412 rows, 89ms)', c: '#34d399' },
               { pre: '  → ', txt: 'GET /api/products?page=3 (200 OK, 131ms)', c: sc },
               { pre: '  ✓ ', txt: 'Dedup: 6 duplicates removed', c: '#555' },
               { pre: '', txt: '', c: '' },
-              { pre: '[eta]  ', txt: 'Progress: 67% — est. 1m 14s remaining', c: '#5080b8' },
+              { pre: '[eta]  ', txt: 'Progress: 67% — est. 1m 14s remaining', c: '#60a5fa' },
             ].slice(0, m ? 2 : 16).map((line, i) => (
               <div key={i} style={{ fontSize: m ? 3 : 4.5, marginBottom: m ? 1 : 1.5, whiteSpace: 'nowrap', overflow: 'hidden', lineHeight: 1.5, height: line.txt === '' ? (m ? 3 : 5) : undefined }}>
                 <span style={{ color: '#444' }}>{line.pre}</span><span style={{ color: line.c }}>{line.txt}</span>
@@ -613,8 +613,8 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
         <div style={{ flex: 1, display: 'flex', flexDirection: m ? 'column' : 'row' }}>
           <div style={{ flex: 3, padding: f(4), display: 'flex', flexDirection: 'column', gap: f(2) }}>
             {[
-              { time: '06:00', task: 'Daily competitor crawl', status: 'Completed', c: '#2d8a32', dur: '3m 42s', cron: '0 6 * * *' },
-              { time: '12:00', task: 'Export CSV + push to S3', status: 'Pending', c: '#9a8030', dur: '~45s', cron: '0 12 * * *' },
+              { time: '06:00', task: 'Daily competitor crawl', status: 'Completed', c: '#34d399', dur: '3m 42s', cron: '0 6 * * *' },
+              { time: '12:00', task: 'Export CSV + push to S3', status: 'Pending', c: '#f59e0b', dur: '~45s', cron: '0 12 * * *' },
               { time: '18:00', task: 'Email digest to team', status: 'Queued', c: '#555', dur: '~10s', cron: '0 18 * * *' },
               { time: '00:00', task: 'Database cleanup + archive', status: 'Queued', c: '#555', dur: '~2m', cron: '0 0 * * *' },
             ].slice(0, m ? 2 : 4).map((job, i) => (
@@ -638,7 +638,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                 {[4,4,3,4,4,2,4,4,4,3,4,4,1,4].map((v, i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     {Array.from({ length: v }, (_, j) => (
-                      <div key={j} style={{ height: 4, background: v < 3 ? '#9a803040' : '#2d8a3230', borderRadius: 1 }} />
+                      <div key={j} style={{ height: 4, background: v < 3 ? '#f59e0b40' : '#34d39930', borderRadius: 1 }} />
                     ))}
                   </div>
                 ))}
@@ -650,7 +650,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: 4 }}>
               <div style={{ fontSize: 4, color: '#555', marginBottom: 3 }}>Stats</div>
               {[
-                { l: 'Success rate', v: '96.4%', c: '#2d8a32' },
+                { l: 'Success rate', v: '96.4%', c: '#34d399' },
                 { l: 'Avg duration', v: '2m 18s', c: '#888' },
                 { l: 'Total runs', v: '52', c: '#888' },
               ].map((s, i) => (
@@ -958,15 +958,15 @@ export function Overview() {
 
   const isDark = true
   const c = {
-    bg: isDark ? '#060606' : '#f4f6f2',
-    panel: isDark ? '#0d0d0d' : '#ffffff',
-    alt: isDark ? '#111111' : '#f8fbf6',
-    border: isDark ? '#1e1e1e' : '#d8e5d7',
-    text: isDark ? '#f5f5f5' : '#101410',
-    muted: isDark ? '#8c8f8c' : '#556155',
-    green: isDark ? '#2d8a32' : '#1a7a18',
-    greenSoft: isDark ? 'rgba(45,138,50,0.08)' : 'rgba(56,212,48,0.06)',
-    blackGreen: isDark ? '#1a1a1a' : '#f0f0f0',
+    bg: isDark ? '#0a0d10' : '#f4f6f2',
+    panel: isDark ? '#0f1215' : '#ffffff',
+    alt: isDark ? '#131619' : '#f8fbf6',
+    border: isDark ? '#1c2028' : '#d8e5d7',
+    text: isDark ? '#e8eaed' : '#101410',
+    muted: isDark ? '#6b7280' : '#556155',
+    green: isDark ? '#34d399' : '#1a7a18',
+    greenSoft: isDark ? 'rgba(52,211,153,0.08)' : 'rgba(56,212,48,0.06)',
+    blackGreen: isDark ? '#141820' : '#f0f0f0',
   }
 
   const readyBuildsCount = useMemo(
@@ -1147,27 +1147,31 @@ export function Overview() {
     <div style={{ minHeight: '100vh', background: c.bg, color: c.text, fontFamily: 'Inter, Arial, sans-serif', padding: 16 }}>
       <style>{`
         @keyframes phase-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+        @keyframes terminal-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes subtle-glow { 0%,100%{box-shadow: 0 0 4px rgba(52,211,153,0.15)} 50%{box-shadow: 0 0 8px rgba(52,211,153,0.25)} }
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { height: 4px; width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 99px; }
+        ::-webkit-scrollbar-thumb { background: #1c2028; border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2a3040; }
+        textarea:focus, input:focus { box-shadow: 0 0 0 1px rgba(52,211,153,0.3), 0 0 8px rgba(52,211,153,0.12) !important; }
       `}</style>
 
       {/* HEADER */}
-      <div style={{ height: 60, border: `1px solid ${c.border}`, background: c.panel, display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative' }}>
+      <div style={{ height: 60, border: `1px solid ${c.border}`, background: c.panel, display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative', borderRadius: 4, boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
         {!isDesktop && (
           <button onClick={() => setMobileNavOpen(!mobileNavOpen)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 6, display: 'flex', flexDirection: 'column', gap: 4, zIndex: 2 }}>
-            <div style={{ width: 20, height: 2, background: '#888' }} />
-            <div style={{ width: 20, height: 2, background: '#888' }} />
-            <div style={{ width: 20, height: 2, background: '#888' }} />
+            <div style={{ width: 20, height: 2, background: '#6b7280' }} />
+            <div style={{ width: 20, height: 2, background: '#6b7280' }} />
+            <div style={{ width: 20, height: 2, background: '#6b7280' }} />
           </button>
         )}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: isMobile ? 22 : 28, fontWeight: 800, letterSpacing: 6, color: '#ffffff' }}>MASSA</span>
-          <span style={{ background: c.green, color: '#081008', fontWeight: 800, fontSize: isMobile ? 16 : 20, padding: '3px 10px', borderRadius: 6 }}>AI</span>
+          <span style={{ fontSize: isMobile ? 22 : 28, fontWeight: 800, letterSpacing: 6, color: '#e8eaed' }}>MASSA</span>
+          <span style={{ background: c.green, color: '#0a0d10', fontWeight: 800, fontSize: isMobile ? 16 : 20, padding: '3px 10px', borderRadius: 6, boxShadow: '0 0 8px rgba(52,211,153,0.25)' }}>AI</span>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div style={{ width: 32, height: 32, borderRadius: 999, background: c.greenSoft, color: c.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid ${c.border}`, fontSize: 13 }}>M</div>
+          <div style={{ width: 32, height: 32, borderRadius: 999, background: c.greenSoft, color: c.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid rgba(52,211,153,0.2)`, fontSize: 13 }}>M</div>
         </div>
       </div>
 
@@ -1270,11 +1274,13 @@ export function Overview() {
                   <div key={step.label} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1 }}>
                     <div style={{
                       width: 36, height: 36, borderRadius: 999,
-                      border: `1.5px solid ${step.active ? c.green : '#2e2e2e'}`,
-                      background: '#060606',
-                      color: '#ffffff',
+                      border: `1.5px solid ${step.active ? c.green : '#252830'}`,
+                      background: step.active ? 'rgba(52,211,153,0.06)' : '#0a0d10',
+                      color: step.active ? '#e8eaed' : '#6b7280',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: 700, fontSize: 14,
+                      boxShadow: step.active ? '0 0 8px rgba(52,211,153,0.15)' : 'none',
+                      transition: 'all 0.3s ease',
                     }}>{i + 1}</div>
                     <div style={{ fontSize: 11, color: '#ffffff', fontWeight: step.active ? 600 : 400 }}>{step.label}</div>
                   </div>
@@ -1293,42 +1299,45 @@ export function Overview() {
             ] : []
 
             return (
-              <div style={{ border: `1px solid #2a2a2a`, background: '#0e0e0e', borderRadius: 12, padding: 16, marginBottom: 12, position: 'relative' }}>
+              <div style={{ border: `1px solid ${c.border}`, background: '#0c0f13', borderRadius: 12, padding: 16, marginBottom: 12, position: 'relative', boxShadow: '0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.02)', transition: 'border-color 0.3s ease' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <div style={{ fontSize: 10, letterSpacing: 1.2, color: '#ffffff', fontWeight: 700 }}>Ask us for anything</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 12, color: c.green, fontFamily: '"JetBrains Mono", monospace', opacity: 0.5 }}>{'>'}</span>
+                    <div style={{ fontSize: 10, letterSpacing: 1.2, color: '#e8eaed', fontWeight: 700 }}>Ask us for anything</div>
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {rawInput.trim().length > 0 && <div style={{ fontSize: 10, color: c.muted }}>{rawInput.length} chars</div>}
-                    <div style={{ width: 6, height: 6, borderRadius: 999, background: c.green }} />
+                    <div style={{ width: 6, height: 6, borderRadius: 999, background: c.green, boxShadow: '0 0 4px rgba(52,211,153,0.4)' }} />
                   </div>
                 </div>
                 <textarea
                   value={rawInput}
                   onChange={e => setRawInput(e.target.value)}
                   placeholder="Describe what you want to build. Be as specific or as vague as you want — MASSA will handle the rest."
-                  style={{ width: '100%', minHeight: 90, background: 'transparent', border: 'none', outline: 'none', color: '#ffffff', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                  style={{ width: '100%', minHeight: 90, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaed', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'flex-end', position: 'relative' }}>
                   <button
                     onClick={() => setShowAttachMenu(showAttachMenu === 'main' ? null : 'main')}
-                    onMouseEnter={e => e.currentTarget.style.background = '#222'}
+                    onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'main' ? '#fff' : '#555', cursor: 'pointer', padding: '4px 8px', borderRadius: 6, fontSize: 16, transition: 'color 0.15s, background 0.15s', display: 'flex', alignItems: 'center' }}
+                    style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'main' ? '#e8eaed' : '#6b7280', cursor: 'pointer', padding: '4px 8px', borderRadius: 6, fontSize: 16, transition: 'color 0.2s, background 0.2s', display: 'flex', alignItems: 'center' }}
                     title="Attach files"
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
                   </button>
                   {showAttachMenu === 'main' && (
-                    <div style={{ position: 'absolute', bottom: 36, right: 0, background: '#1a1a1a', border: '1px solid #333', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
+                    <div style={{ position: 'absolute', bottom: 36, right: 0, background: '#151920', border: '1px solid #1c2028', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03)', zIndex: 10 }}>
                       {[
                         { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, label: 'Photo Library' },
                         { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>, label: 'Take Photo or Video' },
                         { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
                       ].map((item, i) => (
                         <div key={i} onClick={() => setShowAttachMenu(null)}
-                          onMouseEnter={e => e.currentTarget.style.background = '#252525'}
+                          onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                          style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
-                          <span style={{ color: '#888', display: 'flex' }}>{item.icon}</span>
+                          style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#d0d4dc', fontSize: 13, fontWeight: 500, transition: 'background 0.15s', borderBottom: i < 2 ? '1px solid #1c2028' : 'none' }}>
+                          <span style={{ color: '#6b7280', display: 'flex' }}>{item.icon}</span>
                           {item.label}
                         </div>
                       ))}
@@ -1336,14 +1345,14 @@ export function Overview() {
                   )}
                 </div>
                 {suggestions.length > 0 && (
-                  <div style={{ borderTop: `1px solid #1e1e1e`, marginTop: 10, paddingTop: 10 }}>
+                  <div style={{ borderTop: `1px solid #1c2028`, marginTop: 10, paddingTop: 10 }}>
                     <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: c.muted, marginBottom: 6 }}>MASSA SUGGESTS</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                       {suggestions.map((s, i) => (
                         <div key={i} onClick={() => setRawInput(s)}
-                          style={{ fontSize: 11, color: '#a0a0a0', background: '#151515', border: `1px solid #252525`, borderRadius: 7, padding: '6px 10px', cursor: 'pointer', lineHeight: 1.5, transition: 'background 0.15s' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#1e1e1e')}
-                          onMouseLeave={e => (e.currentTarget.style.background = '#151515')}>
+                          style={{ fontSize: 11, color: '#9ca3af', background: '#131619', border: `1px solid #1c2028`, borderRadius: 7, padding: '6px 10px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease' }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#1e2430')}
+                          onMouseLeave={e => (e.currentTarget.style.background = '#131619')}>
                           <span style={{ color: c.green, fontWeight: 700, marginRight: 5 }}>+</span>{s}
                         </div>
                       ))}
@@ -1361,11 +1370,11 @@ export function Overview() {
               onMouseEnter={() => setHoveredArchBtn('arch-build')}
               onMouseLeave={() => setHoveredArchBtn(null)}
               onClick={() => { if (vagueMode && rawInput.trim().length > 0) setShowClarifyModal(true) }}
-              style={{ background: hoveredArchBtn === 'arch-build' ? '#242424' : '#1a1a1a', color: '#ffffff', border: '1px solid #2e2e2e', padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Build and Run Prompt</button>
+              style={{ background: hoveredArchBtn === 'arch-build' ? '#1e2430' : '#151920', color: '#e8eaed', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.3)' : '#1c2028'}`, padding: '9px 18px', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontSize: 13, boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 12px rgba(52,211,153,0.12)' : '0 2px 6px rgba(0,0,0,0.35)', transition: 'all 0.2s ease' }}>Build and Run Prompt</button>
             <div
               onMouseEnter={() => setHoveredArchBtn('claude-rec')}
               onMouseLeave={() => setHoveredArchBtn(null)}
-              style={{ border: '1px solid #2e2e2e', padding: '9px 12px', borderRadius: 9, color: c.text, background: hoveredArchBtn === 'claude-rec' ? '#242424' : '#1a1a1a', fontSize: 12, cursor: 'default', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>LLM: Sonnet 4.6 (Claude)</div>
+              style={{ border: '1px solid #1c2028', padding: '9px 12px', borderRadius: 9, color: c.muted, background: hoveredArchBtn === 'claude-rec' ? '#1e2430' : '#151920', fontSize: 12, cursor: 'default', boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'all 0.2s ease' }}>LLM: Sonnet 4.6 (Claude)</div>
             {/* Vague mode toggle */}
             <div style={{ position: 'relative' }}
               onMouseEnter={() => setHoveredArchBtn('vague-tip')}
@@ -1373,9 +1382,9 @@ export function Overview() {
             >
               <button
                 onClick={() => setVagueMode(v => !v)}
-                style={{ width: 32, height: 32, borderRadius: 999, border: vagueMode ? `1px solid ${c.green}` : '1px solid #2e2e2e', background: vagueMode ? c.greenSoft : '#1a1a1a', color: vagueMode ? c.green : c.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>?</button>
+                style={{ width: 32, height: 32, borderRadius: 999, border: vagueMode ? `1px solid ${c.green}` : '1px solid #1c2028', background: vagueMode ? c.greenSoft : '#151920', color: vagueMode ? c.green : c.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s ease', boxShadow: vagueMode ? '0 0 8px rgba(52,211,153,0.15)' : 'none' }}>?</button>
               {hoveredArchBtn === 'vague-tip' && (
-                <div style={{ position: 'absolute', bottom: '100%', right: 0, marginBottom: 8, background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#ccc', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.5)', zIndex: 10, pointerEvents: 'none' }}>
+                <div style={{ position: 'absolute', bottom: '100%', right: 0, marginBottom: 8, background: '#151920', border: '1px solid #252830', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#ccc', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.5)', zIndex: 10, pointerEvents: 'none' }}>
                   <div style={{ fontWeight: 700, color: c.text, marginBottom: 4 }}>Vague Mode {vagueMode ? '(On)' : '(Off)'}</div>
                   When enabled, MASSA will ask clarifying questions before building if your prompt is broad or ambiguous. Click to toggle.
                 </div>
@@ -1453,9 +1462,9 @@ export function Overview() {
                           const lastMsg = msgs[msgs.length - 1]
                           const agentReplied = lastMsg.role === 'agent'
                           return (
-                            <div style={{ position: 'absolute', top: column ? 6 : 6, left: column ? 56 : 6, display: 'flex', alignItems: 'center', gap: 4, background: agentReplied ? 'rgba(45,138,50,0.15)' : 'rgba(154,128,48,0.15)', border: `1px solid ${agentReplied ? 'rgba(45,138,50,0.3)' : 'rgba(154,128,48,0.3)'}`, borderRadius: 6, padding: '2px 6px', zIndex: 2 }}>
-                              <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#2d8a32' : '#9a8030', ...(agentReplied ? {} : { animation: 'phase-pulse 2s ease-in-out infinite' }) }} />
-                              <span style={{ fontSize: 8, fontWeight: 700, color: agentReplied ? '#2d8a32' : '#9a8030' }}>{agentReplied ? 'Replied' : 'Waiting'}</span>
+                            <div style={{ position: 'absolute', top: column ? 6 : 6, left: column ? 56 : 6, display: 'flex', alignItems: 'center', gap: 4, background: agentReplied ? 'rgba(52,211,153,0.12)' : 'rgba(245,158,11,0.12)', border: `1px solid ${agentReplied ? 'rgba(52,211,153,0.25)' : 'rgba(245,158,11,0.25)'}`, borderRadius: 6, padding: '2px 6px', zIndex: 2 }}>
+                              <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#34d399' : '#f59e0b', ...(agentReplied ? {} : { animation: 'phase-pulse 2s ease-in-out infinite' }) }} />
+                              <span style={{ fontSize: 8, fontWeight: 700, color: agentReplied ? '#34d399' : '#f59e0b' }}>{agentReplied ? 'Replied' : 'Waiting'}</span>
                             </div>
                           )
                         })()}
@@ -1472,10 +1481,10 @@ export function Overview() {
                                   <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
                                   <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
                                 </div>
-                                <div style={{ fontSize: 10, color: isRunning ? sc : isFailed ? '#b85858' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
+                                <div style={{ fontSize: 10, color: isRunning ? sc : isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
-                                <div style={{ width: 80, height: 3, background: isDark ? '#1b1b1b' : '#dfe8de', borderRadius: 999, overflow: 'hidden' }}>
+                                <div style={{ width: 80, height: 3, background: isDark ? '#131619' : '#dfe8de', borderRadius: 999, overflow: 'hidden' }}>
                                   <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
                                 </div>
                                 <span style={{ fontSize: 10, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
@@ -1506,10 +1515,10 @@ export function Overview() {
                                   <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
                                 </div>
                               </div>
-                              <div style={{ height: 3, background: isDark ? '#1b1b1b' : '#dfe8de', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
+                              <div style={{ height: 3, background: isDark ? '#131619' : '#dfe8de', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
                                 <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
                               </div>
-                              <div style={{ fontSize: 10, color: isRunning ? sc : isFailed ? '#b85858' : c.muted, fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>{statusText}</div>
+                              <div style={{ fontSize: 10, color: isRunning ? sc : isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>{statusText}</div>
                             </div>
                           </>
                         )}
@@ -1520,7 +1529,7 @@ export function Overview() {
                   {/* Add agent / New task */}
                   <div style={{ ...(column ? { width: '100%', height: 80, flexDirection: 'row' } : { minWidth: 140, height: 148, flexDirection: 'column', flexShrink: 0 }), border: `1px dashed ${c.border}`, borderRadius: 12, display: 'flex', overflow: 'hidden', background: 'transparent' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', transition: 'background 0.15s', borderRight: column ? 'none' : `1px dashed ${c.border}`, borderBottom: column ? `1px dashed ${c.border}` : 'none' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#141414'}
+                      onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #333`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <div style={{ fontSize: 18, color: '#555', lineHeight: 1 }}>+</div>
@@ -1528,7 +1537,7 @@ export function Overview() {
                       <div style={{ fontSize: 10, color: c.muted, fontWeight: 500 }}>Add Agent</div>
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', transition: 'background 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#141414'}
+                      onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #333`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <div style={{ fontSize: 18, color: '#555', lineHeight: 1 }}>+</div>
@@ -1570,19 +1579,19 @@ export function Overview() {
                             <button onClick={(e) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }}
                               onMouseEnter={() => setHoveredArchBtn(project.id + '-chat')}
                               onMouseLeave={() => setHoveredArchBtn(null)}
-                              style={{ flex: 1, border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-chat' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                              style={{ flex: 1, border: `1px solid #1c2028`, background: hoveredArchBtn === project.id + '-chat' ? '#1e2430' : '#151920', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>
                               Chat
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
                               onMouseEnter={() => setHoveredArchBtn(project.id)}
                               onMouseLeave={() => setHoveredArchBtn(null)}
-                              style={{ flex: 1, border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                              style={{ flex: 1, border: `1px solid #1c2028`, background: hoveredArchBtn === project.id ? '#1e2430' : '#151920', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>
                               Arch Map
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }}
                               onMouseEnter={() => setHoveredArchBtn(project.id + '-preview')}
                               onMouseLeave={() => setHoveredArchBtn(null)}
-                              style={{ flex: 1, border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-preview' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                              style={{ flex: 1, border: `1px solid #1c2028`, background: hoveredArchBtn === project.id + '-preview' ? '#1e2430' : '#151920', color: '#ffffff', padding: '7px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>
                               Preview
                             </button>
                           </div>
@@ -1612,19 +1621,19 @@ export function Overview() {
                           <button onClick={(e) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }}
                             onMouseEnter={() => setHoveredArchBtn(project.id + '-card-chat')}
                             onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card-chat' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                            style={{ border: `1px solid #1c2028`, background: hoveredArchBtn === project.id + '-card-chat' ? '#1e2430' : '#151920', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>
                             Chat
                           </button>
                           <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
                             onMouseEnter={() => setHoveredArchBtn(project.id + '-card')}
                             onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                            style={{ border: `1px solid #1c2028`, background: hoveredArchBtn === project.id + '-card' ? '#1e2430' : '#151920', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>
                             Arch Map
                           </button>
                           <button onClick={(e) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }}
                             onMouseEnter={() => setHoveredArchBtn(project.id + '-card-preview')}
                             onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ border: `1px solid #2e2e2e`, background: hoveredArchBtn === project.id + '-card-preview' ? '#242424' : '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                            style={{ border: `1px solid #1c2028`, background: hoveredArchBtn === project.id + '-card-preview' ? '#1e2430' : '#151920', color: '#ffffff', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>
                             Preview
                           </button>
                         </div>
@@ -1693,8 +1702,8 @@ export function Overview() {
           <button
             onClick={() => setRightPanelCollapsed(true)}
             style={{
-              background: '#1a1a1a',
-              border: '1px solid #2e2e2e',
+              background: '#151920',
+              border: '1px solid #1c2028',
               borderRadius: 9,
               padding: '6px 12px',
               cursor: 'pointer',
@@ -1709,10 +1718,10 @@ export function Overview() {
               alignSelf: 'flex-end',
               marginBottom: -4,
               letterSpacing: 0.5,
-              boxShadow: '3px 3px 8px rgba(0,0,0,0.45)',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.35)',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = '#242424'}
-            onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}
+            onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+            onMouseLeave={e => e.currentTarget.style.background = '#151920'}
             title="Collapse right panel"
           >
             HIDE <span style={{ fontSize: 14 }}>›</span>
@@ -1725,19 +1734,19 @@ export function Overview() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 8 }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#9a8030' : c.text, lineHeight: 1 }}>{readyBuildsCount}</span>
+                    <span style={{ fontSize: 28, fontWeight: 800, color: readyBuildsCount > 0 ? '#f59e0b' : c.text, lineHeight: 1 }}>{readyBuildsCount}</span>
                     <span style={{ fontSize: 12, color: '#ffffff', fontWeight: 500 }}>queued</span>
                   </div>
                 </div>
                 <button
                   onClick={handleStartAll}
                   disabled={readyBuildsCount === 0}
-                  onMouseEnter={e => { if (readyBuildsCount > 0) e.currentTarget.style.background = '#242424' }}
-                  onMouseLeave={e => { if (readyBuildsCount > 0) e.currentTarget.style.background = '#1a1a1a' }}
+                  onMouseEnter={e => { if (readyBuildsCount > 0) e.currentTarget.style.background = '#1e2430' }}
+                  onMouseLeave={e => { if (readyBuildsCount > 0) e.currentTarget.style.background = '#151920' }}
                   style={{
-                    background: readyBuildsCount > 0 ? '#1a1a1a' : (isDark ? '#1e1e1e' : '#e8e8e8'),
-                    color: readyBuildsCount > 0 ? '#9a8030' : c.muted,
-                    border: `1px solid ${readyBuildsCount > 0 ? '#2e2e2e' : c.border}`,
+                    background: readyBuildsCount > 0 ? '#151920' : (isDark ? '#131619' : '#e8e8e8'),
+                    color: readyBuildsCount > 0 ? '#f59e0b' : c.muted,
+                    border: `1px solid ${readyBuildsCount > 0 ? '#1c2028' : c.border}`,
                     borderRadius: 9,
                     padding: '7px 13px',
                     fontSize: 12,
@@ -1766,10 +1775,10 @@ export function Overview() {
 
             const kpis: { label: string; value: number; color: string; bg: string }[] = [
               { label: 'Total Projects', value: totalProjects, color: c.text, bg: c.alt },
-              { label: 'Running', value: runningBuilds, color: '#2d8a32', bg: c.greenSoft },
-              { label: 'Completed', value: completedBuilds, color: '#5080b8', bg: 'rgba(80,128,184,0.06)' },
-              { label: 'Queued', value: queuedBuilds, color: '#9a8030', bg: 'rgba(154,128,48,0.06)' },
-              { label: 'Failed', value: failedBuilds, color: '#b85858', bg: 'rgba(184,88,88,0.06)' },
+              { label: 'Running', value: runningBuilds, color: '#34d399', bg: c.greenSoft },
+              { label: 'Completed', value: completedBuilds, color: '#60a5fa', bg: 'rgba(96,165,250,0.06)' },
+              { label: 'Queued', value: queuedBuilds, color: '#f59e0b', bg: 'rgba(245,158,11,0.06)' },
+              { label: 'Failed', value: failedBuilds, color: '#f87171', bg: 'rgba(248,113,113,0.06)' },
             ]
 
             return (
@@ -1817,16 +1826,16 @@ export function Overview() {
           {/* Code Stream + Build Activity */}
           <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: collapsedSections.codeStream ? 'none' : 1, minHeight: 0 }}>
             <div style={{ padding: '8px 12px 6px', borderBottom: collapsedSections.codeStream ? 'none' : `1px solid ${c.border}` }}>
-              {sectionHeader('CODE STREAM', 'codeStream', <span style={{ width: 6, height: 6, borderRadius: 999, background: '#2d8a32', display: 'inline-block' }} />)}
+              {sectionHeader('CODE STREAM', 'codeStream', <span style={{ width: 6, height: 6, borderRadius: 999, background: '#34d399', display: 'inline-block', boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />)}
             </div>
             {!collapsedSections.codeStream && (
               <div
                 ref={codeRef}
                 onMouseEnter={() => setCodeHovered(true)}
                 onMouseLeave={() => setCodeHovered(false)}
-                style={{ flex: 1, overflowY: 'auto', background: isDark ? '#1a1a1a' : '#f0f0f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
+                style={{ flex: 1, overflowY: 'auto', background: isDark ? '#0f1215' : '#f0f0f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
               >
-                <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#1a1a1a' : '#f0f0f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
+                <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#0f1215' : '#f0f0f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
                 {feedEntries.length > 0 && feedEntries.slice(0, 3).map(entry => {
                   const pm = PHASE_META[entry.phase]
                   return (
@@ -1841,7 +1850,7 @@ export function Overview() {
                   if (line.kind === 'qa') {
                     const isPass = line.qa === 'pass'
                     return (
-                      <div key={line.id} style={{ padding: '3px 12px', color: isPass ? '#5aad58' : '#b8801a', lineHeight: 1.5 }}>
+                      <div key={line.id} style={{ padding: '3px 12px', color: isPass ? '#4ade80' : '#f59e0b', lineHeight: 1.5 }}>
                         {line.content}
                       </div>
                     )
@@ -1863,24 +1872,24 @@ export function Overview() {
       {/* ARCHITECTURE MAP MODAL */}
       {expandedProject && expandProject && (
         <div onClick={() => setExpandedProject(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 50 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 'min(900px, 100%)', maxHeight: '82vh', background: c.panel, border: '1px solid #333', borderRadius: 18, padding: 24, overflow: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(900px, 100%)', maxHeight: '82vh', background: c.panel, border: '1px solid #252830', borderRadius: 18, padding: 24, overflow: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
                 <div style={{ fontSize: 11, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>ARCHITECTURE MAP</div>
                 <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>{expandProject.name}</div>
                 <div style={{ color: c.muted, fontSize: 13 }}>{expandProject.goal}</div>
               </div>
-              <button onClick={() => setExpandedProject(null)} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
+              <button onClick={() => setExpandedProject(null)} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #1c2028', background: '#151920', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
             </div>
 
-            <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: isDark ? '#111' : '#eee', borderRadius: 8, padding: 3, width: 'fit-content' }}>
+            <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: isDark ? '#131619' : '#eee', borderRadius: 8, padding: 3, width: 'fit-content' }}>
               {(['tree', 'graph', 'timeline'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setArchTab(tab)}
                   style={{
                     border: 'none',
-                    background: archTab === tab ? (isDark ? '#2a2a2a' : '#fff') : 'transparent',
+                    background: archTab === tab ? (isDark ? '#1e2430' : '#fff') : 'transparent',
                     color: archTab === tab ? c.text : c.muted,
                     padding: '6px 16px',
                     borderRadius: 6,
@@ -1977,7 +1986,7 @@ export function Overview() {
       {/* LIVE PREVIEW MODAL */}
       {livePreviewProject && previewProject && (
         <div onClick={() => setLivePreviewProject(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 50 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 'min(940px, 100%)', maxHeight: '85vh', background: c.panel, border: '1px solid #333', borderRadius: 18, padding: 24, overflow: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(940px, 100%)', maxHeight: '85vh', background: c.panel, border: '1px solid #252830', borderRadius: 18, padding: 24, overflow: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
                 <div style={{ fontSize: 11, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>LIVE PREVIEW</div>
@@ -1985,20 +1994,20 @@ export function Overview() {
                 <div style={{ color: c.muted, fontSize: 13 }}>{previewProject.goal}</div>
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ width: 8, height: 8, borderRadius: 99, background: '#2d8a32', animation: 'phase-pulse 2s ease-in-out infinite' }} />
-                <span style={{ fontSize: 11, color: '#2d8a32', fontWeight: 600 }}>Running</span>
-                <button onClick={() => setLivePreviewProject(null)} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s', marginLeft: 8 }}>Close</button>
+                <div style={{ width: 8, height: 8, borderRadius: 99, background: '#34d399', animation: 'phase-pulse 2s ease-in-out infinite', boxShadow: '0 0 6px rgba(52,211,153,0.4)' }} />
+                <span style={{ fontSize: 11, color: '#34d399', fontWeight: 600 }}>Running</span>
+                <button onClick={() => setLivePreviewProject(null)} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #1c2028', background: '#151920', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', marginLeft: 8 }}>Close</button>
               </div>
             </div>
 
             <div style={{ flex: 1, background: '#0a0a0a', borderRadius: 12, border: `1px solid ${c.border}`, overflow: 'hidden', minHeight: 420 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderBottom: `1px solid ${c.border}`, background: '#111' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderBottom: `1px solid ${c.border}`, background: '#131619' }}>
                 <div style={{ display: 'flex', gap: 5 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: 99, background: '#b85858' }} />
-                  <div style={{ width: 10, height: 10, borderRadius: 99, background: '#9a8030' }} />
-                  <div style={{ width: 10, height: 10, borderRadius: 99, background: '#2d8a32' }} />
+                  <div style={{ width: 10, height: 10, borderRadius: 99, background: '#f87171' }} />
+                  <div style={{ width: 10, height: 10, borderRadius: 99, background: '#f59e0b' }} />
+                  <div style={{ width: 10, height: 10, borderRadius: 99, background: '#34d399' }} />
                 </div>
-                <div style={{ flex: 1, background: '#1a1a1a', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: c.muted, border: `1px solid ${c.border}` }}>
+                <div style={{ flex: 1, background: '#151920', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: c.muted, border: `1px solid ${c.border}` }}>
                   {previewProject.id === 'trading-bot' ? 'https://app.tradingbot.io' : previewProject.id === 'massa-site' ? 'https://massa.ai' : 'https://scraper.massa.ai'}
                 </div>
               </div>
@@ -2008,17 +2017,17 @@ export function Overview() {
                     <div style={{ display: 'flex', gap: 12, flex: '0 0 auto' }}>
                       <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
                         <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>PORTFOLIO VALUE</div>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: '#2d8a32' }}>$127,843.92</div>
-                        <div style={{ fontSize: 11, color: '#2d8a32', marginTop: 2 }}>+3.42% today</div>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: '#34d399' }}>$127,843.92</div>
+                        <div style={{ fontSize: 11, color: '#34d399', marginTop: 2 }}>+3.42% today</div>
                       </div>
                       <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
                         <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>OPEN POSITIONS</div>
                         <div style={{ fontSize: 22, fontWeight: 800, color: c.text }}>7</div>
-                        <div style={{ fontSize: 11, color: '#5080b8', marginTop: 2 }}>4 long / 3 short</div>
+                        <div style={{ fontSize: 11, color: '#60a5fa', marginTop: 2 }}>4 long / 3 short</div>
                       </div>
                       <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
                         <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>24H P&L</div>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: '#2d8a32' }}>+$4,221</div>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: '#34d399' }}>+$4,221</div>
                         <div style={{ fontSize: 11, color: c.muted, marginTop: 2 }}>Win rate: 71%</div>
                       </div>
                     </div>
@@ -2026,12 +2035,12 @@ export function Overview() {
                       <div style={{ fontSize: 10, color: c.muted, marginBottom: 8 }}>BTC/USDT</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                         <span style={{ fontSize: 20, fontWeight: 800 }}>$67,432.18</span>
-                        <span style={{ fontSize: 12, color: '#2d8a32' }}>+2.14%</span>
+                        <span style={{ fontSize: 12, color: '#34d399' }}>+2.14%</span>
                         <span style={{ fontSize: 11, color: c.muted }}>H: $68,100 L: $65,890</span>
                       </div>
                       <svg width="100%" height="120" viewBox="0 0 800 120" preserveAspectRatio="none">
-                        <defs><linearGradient id="pgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2d8a32" stopOpacity="0.3"/><stop offset="1" stopColor="#2d8a32" stopOpacity="0"/></linearGradient></defs>
-                        <path d="M0,80 Q50,75 100,70 T200,55 T300,65 T400,40 T500,50 T600,30 T700,25 T800,20" fill="none" stroke="#2d8a32" strokeWidth="2"/>
+                        <defs><linearGradient id="pgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#34d399" stopOpacity="0.3"/><stop offset="1" stopColor="#34d399" stopOpacity="0"/></linearGradient></defs>
+                        <path d="M0,80 Q50,75 100,70 T200,55 T300,65 T400,40 T500,50 T600,30 T700,25 T800,20" fill="none" stroke="#34d399" strokeWidth="2"/>
                         <path d="M0,80 Q50,75 100,70 T200,55 T300,65 T400,40 T500,50 T600,30 T700,25 T800,20 L800,120 L0,120Z" fill="url(#pgrad)"/>
                       </svg>
                     </div>
@@ -2039,7 +2048,7 @@ export function Overview() {
                       {['ETH/USDT', 'SOL/USDT', 'ARB/USDT'].map(pair => (
                         <div key={pair} style={{ flex: 1, background: '#111', borderRadius: 6, padding: '8px 10px', border: `1px solid ${c.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: 11, fontWeight: 600 }}>{pair}</span>
-                          <span style={{ fontSize: 11, color: pair === 'ARB/USDT' ? '#b85858' : '#2d8a32' }}>{pair === 'ETH/USDT' ? '+1.8%' : pair === 'SOL/USDT' ? '+5.2%' : '-0.9%'}</span>
+                          <span style={{ fontSize: 11, color: pair === 'ARB/USDT' ? '#f87171' : '#34d399' }}>{pair === 'ETH/USDT' ? '+1.8%' : pair === 'SOL/USDT' ? '+5.2%' : '-0.9%'}</span>
                         </div>
                       ))}
                     </div>
@@ -2052,8 +2061,8 @@ export function Overview() {
                       <div style={{ fontSize: 28, fontWeight: 800, marginBottom: 8, background: 'linear-gradient(135deg, #fff 0%, #888 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Build anything with AI agents, in parallel</div>
                       <div style={{ fontSize: 13, color: c.muted, maxWidth: 500, margin: '0 auto 20px' }}>Deploy multiple intelligent agents that architect, build, and ship production-ready software simultaneously.</div>
                       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-                        <div style={{ background: '#2d8a32', color: '#fff', padding: '10px 24px', borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Start Building</div>
-                        <div style={{ border: '1px solid #333', color: '#ccc', padding: '10px 24px', borderRadius: 8, fontWeight: 600, fontSize: 13 }}>View Demo</div>
+                        <div style={{ background: '#34d399', color: '#0a0d10', padding: '10px 24px', borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Start Building</div>
+                        <div style={{ border: '1px solid #252830', color: '#ccc', padding: '10px 24px', borderRadius: 8, fontWeight: 600, fontSize: 13 }}>View Demo</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 12, padding: '20px 40px' }}>
@@ -2072,28 +2081,28 @@ export function Overview() {
                       <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
                         <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>PAGES CRAWLED</div>
                         <div style={{ fontSize: 22, fontWeight: 800 }}>12,847</div>
-                        <div style={{ fontSize: 11, color: '#5080b8', marginTop: 2 }}>142/min avg</div>
+                        <div style={{ fontSize: 11, color: '#60a5fa', marginTop: 2 }}>142/min avg</div>
                       </div>
-                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                      <div style={{ flex: 1, background: '#131619', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
                         <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>DATA EXTRACTED</div>
                         <div style={{ fontSize: 22, fontWeight: 800 }}>3.2 GB</div>
-                        <div style={{ fontSize: 11, color: '#2d8a32', marginTop: 2 }}>98.7% success</div>
+                        <div style={{ fontSize: 11, color: '#34d399', marginTop: 2 }}>98.7% success</div>
                       </div>
-                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                      <div style={{ flex: 1, background: '#131619', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
                         <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>ACTIVE JOBS</div>
                         <div style={{ fontSize: 22, fontWeight: 800 }}>3</div>
-                        <div style={{ fontSize: 11, color: '#9a8030', marginTop: 2 }}>2 queued</div>
+                        <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 2 }}>2 queued</div>
                       </div>
                     </div>
                     <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 10, border: `1px solid ${c.border}`, fontSize: 11, lineHeight: 1.8, color: '#888', overflow: 'hidden' }}>
-                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> GET https://api.example.com/products?page=142 <span style={{ color: '#555' }}>200 OK 234ms</span></div>
-                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> GET https://api.example.com/products?page=143 <span style={{ color: '#555' }}>200 OK 189ms</span></div>
-                      <div><span style={{ color: '#5080b8' }}>[PARSE]</span> Extracting 48 records from response...</div>
-                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> GET https://api.example.com/products?page=144 <span style={{ color: '#555' }}>200 OK 312ms</span></div>
-                      <div><span style={{ color: '#9a8030' }}>[WARN]</span> Rate limit approaching, throttling to 80/min</div>
-                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> Stored 48 records to PostgreSQL <span style={{ color: '#555' }}>batch_id: b-2847</span></div>
-                      <div><span style={{ color: '#5080b8' }}>[PARSE]</span> Extracting 52 records from response...</div>
-                      <div><span style={{ color: '#2d8a32' }}>[OK]</span> GET https://api.example.com/products?page=145 <span style={{ color: '#555' }}>200 OK 198ms</span></div>
+                      <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=142 <span style={{ color: '#4b5563' }}>200 OK 234ms</span></div>
+                      <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=143 <span style={{ color: '#4b5563' }}>200 OK 189ms</span></div>
+                      <div><span style={{ color: '#60a5fa' }}>[PARSE]</span> Extracting 48 records from response...</div>
+                      <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=144 <span style={{ color: '#4b5563' }}>200 OK 312ms</span></div>
+                      <div><span style={{ color: '#f59e0b' }}>[WARN]</span> Rate limit approaching, throttling to 80/min</div>
+                      <div><span style={{ color: '#34d399' }}>[OK]</span> Stored 48 records to PostgreSQL <span style={{ color: '#4b5563' }}>batch_id: b-2847</span></div>
+                      <div><span style={{ color: '#60a5fa' }}>[PARSE]</span> Extracting 52 records from response...</div>
+                      <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=145 <span style={{ color: '#4b5563' }}>200 OK 198ms</span></div>
                     </div>
                   </div>
                 )}
@@ -2113,7 +2122,7 @@ export function Overview() {
         const sc = skillColor(activeBuild.stack)
         return (
           <div onClick={() => { setChatProject(null); setChatInput('') }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 55 }}>
-            <div onClick={e => e.stopPropagation()} style={{ width: 'min(940px, 100%)', height: 'min(80vh, 680px)', background: c.panel, border: '1px solid #333', borderRadius: 18, display: 'flex', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: 'min(940px, 100%)', height: 'min(80vh, 680px)', background: c.panel, border: '1px solid #252830', borderRadius: 18, display: 'flex', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
               <div style={{ width: 220, borderRight: `1px solid ${c.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
                 <div style={{ padding: '16px 14px 12px', borderBottom: `1px solid ${c.border}` }}>
                   <div style={{ fontSize: 11, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>PROJECT CHATS</div>
@@ -2130,7 +2139,7 @@ export function Overview() {
                       <div key={b.id} onClick={() => setChatProjectBuildId(b.id)}
                         style={{ padding: '10px 14px', cursor: 'pointer', background: isActive ? c.alt : 'transparent', borderLeft: isActive ? `2px solid ${bsc}` : '2px solid transparent', transition: 'all 0.15s' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                          <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#2d8a32' : bMsgs.length > 0 ? '#9a8030' : '#444', flexShrink: 0 }} />
+                          <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#34d399' : bMsgs.length > 0 ? '#f59e0b' : '#374151', flexShrink: 0 }} />
                           <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? '#fff' : c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.title}</div>
                         </div>
                         <div style={{ fontSize: 10, color: c.muted, marginLeft: 11 }}>{b.agent}</div>
@@ -2149,7 +2158,7 @@ export function Overview() {
                     </div>
                     <div style={{ fontSize: 11, color: c.muted }}>{activeBuild.agent} · {activeBuild.agentRole}</div>
                   </div>
-                  <button onClick={() => { setChatProject(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
+                  <button onClick={() => { setChatProject(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #1c2028', background: '#151920', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
                   {msgs.map(msg => (
@@ -2157,7 +2166,7 @@ export function Overview() {
                       {msg.role === 'agent' && (
                         <div style={{ fontSize: 10, color: sc, fontWeight: 700, marginBottom: 3 }}>{activeBuild.agent}</div>
                       )}
-                      <div style={{ maxWidth: '75%', background: msg.role === 'user' ? '#1a2a1a' : c.alt, border: `1px solid ${msg.role === 'user' ? `${c.green}30` : c.border}`, borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px', padding: '10px 14px' }}>
+                      <div style={{ maxWidth: '75%', background: msg.role === 'user' ? '#0f1f18' : c.alt, border: `1px solid ${msg.role === 'user' ? `${c.green}30` : c.border}`, borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px', padding: '10px 14px' }}>
                         {msg.content.split('\n').map((line, li) => {
                           if (line.startsWith('```')) return null
                           const prevLines = msg.content.split('\n')
@@ -2186,14 +2195,14 @@ export function Overview() {
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
                     </button>
                     {showAttachMenu === 'projchat' && (
-                      <div style={{ position: 'absolute', bottom: 44, left: 0, background: '#1a1a1a', border: '1px solid #333', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
+                      <div style={{ position: 'absolute', bottom: 44, left: 0, background: '#151920', border: '1px solid #252830', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
                         {[
                           { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, label: 'Photo Library' },
                           { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>, label: 'Take Photo or Video' },
                           { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
                         ].map((item, i) => (
                           <div key={i} onClick={() => setShowAttachMenu(null)}
-                            onMouseEnter={e => e.currentTarget.style.background = '#252525'}
+                            onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
                             <span style={{ color: '#888', display: 'flex' }}>{item.icon}</span>
@@ -2207,13 +2216,13 @@ export function Overview() {
                       onChange={e => setChatInput(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(activeBuild.id) } }}
                       placeholder={`Message ${activeBuild.agent}...`}
-                      style={{ flex: 1, background: '#1a1a1a', border: '1px solid #2e2e2e', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
+                      style={{ flex: 1, background: '#151920', border: '1px solid #1c2028', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
                     />
                     <button
                       onClick={() => sendChatMessage(activeBuild.id)}
-                      onMouseEnter={e => e.currentTarget.style.background = '#242424'}
-                      onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}
-                      style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#151920'}
+                      style={{ border: '1px solid #1c2028', background: '#151920', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}
                     >Send</button>
                   </div>
                 </div>
@@ -2226,7 +2235,7 @@ export function Overview() {
       {/* BUILD DETAIL MODAL */}
       {expandedBuild && (
         <div onClick={() => { setExpandedBuildId(null); setChatInput('') }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 60 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 'min(860px, 100%)', height: 'min(78vh, 640px)', background: c.panel, border: '1px solid #333', borderRadius: 18, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(860px, 100%)', height: 'min(78vh, 640px)', background: c.panel, border: '1px solid #252830', borderRadius: 18, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
             {(() => {
               const sc = skillColor(expandedBuild.build.stack)
               const ps = primarySkill(expandedBuild.build.stack)
@@ -2244,14 +2253,14 @@ export function Overview() {
                         <div style={{ fontSize: 12, color: c.muted }}>{expandedBuild.project.name} · {expandedBuild.build.agent} ({expandedBuild.build.agentRole})</div>
                       </div>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button onClick={() => { setSelectedChatBuildId(expandedBuild.build.id); setExpandedBuildId(null); setActiveView('chats') }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: `1px solid ${c.green}44`, background: '#1a1a1a', color: c.green, padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}>Open in Chats</button>
-                        <button onClick={() => { setExpandedBuildId(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
+                        <button onClick={() => { setSelectedChatBuildId(expandedBuild.build.id); setExpandedBuildId(null); setActiveView('chats') }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.green}44`, background: '#151920', color: c.green, padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}>Open in Chats</button>
+                        <button onClick={() => { setExpandedBuildId(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #1c2028', background: '#151920', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 2, background: '#111', borderRadius: 8, padding: 3, width: 'fit-content', marginBottom: 0 }}>
+                    <div style={{ display: 'flex', gap: 2, background: '#131619', borderRadius: 8, padding: 3, width: 'fit-content', marginBottom: 0 }}>
                       {(['chat', 'details'] as const).map(tab => (
-                        <button key={tab} onClick={() => setBuildModalTab(tab)} style={{ border: 'none', background: buildModalTab === tab ? '#2a2a2a' : 'transparent', color: buildModalTab === tab ? '#fff' : c.muted, padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', textTransform: 'capitalize' }}>{tab}</button>
+                        <button key={tab} onClick={() => setBuildModalTab(tab)} style={{ border: 'none', background: buildModalTab === tab ? '#1e2430' : 'transparent', color: buildModalTab === tab ? '#e8eaed' : c.muted, padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', textTransform: 'capitalize' }}>{tab}</button>
                       ))}
                     </div>
                   </div>
@@ -2264,7 +2273,7 @@ export function Overview() {
                             {msg.role === 'agent' && (
                               <div style={{ fontSize: 10, color: sc, fontWeight: 700, marginBottom: 3 }}>{expandedBuild.build.agent}</div>
                             )}
-                            <div style={{ maxWidth: '75%', background: msg.role === 'user' ? '#1a2a1a' : c.alt, border: `1px solid ${msg.role === 'user' ? `${c.green}30` : c.border}`, borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px', padding: '10px 14px' }}>
+                            <div style={{ maxWidth: '75%', background: msg.role === 'user' ? '#0f1f18' : c.alt, border: `1px solid ${msg.role === 'user' ? `${c.green}30` : c.border}`, borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px', padding: '10px 14px' }}>
                               {msg.content.split('\n').map((line, li) => {
                                 if (line.startsWith('```')) {
                                   return null
@@ -2294,14 +2303,14 @@ export function Overview() {
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
                           </button>
                           {showAttachMenu === 'buildchat' && (
-                            <div style={{ position: 'absolute', bottom: 44, left: 0, background: '#1a1a1a', border: '1px solid #333', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
+                            <div style={{ position: 'absolute', bottom: 44, left: 0, background: '#151920', border: '1px solid #252830', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
                               {[
                                 { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, label: 'Photo Library' },
                                 { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>, label: 'Take Photo or Video' },
                                 { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
                               ].map((item, i) => (
                                 <div key={i} onClick={() => setShowAttachMenu(null)}
-                                  onMouseEnter={e => e.currentTarget.style.background = '#252525'}
+                                  onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
                                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                   style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
                                   <span style={{ color: '#888', display: 'flex' }}>{item.icon}</span>
@@ -2315,13 +2324,13 @@ export function Overview() {
                             onChange={e => setChatInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(expandedBuild.build.id) } }}
                             placeholder={`Message ${expandedBuild.build.agent}...`}
-                            style={{ flex: 1, background: '#1a1a1a', border: '1px solid #2e2e2e', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
+                            style={{ flex: 1, background: '#151920', border: '1px solid #1c2028', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
                           />
                           <button
                             onClick={() => sendChatMessage(expandedBuild.build.id)}
-                            onMouseEnter={e => e.currentTarget.style.background = '#242424'}
-                            onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}
-                            style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#151920'}
+                            style={{ border: '1px solid #1c2028', background: '#151920', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}
                           >Send</button>
                         </div>
                       </div>
@@ -2458,14 +2467,14 @@ export function Overview() {
                 onClick={() => setShowClarifyModal(false)}
                 onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
                 onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-                style={{ flex: 1, background: c.green, color: '#081008', border: 'none', borderRadius: 9, padding: '10px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'opacity 0.15s' }}>
+                style={{ flex: 1, background: c.green, color: '#081008', border: 'none', borderRadius: 9, padding: '10px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'opacity 0.15s' }}>
                 Build with answers
               </button>
               <button
                 onClick={() => setShowClarifyModal(false)}
-                onMouseEnter={e => e.currentTarget.style.background = '#242424'}
-                onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}
-                style={{ background: '#1a1a1a', color: c.muted, border: '1px solid #2e2e2e', borderRadius: 9, padding: '10px 16px', fontSize: 12, cursor: 'pointer', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
+                onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                onMouseLeave={e => e.currentTarget.style.background = '#151920'}
+                style={{ background: '#151920', color: c.muted, border: '1px solid #1c2028', borderRadius: 9, padding: '10px 16px', fontSize: 12, cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>
                 Skip
               </button>
             </div>

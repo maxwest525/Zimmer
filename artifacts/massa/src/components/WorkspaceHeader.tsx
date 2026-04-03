@@ -13,7 +13,7 @@ function StatusPill({ status }: { status: ProjectStatus }) {
   const config: Record<ProjectStatus, { label: string; className: string; icon: React.ReactNode }> = {
     running: {
       label: "Running",
-      className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_6px_rgba(52,211,153,0.15)]",
       icon: <Loader2 className="w-3 h-3 animate-spin" />,
     },
     "needs-review": {

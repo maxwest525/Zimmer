@@ -1,0 +1,304 @@
+You are NOT rebuilding this application.
+
+You are performing a visual overhaul ONLY.
+
+CRITICAL RULES
+- Do NOT change any functionality
+- Do NOT change layout structure in a way that affects behavior
+- Do NOT remove or replace components
+- Do NOT alter logic, APIs, or data flow
+- Do NOT restructure pages
+- Do NOT break responsiveness
+
+You are ONLY updating:
+- styling
+- theme
+- component appearance
+- visual hierarchy
+- spacing (light adjustments only)
+- interaction polish
+
+GOAL
+
+Transform the current UI into a modern terminal-inspired command center while preserving usability and readability.
+
+This should feel like:
+- a premium AI operating system
+- a clean command interface
+- a modern cyber-terminal
+- NOT a gimmicky hacker screen
+
+STYLE DIRECTION
+
+- Keep existing layout and structure exactly the same
+- Apply a layered dark theme (not pure black)
+- Introduce terminal-inspired accents:
+  - controlled green highlights
+  - subtle glow on focus/active elements
+  - structured output-style panels where appropriate
+
+- Maintain high readability:
+  - keep primary UI text in sans-serif
+  - use monospace ONLY for:
+    - IDs (DOT, MC, etc)
+    - system outputs
+    - logs or structured data
+
+- Avoid:
+  - neon overload
+  - full monospace UI
+  - retro terminal gimmicks
+  - heavy visual noise
+
+COMPONENT TRANSFORMATION RULES
+
+Apply these changes to EXISTING components:
+
+1. PANELS / CARDS
+- Convert into “terminal panels”
+- Slightly darker layered background
+- Add subtle border or edge glow
+- Increase depth slightly (not heavy shadows)
+- Keep padding similar, only refine
+
+2. INPUTS (SEARCH BARS, FORMS)
+- Keep exact functionality
+- Restyle to feel like command inputs
+- Add subtle prompt-style indicator on focus
+- Slightly increase height and padding for clarity
+- Improve contrast and focus states
+
+3. BUTTONS
+- Keep all actions the same
+- Update styling to:
+  - clean dark base
+  - subtle green or accent glow on hover
+  - clearer active states
+- No large redesign, only polish
+
+4. TABS / SEGMENTED CONTROLS (LIKE NAME / DOT / MC)
+- Keep same behavior
+- Restyle as modern segmented controls
+- Active state:
+  - slightly brighter
+  - subtle accent highlight
+- Keep spacing and layout intact
+
+5. DATA DISPLAY
+- Improve readability of tables and results
+- Use:
+  - better spacing
+  - subtle separators
+  - clearer hierarchy
+- Use monospace ONLY where it improves clarity
+
+6. STATUS / SYSTEM FEEDBACK
+- Introduce subtle system-style labels where helpful:
+  - status indicators
+  - small “system” or “live” tags
+- Keep minimal and clean
+
+7. HOVER + INTERACTION
+- Add:
+  - soft glow on hover
+  - slight elevation
+  - smooth transitions
+- No flashy animations
+
+8. COLORS
+- Background: deep charcoal (not black)
+- Panels: slightly lighter layered dark
+- Primary accent: controlled green
+- Secondary accents: blue / amber / red for states
+- Text: off-white and muted gray
+
+9. GLOBAL FEEL
+Everything should feel:
+- sharper
+- more premium
+- more intentional
+- easier to scan
+- more “alive” but not distracting
+
+DO NOT:
+- redesign layouts
+- move components around significantly
+- introduce new complex UI systems
+- replace working elements with new patterns
+
+FINAL CHECK
+
+Before finishing, ensure:
+- every original feature still exists and works
+- no flows are broken
+- readability is improved, not reduced
+- UI feels upgraded, not different for the sake of different
+
+Enhance the dashboard with a terminal-inspired command bar WITHOUT replacing any existing functionality.
+
+CRITICAL RULES
+- Do NOT remove or replace existing search inputs or controls
+- Do NOT change any logic or handlers
+- This is a visual + UX enhancement only
+- If a search bar already exists, enhance it instead of duplicating it
+- If needed, wrap the existing component visually
+
+GOAL
+Make the primary search / input area feel like a command interface while still behaving like a normal UI input.
+
+DESIGN BEHAVIOR
+
+1. VISUAL STYLE
+- Keep it clean and premium, not gimmicky
+- Slightly larger than standard inputs
+- Rounded corners, soft depth
+- Dark layered background (slightly brighter than surrounding panels)
+
+2. TERMINAL TOUCH (SUBTLE)
+- Add a faint prompt indicator on the left:
+  > or _
+- This should be low-opacity and not distracting
+
+3. TEXT BEHAVIOR
+- Placeholder should feel like natural language, not code
+Examples:
+- Search carrier by company name...
+- Try: "show top performing campaigns"
+- Try: "find DOT 123456"
+
+4. FOCUS STATE
+- On focus:
+  - subtle green edge glow
+  - slightly brighter background
+  - optional blinking cursor effect (very subtle, not retro)
+
+5. SUGGESTIONS (OPTIONAL BUT LIGHTWEIGHT)
+- Show a small dropdown on focus with:
+  - recent searches
+  - suggested queries
+- Keep minimal, no complex logic changes
+
+6. RIGHT SIDE MICRO-UI
+- Add a small hint like:
+  Enter to search
+  or
+  Type to search
+- Keep very subtle
+
+7. NO FUNCTIONAL CHANGES
+- All input behavior stays exactly the same
+- This is just a visual and interaction polish layer
+
+FINAL RESULT
+The command bar should feel like:
+- a smarter version of a search bar
+- a control input, not just a field
+- but still 100% familiar and usable
+
+Apply a consistent terminal-inspired visual identity system ONLY to the dashboard.
+
+CRITICAL RULES
+- Do NOT change layout or functionality
+- Do NOT redesign components
+- Only apply visual consistency upgrades
+- Keep everything readable and professional
+
+CORE THEME
+Modern terminal + premium SaaS
+
+COLOR SYSTEM
+
+Background Layers:
+- Page background: deep charcoal (not black)
+- Primary panels: slightly lighter dark gray
+- Secondary panels: slightly elevated tone
+
+Text:
+- Primary text: soft white
+- Secondary text: muted gray
+- Labels: slightly dimmed but readable
+
+ACCENT COLORS (USE WITH CONTROL)
+
+Primary Accent (Green):
+- Used for:
+  - focus states
+  - active elements
+  - selected tabs
+  - key highlights
+- Must NOT be used everywhere
+- No neon overload
+
+Secondary Accents:
+- Blue → informational / neutral highlight
+- Amber → warnings / attention
+- Red → errors / critical states
+
+GLOW RULES (VERY IMPORTANT)
+
+Glow should be:
+- subtle
+- controlled
+- used only for interaction feedback
+
+Apply glow ONLY on:
+- hover (light)
+- focus (stronger but still clean)
+- active/selected states
+
+DO NOT:
+- apply glow to all borders
+- stack multiple glowing elements
+- create visual noise
+
+COMPONENT RULES
+
+Panels:
+- Slight layered contrast from background
+- Very subtle border or edge definition
+- No heavy shadows
+
+Inputs:
+- Clean dark base
+- Glow only on focus
+
+Buttons:
+- Default: clean, minimal
+- Hover: slight glow or lift
+- Active: slightly pressed feel
+
+Tabs / Toggles:
+- Inactive: low contrast
+- Active: brighter + subtle accent highlight
+
+Tables / Data:
+- Clear row separation using contrast, not heavy borders
+- Improve spacing, not decoration
+
+HOVER + INTERACTION
+
+- Add smooth transitions (fast, not slow)
+- Slight elevation or highlight on hover
+- No flashy animations
+
+OVERALL FEEL
+
+The dashboard should feel:
+- sharper
+- more modern
+- more premium
+- more focused
+- slightly “alive” but not distracting
+
+NOT:
+- hacker movie UI
+- retro terminal
+- neon overload
+- cluttered
+
+FINAL CHECK
+
+- readability improved
+- hierarchy clearer
+- interactions feel better
+- nothing feels heavier or harder to use

@@ -24,7 +24,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
   > = {
     running: {
       label: "Running",
-      className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_6px_rgba(52,211,153,0.1)]",
       icon: <Loader2 className="w-3 h-3 animate-spin" />,
     },
     queued: {
@@ -100,8 +100,8 @@ export function ExecutionCard({ card }: ExecutionCardProps) {
 
   return (
     <div className={cn(
-      "border rounded-lg bg-card overflow-hidden transition-opacity duration-200",
-      isCompleted ? "border-blue-500/20 opacity-70" : "border-border"
+      "border rounded-lg bg-card overflow-hidden transition-all duration-200",
+      isCompleted ? "border-blue-500/20 opacity-60" : "border-border hover:border-emerald-500/10"
     )}>
       <div className="px-4 py-3">
         <div className="flex items-start justify-between gap-3">

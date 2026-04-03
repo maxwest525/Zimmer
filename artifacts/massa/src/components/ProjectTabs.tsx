@@ -23,7 +23,7 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
           className={cn(
             "px-3 py-2 text-sm font-medium rounded-t transition-colors -mb-px border-b-2",
             activeTab === tab.id
-              ? "text-foreground border-foreground"
+              ? "text-emerald-400 border-emerald-500"
               : "text-muted-foreground border-transparent hover:text-foreground hover:border-border"
           )}
         >
