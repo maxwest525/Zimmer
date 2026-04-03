@@ -10,11 +10,10 @@ const KEYFRAMES = `
 `
 
 export function InsideMassa() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [, navigate] = useLocation()
   const [hoveredStep, setHoveredStep] = useState<number | null>(null)
 
-  const isDark = theme === 'dark'
+  const isDark = true
 
   useEffect(() => {
     const id = 'massa-inside-keyframes'
@@ -136,9 +135,6 @@ export function InsideMassa() {
           <span style={{ fontSize: 15, fontWeight: 700 }}>Massa <span style={{ color: c.green }}>AI</span></span>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={() => setTheme(isDark ? 'light' : 'dark')} style={{ background: 'transparent', color: c.text, border: `1px solid ${c.border}`, padding: '6px 11px', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>
-            {isDark ? 'Light' : 'Dark'}
-          </button>
           <div style={{ width: 30, height: 30, borderRadius: 999, background: c.soft, color: c.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid ${c.border}`, fontSize: 13 }}>M</div>
         </div>
       </div>
@@ -200,8 +196,8 @@ export function InsideMassa() {
                         width: 40,
                         height: 40,
                         borderRadius: '50%',
-                        background: isHovered ? c.green : c.soft,
-                        border: `2px solid ${c.green}`,
+                        background: isHovered ? c.green : '#060606',
+                        border: `1.5px solid ${c.green}`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
