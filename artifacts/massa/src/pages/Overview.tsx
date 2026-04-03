@@ -1515,40 +1515,7 @@ export function Overview() {
             )
           })()}
 
-          {/* Build Activity Feed */}
-          <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: '0 0 auto' }}>
-            <div style={{ padding: '8px 12px 6px', borderBottom: collapsedSections.buildActivity ? 'none' : `1px solid ${c.border}` }}>
-              {sectionHeader('BUILD ACTIVITY', 'buildActivity')}
-            </div>
-            {!collapsedSections.buildActivity && (
-              <div
-                ref={feedRef}
-                onMouseEnter={() => setFeedHovered(true)}
-                onMouseLeave={() => setFeedHovered(false)}
-                style={{ position: 'relative', height: 210, overflowY: 'auto', scrollBehavior: 'smooth', padding: '8px 0 4px' }}
-              >
-                <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#0d0d0d' : '#ffffff'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
-                {feedEntries.map(entry => {
-                  const pm = PHASE_META[entry.phase]
-                  return (
-                    <div key={entry.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 12px', borderBottom: `1px solid ${c.border}33` }}>
-                      <span style={{ fontSize: 10, color: c.muted, fontVariantNumeric: 'tabular-nums', flexShrink: 0, marginTop: 1 }}>{entry.time}</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: pm.color, background: `${pm.color}18`, border: `1px solid ${pm.color}44`, padding: '1px 6px', borderRadius: 999, flexShrink: 0, alignSelf: 'center' }}>{pm.label}</span>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.buildName}</div>
-                        <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.agent} — {entry.status}</div>
-                      </div>
-                    </div>
-                  )
-                })}
-                {feedEntries.length === 0 && (
-                  <div style={{ padding: '12px', fontSize: 12, color: c.muted }}>Waiting for activity…</div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Code Stream */}
+          {/* Code Stream + Build Activity */}
           <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, display: 'flex', flexDirection: 'column', flex: collapsedSections.codeStream ? 'none' : 1, minHeight: 0 }}>
             <div style={{ padding: '8px 12px 6px', borderBottom: collapsedSections.codeStream ? 'none' : `1px solid ${c.border}` }}>
               {sectionHeader('CODE STREAM', 'codeStream', <span style={{ width: 6, height: 6, borderRadius: 999, background: '#2d8a32', display: 'inline-block' }} />)}
@@ -1561,6 +1528,19 @@ export function Overview() {
                 style={{ flex: 1, overflowY: 'auto', background: isDark ? '#1a1a1a' : '#f0f0f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
               >
                 <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#1a1a1a' : '#f0f0f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
+                {feedEntries.length > 0 && feedEntries.slice(0, 3).map(entry => {
+                  const pm = PHASE_META[entry.phase]
+                  return (
+                    <div key={`feed-${entry.id}`} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 12px', borderBottom: `1px solid ${c.border}33`, fontFamily: 'inherit' }}>
+                      <span style={{ fontSize: 10, color: c.muted, fontVariantNumeric: 'tabular-nums', flexShrink: 0, marginTop: 1 }}>{entry.time}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: pm.color, background: `${pm.color}18`, border: `1px solid ${pm.color}44`, padding: '1px 6px', borderRadius: 999, flexShrink: 0, alignSelf: 'center' }}>{pm.label}</span>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.buildName}</div>
+                        <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.agent} — {entry.status}</div>
+                      </div>
+                    </div>
+                  )
+                })}
                 {codeLines.map(line => {
                   if (line.kind === 'qa') {
                     const isPass = line.qa === 'pass'
