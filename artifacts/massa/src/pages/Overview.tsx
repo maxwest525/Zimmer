@@ -567,7 +567,7 @@ export function Overview() {
                   </svg>
                 </button>
               </div>
-              <div style={{ fontSize: 12, color: '#ffffff', cursor: 'pointer', border: `1px solid ${c.border}`, padding: '4px 10px', borderRadius: 6 }}>Find Project</div>
+              <div style={{ fontSize: 12, color: '#ffffff', cursor: 'pointer', border: '1px solid #2e2e2e', padding: '4px 10px', borderRadius: 9, background: '#1a1a1a', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}>Find Project</div>
             </div>
           </div>
 
@@ -626,7 +626,9 @@ export function Overview() {
                             </div>
                           )}
                           <button onClick={(e) => { e.stopPropagation(); setExpandedBuildId(build.id) }}
-                            style={{ ...(column ? {} : { width: '100%' }), border: `1px solid ${c.border}`, background: isDark ? '#181818' : '#f0f4ef', color: c.text, padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                            style={{ ...(column ? {} : { width: '100%' }), border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '5px 12px', borderRadius: 9, cursor: 'pointer', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#242424'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}>
                             View Build
                           </button>
                         </div>
@@ -790,25 +792,26 @@ export function Overview() {
           <button
             onClick={() => setRightPanelCollapsed(true)}
             style={{
-              background: c.alt,
-              border: `1px solid ${c.border}`,
-              borderRadius: 8,
+              background: '#1a1a1a',
+              border: '1px solid #2e2e2e',
+              borderRadius: 9,
               padding: '6px 12px',
               cursor: 'pointer',
-              color: c.text,
+              color: '#ffffff',
               fontSize: 11,
               fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
               gap: 5,
               lineHeight: 1,
-              transition: 'color 0.15s, background 0.15s, border-color 0.15s',
+              transition: 'background 0.15s',
               alignSelf: 'flex-end',
               marginBottom: -4,
               letterSpacing: 0.5,
+              boxShadow: '3px 3px 8px rgba(0,0,0,0.45)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = c.green; e.currentTarget.style.color = c.green }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.text }}
+            onMouseEnter={e => e.currentTarget.style.background = '#242424'}
+            onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}
             title="Collapse right panel"
           >
             HIDE <span style={{ fontSize: 14 }}>›</span>
@@ -828,18 +831,21 @@ export function Overview() {
                 <button
                   onClick={handleStartAll}
                   disabled={readyBuildsCount === 0}
+                  onMouseEnter={e => { if (readyBuildsCount > 0) e.currentTarget.style.background = '#242424' }}
+                  onMouseLeave={e => { if (readyBuildsCount > 0) e.currentTarget.style.background = '#1a1a1a' }}
                   style={{
                     background: readyBuildsCount > 0 ? '#1a1a1a' : (isDark ? '#1e1e1e' : '#e8e8e8'),
                     color: readyBuildsCount > 0 ? '#9a8030' : c.muted,
-                    border: `1px solid ${readyBuildsCount > 0 ? '#9a803044' : c.border}`,
-                    borderRadius: 8,
+                    border: `1px solid ${readyBuildsCount > 0 ? '#2e2e2e' : c.border}`,
+                    borderRadius: 9,
                     padding: '7px 13px',
                     fontSize: 12,
                     fontWeight: 700,
                     cursor: readyBuildsCount > 0 ? 'pointer' : 'default',
                     letterSpacing: 0.3,
-                    transition: 'all 0.15s',
+                    transition: 'background 0.15s',
                     whiteSpace: 'nowrap',
+                    boxShadow: readyBuildsCount > 0 ? '3px 3px 8px rgba(0,0,0,0.45)' : 'none',
                   }}
                 >
                   Start All
@@ -985,7 +991,7 @@ export function Overview() {
                 <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>{expandProject.name}</div>
                 <div style={{ color: c.muted, fontSize: 13 }}>{expandProject.goal}</div>
               </div>
-              <button onClick={() => setExpandedProject(null)} style={{ border: `1px solid rgba(255,255,255,0.35)`, background: c.alt, color: c.text, padding: '9px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Close</button>
+              <button onClick={() => setExpandedProject(null)} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
             </div>
 
             {/* Root node */}
@@ -1064,7 +1070,7 @@ export function Overview() {
                       </div>
                       <div style={{ fontSize: 13, color: c.muted }}>{expandedBuild.project.name}</div>
                     </div>
-                    <button onClick={() => setExpandedBuildId(null)} style={{ border: `1px solid rgba(255,255,255,0.35)`, background: c.alt, color: c.text, padding: '9px 16px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Close</button>
+                    <button onClick={() => setExpandedBuildId(null)} onMouseEnter={e => e.currentTarget.style.background = '#242424'} onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'} style={{ border: '1px solid #2e2e2e', background: '#1a1a1a', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>Close</button>
                   </div>
 
                   {/* Progress */}
@@ -1170,12 +1176,16 @@ export function Overview() {
             <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
               <button
                 onClick={() => setShowClarifyModal(false)}
-                style={{ flex: 1, background: c.green, color: '#081008', border: 'none', borderRadius: 9, padding: '10px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                style={{ flex: 1, background: c.green, color: '#081008', border: 'none', borderRadius: 9, padding: '10px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'opacity 0.15s' }}>
                 Build with answers
               </button>
               <button
                 onClick={() => setShowClarifyModal(false)}
-                style={{ background: '#1a1a1a', color: c.muted, border: '1px solid #2e2e2e', borderRadius: 9, padding: '10px 16px', fontSize: 12, cursor: 'pointer' }}>
+                onMouseEnter={e => e.currentTarget.style.background = '#242424'}
+                onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}
+                style={{ background: '#1a1a1a', color: c.muted, border: '1px solid #2e2e2e', borderRadius: 9, padding: '10px 16px', fontSize: 12, cursor: 'pointer', boxShadow: '3px 3px 8px rgba(0,0,0,0.45)', transition: 'background 0.15s' }}>
                 Skip
               </button>
             </div>
