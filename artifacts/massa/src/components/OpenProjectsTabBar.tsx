@@ -19,7 +19,7 @@ function StatusDot({ status }: { status: ProjectStatus }) {
     );
   }
   return (
-    <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground/30 shrink-0" />
+    <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground/60 shrink-0" />
   );
 }
 

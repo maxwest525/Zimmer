@@ -50,7 +50,7 @@ function StatusIcon({ status, className }: StatusIconProps) {
   }
   return (
     <Circle
-      className={cn("w-3.5 h-3.5 text-muted-foreground/40", className)}
+      className={cn("w-3.5 h-3.5 text-muted-foreground/70", className)}
       strokeWidth={2}
     />
   );

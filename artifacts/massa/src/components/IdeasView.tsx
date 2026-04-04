@@ -26,7 +26,7 @@ const c = {
   border: '#1e2330',
   borderLight: '#252a35',
   text: '#e8eaed',
-  muted: '#6b7280',
+  muted: '#9ca3af',
   green: '#34d399',
   font: '"JetBrains Mono", Menlo, monospace',
 }

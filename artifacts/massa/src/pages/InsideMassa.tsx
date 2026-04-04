@@ -152,9 +152,9 @@ export function InsideMassa() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {isMobile && (
             <button onClick={() => setMobileNavOpen(!mobileNavOpen)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <div style={{ width: 20, height: 2, background: '#888' }} />
-              <div style={{ width: 20, height: 2, background: '#888' }} />
-              <div style={{ width: 20, height: 2, background: '#888' }} />
+              <div style={{ width: 20, height: 2, background: '#b0b0b0' }} />
+              <div style={{ width: 20, height: 2, background: '#b0b0b0' }} />
+              <div style={{ width: 20, height: 2, background: '#b0b0b0' }} />
             </button>
           )}
           <div style={{ width: 28, height: 28, borderRadius: 7, background: c.green, color: '#091109', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14 }}>M</div>

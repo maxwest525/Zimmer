@@ -10,9 +10,9 @@ export function ExecutionCardsPanel({ cards }: ExecutionCardsPanelProps) {
   if (cards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-36 text-center px-6 text-muted-foreground">
-        <Inbox className="w-8 h-8 mb-2 text-muted-foreground/40" />
+        <Inbox className="w-8 h-8 mb-2 text-muted-foreground/70" />
         <p className="text-sm font-medium">No tasks running</p>
-        <p className="text-xs text-muted-foreground/60 mt-0.5">
+        <p className="text-xs text-muted-foreground/80 mt-0.5">
           Describe your goal above and hit Architect & Build to get started.
         </p>
       </div>

@@ -23,7 +23,7 @@ export function WritingCanvas({ onSubmit, isActive }: WritingCanvasProps) {
           <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Command Input</span>
         </div>
         <textarea
-          className="w-full min-h-[120px] resize-none px-4 pt-2 pb-2 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/40 outline-none leading-relaxed"
+          className="w-full min-h-[120px] resize-none px-4 pt-2 pb-2 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/70 outline-none leading-relaxed"
           placeholder="Describe what you want to architect and build. Be direct — this is your command."
           value={value}
           onChange={(e) => setValue(e.target.value)}
@@ -37,7 +37,7 @@ export function WritingCanvas({ onSubmit, isActive }: WritingCanvasProps) {
         <div className="flex items-center justify-between px-3 py-2 bg-muted/20 border-t border-border/50">
           <span className="text-[10px] text-muted-foreground">
             {value.length > 0 ? `${value.length} chars · ` : ""}
-            <span className="text-muted-foreground/50">⌘ + Enter to submit</span>
+            <span className="text-muted-foreground/70">⌘ + Enter to submit</span>
           </span>
           <button
             onClick={handleSubmit}

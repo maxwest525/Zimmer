@@ -44,12 +44,12 @@ export function ImageGenerator() {
 
           <div className="relative mb-8">
             <div className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border bg-card">
-              <Sparkles className="w-4 h-4 text-muted-foreground/50 shrink-0" />
+              <Sparkles className="w-4 h-4 text-muted-foreground/70 shrink-0" />
               <input
                 type="text"
                 placeholder="Describe the image you want to create..."
                 disabled
-                className="flex-1 bg-transparent text-sm text-muted-foreground/50 placeholder:text-muted-foreground/30 outline-none cursor-not-allowed"
+                className="flex-1 bg-transparent text-sm text-muted-foreground/70 placeholder:text-muted-foreground/60 outline-none cursor-not-allowed"
               />
               <button
                 disabled
@@ -83,7 +83,7 @@ export function ImageGenerator() {
                       border: `1px solid ${img.color}30`,
                     }}
                   />
-                  <span className="text-[11px] text-muted-foreground/40 text-center leading-tight">
+                  <span className="text-[11px] text-muted-foreground/70 text-center leading-tight">
                     {img.prompt}
                   </span>
                 </div>
@@ -92,7 +92,7 @@ export function ImageGenerator() {
                     "w-5 h-5 rounded flex items-center justify-center",
                     "bg-muted/30"
                   )}>
-                    <ImagePlus className="w-3 h-3 text-muted-foreground/30" />
+                    <ImagePlus className="w-3 h-3 text-muted-foreground/60" />
                   </div>
                 </div>
               </div>

@@ -25,7 +25,7 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
             "px-4 py-2.5 text-xs font-mono font-medium tracking-wide transition-colors -mb-px border-b-2 rounded-none uppercase",
             activeTab === tab.id
               ? "text-emerald-400 border-emerald-400 bg-emerald-400/[0.04]"
-              : "text-[#7a8294] border-transparent hover:text-[#c0c5cf] hover:bg-white/[0.02]"
+              : "text-[#a0a8b8] border-transparent hover:text-[#c0c5cf] hover:bg-white/[0.02]"
           )}
         >
           {activeTab === tab.id && <span className="text-emerald-400 mr-1.5 opacity-70">{">"}</span>}

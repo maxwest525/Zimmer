@@ -75,7 +75,7 @@ function renderMessageContent(content: string) {
             const isSeparator = cells.every(c => /^[\s-:]+$/.test(c))
             if (isSeparator) return null
             return (
-              <div key={li} style={{ display: 'flex', gap: 4, fontFamily: 'monospace', fontSize: 11, color: '#999', margin: '1px 0' }}>
+              <div key={li} style={{ display: 'flex', gap: 4, fontFamily: 'monospace', fontSize: 11, color: '#bbb', margin: '1px 0' }}>
                 {cells.map((cell, ci) => (
                   <span key={ci} style={{ flex: 1, padding: '2px 4px', background: '#1a1a1a', borderRadius: 2 }}>{cell.trim()}</span>
                 ))}
@@ -265,7 +265,7 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                         {build.title}
                       </div>
                       {lastMsg && (
-                        <div style={{ fontSize: 10, color: '#666', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ fontSize: 10, color: '#999', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {lastMsg.role === 'user' ? 'You: ' : ''}{lastMsg.content.slice(0, 60).replace(/\n/g, ' ')}
                         </div>
                       )}
@@ -315,7 +315,7 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                   }}>
                     {renderMessageContent(msg.content)}
                   </div>
-                  <div style={{ fontSize: 9, color: '#555', marginTop: 4, padding: '0 4px' }}>{msg.time}</div>
+                  <div style={{ fontSize: 9, color: '#888', marginTop: 4, padding: '0 4px' }}>{msg.time}</div>
                 </div>
               ))}
               {isTypingForCurrent && (
@@ -339,8 +339,8 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                 <button
                   onClick={() => setShowAttachMenu(prev => !prev)}
                   onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-                  onMouseLeave={e => { if (!showAttachMenu) e.currentTarget.style.color = '#555' }}
-                  style={{ background: 'transparent', border: 'none', color: showAttachMenu ? '#fff' : '#555', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
+                  onMouseLeave={e => { if (!showAttachMenu) e.currentTarget.style.color = '#888' }}
+                  style={{ background: 'transparent', border: 'none', color: showAttachMenu ? '#fff' : '#888', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
                   title="Attach files"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
@@ -410,7 +410,7 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8 }}>
             <div style={{ fontSize: 32, color: '#222' }}>💬</div>
             <div style={{ fontSize: 14, color: c.muted, fontWeight: 600 }}>Select a conversation</div>
-            <div style={{ fontSize: 12, color: '#555' }}>Choose a build from the left panel to view its chat thread</div>
+            <div style={{ fontSize: 12, color: '#888' }}>Choose a build from the left panel to view its chat thread</div>
           </div>
         )}
       </div>

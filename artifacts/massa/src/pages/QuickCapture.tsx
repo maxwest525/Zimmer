@@ -61,7 +61,7 @@ export function QuickCapture() {
             padding: 14, minHeight: 120, resize: 'vertical', outline: 'none',
           }}
         />
-        <div style={{ textAlign: 'right', fontSize: 11, color: '#6b7280', marginTop: 6 }}>
+        <div style={{ textAlign: 'right', fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
           {content.length} chars
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>

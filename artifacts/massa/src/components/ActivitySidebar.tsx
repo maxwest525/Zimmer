@@ -38,7 +38,7 @@ function ActivityItemRow({ item }: ActivityItemProps) {
           </div>
         )}
       </div>
-      <span className="text-[10px] text-muted-foreground/60 shrink-0 mt-0.5">
+      <span className="text-[10px] text-muted-foreground/80 shrink-0 mt-0.5">
         {item.timestamp}
       </span>
     </div>

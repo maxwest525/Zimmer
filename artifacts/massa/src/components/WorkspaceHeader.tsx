@@ -61,7 +61,7 @@ export function WorkspaceHeader({ project, onOpenActivity, activityCount = 0 }: 
           <LayoutGrid className="w-3.5 h-3.5" />
           <span className="text-xs font-medium">Overview</span>
         </button>
-        <span className="text-muted-foreground/50 text-sm">/</span>
+        <span className="text-muted-foreground/70 text-sm">/</span>
         <h1 className="text-base font-semibold text-foreground">{project.name}</h1>
         <StatusPill status={project.status} />
       </div>

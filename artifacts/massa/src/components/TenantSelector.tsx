@@ -7,7 +7,7 @@ function statusDot(status: string) {
   if (status === "needs-review" || status === "idle" || status === "queued") return "#f59e0b";
   if (status === "failed") return "#f87171";
   if (status === "complete") return "#60a5fa";
-  return "#6b7280";
+  return "#9ca3af";
 }
 
 export function TenantSelector() {

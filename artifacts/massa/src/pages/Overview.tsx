@@ -91,7 +91,7 @@ function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: 
   if (status === 'failed') return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f87171', background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✕ Failed</span>
   )
-  return <span style={{ fontSize: fs, color: '#6b7280', background: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', padding: pad, borderRadius: 999, fontWeight: 600 }}>Idle</span>
+  return <span style={{ fontSize: fs, color: '#9ca3af', background: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', padding: pad, borderRadius: 999, fontWeight: 600 }}>Idle</span>
 }
 
 function getBuildType(stack: string[], title: string): 'ui' | 'backend' | 'database' | 'automation' {
@@ -128,11 +128,11 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             <div style={{ height: f(2), width: m ? 10 : 30, background: '#333', borderRadius: 1 }} />
             {!m && <>
               <div style={{ display: 'flex', gap: 2, marginLeft: 6 }}>
-                {['1m', '5m', '1H', '4H', '1D'].map((tf, i) => <div key={i} style={{ fontSize: 3, color: i === 2 ? '#fff' : '#444', padding: '1px 3px', background: i === 2 ? `${sc}30` : 'transparent', borderRadius: 2 }}>{tf}</div>)}
+                {['1m', '5m', '1H', '4H', '1D'].map((tf, i) => <div key={i} style={{ fontSize: 3, color: i === 2 ? '#fff' : '#777', padding: '1px 3px', background: i === 2 ? `${sc}30` : 'transparent', borderRadius: 2 }}>{tf}</div>)}
               </div>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 3, alignItems: 'center' }}>
                 <div style={{ width: 4, height: 4, borderRadius: 99, background: '#34d399' }} />
-                <div style={{ fontSize: 3, color: '#888' }}>Live</div>
+                <div style={{ fontSize: 3, color: '#b0b0b0' }}>Live</div>
                 <div style={{ width: 16, height: 5, borderRadius: 2, background: `${sc}30`, border: `1px solid ${sc}50` }} />
               </div>
             </>}
@@ -147,7 +147,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               ].slice(0, m ? 2 : 4).map((kpi, i) => (
                 <div key={i} style={{ flex: 1, background: '#111', borderRadius: f(2), padding: f(3), border: '1px solid #1a1a1a' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: f(4), color: '#555' }}>{kpi.label}</div>
+                    <div style={{ fontSize: f(4), color: '#888' }}>{kpi.label}</div>
                     {!m && kpi.delta && <div style={{ fontSize: 3, color: kpi.c }}>{kpi.delta}</div>}
                   </div>
                   <div style={{ fontSize: f(7), fontWeight: 700, color: kpi.c, marginTop: f(1) }}>{kpi.val}</div>
@@ -157,7 +157,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             {!m && <div style={{ flex: 1, display: 'flex', gap: 3 }}>
               <div style={{ flex: 3, background: '#0e0e0e', borderRadius: 3, border: '1px solid #1a1a1a', padding: 4, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-                  <div style={{ fontSize: 4, color: '#888', fontWeight: 600 }}>BTC/USDT</div>
+                  <div style={{ fontSize: 4, color: '#b0b0b0', fontWeight: 600 }}>BTC/USDT</div>
                   <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                     <span style={{ fontSize: 5, fontWeight: 700, color: '#34d399' }}>$68,412</span>
                     <span style={{ fontSize: 3, color: '#34d399' }}>+1.8%</span>
@@ -176,8 +176,8 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               </div>
               <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <div style={{ flex: 1, background: '#0e0e0e', borderRadius: 3, border: '1px solid #1a1a1a', padding: 4, overflow: 'hidden' }}>
-                  <div style={{ fontSize: 4, color: '#555', marginBottom: 2 }}>Open Positions</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 3, color: '#333', marginBottom: 2, borderBottom: '1px solid #151515', paddingBottom: 1 }}>
+                  <div style={{ fontSize: 4, color: '#888', marginBottom: 2 }}>Open Positions</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 3, color: '#666', marginBottom: 2, borderBottom: '1px solid #151515', paddingBottom: 1 }}>
                     <span>Pair</span><span>Side</span><span>Size</span><span>P&L</span>
                   </div>
                   {[
@@ -187,15 +187,15 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                     { pair: 'AVAX', side: 'Long', size: '40', pnl: '+$34', c: '#34d399' },
                   ].map((pos, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 4, marginBottom: 2, padding: '1px 0' }}>
-                      <span style={{ color: '#999', minWidth: 20 }}>{pos.pair}</span>
+                      <span style={{ color: '#bbb', minWidth: 20 }}>{pos.pair}</span>
                       <span style={{ color: pos.side === 'Long' ? '#34d39980' : '#f8717180', fontSize: 3, minWidth: 14 }}>{pos.side}</span>
-                      <span style={{ color: '#555', fontSize: 3, minWidth: 10 }}>{pos.size}</span>
+                      <span style={{ color: '#888', fontSize: 3, minWidth: 10 }}>{pos.size}</span>
                       <span style={{ color: pos.c, fontWeight: 600, minWidth: 16, textAlign: 'right' }}>{pos.pnl}</span>
                     </div>
                   ))}
                 </div>
                 <div style={{ background: '#0e0e0e', borderRadius: 3, border: '1px solid #1a1a1a', padding: 4 }}>
-                  <div style={{ fontSize: 4, color: '#555', marginBottom: 2 }}>Order Book</div>
+                  <div style={{ fontSize: 4, color: '#888', marginBottom: 2 }}>Order Book</div>
                   <div style={{ display: 'flex', gap: 2 }}>
                     <div style={{ flex: 1 }}>
                       {[95,80,65,45,30].map((w, i) => (
@@ -203,7 +203,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                           <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: `${w}%`, background: '#34d39915', borderRadius: 1 }} />
                           <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', fontSize: 3, padding: '0 1px' }}>
                             <span style={{ color: '#34d399' }}>{(68412 - i * 12).toLocaleString()}</span>
-                            <span style={{ color: '#444' }}>{(w * 0.02).toFixed(2)}</span>
+                            <span style={{ color: '#777' }}>{(w * 0.02).toFixed(2)}</span>
                           </div>
                         </div>
                       ))}
@@ -214,7 +214,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                           <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${w}%`, background: '#f8717115', borderRadius: 1 }} />
                           <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', fontSize: 3, padding: '0 1px' }}>
                             <span style={{ color: '#f87171' }}>{(68424 + i * 12).toLocaleString()}</span>
-                            <span style={{ color: '#444' }}>{(w * 0.018).toFixed(2)}</span>
+                            <span style={{ color: '#777' }}>{(w * 0.018).toFixed(2)}</span>
                           </div>
                         </div>
                       ))}
@@ -236,10 +236,10 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
           <div style={{ height: f(7), background: '#161616', borderBottom: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', padding: `0 ${f(4)}px`, gap: f(3) }}>
             {!m && <>
               {['#ff5f56', '#ffbd2e', '#27c93f'].map(clr => <div key={clr} style={{ width: 4, height: 4, borderRadius: 99, background: clr }} />)}
-              <div style={{ marginLeft: 8, fontSize: 4, color: '#999', padding: '1px 4px', background: '#1e1e1e', borderRadius: 2 }}>src/engine/strategy.ts</div>
-              <div style={{ fontSize: 4, color: '#555', padding: '1px 4px' }}>src/engine/order.ts</div>
-              <div style={{ fontSize: 4, color: '#555', padding: '1px 4px' }}>src/engine/broker.ts</div>
-              <div style={{ marginLeft: 'auto', fontSize: 3, color: '#333' }}>TypeScript</div>
+              <div style={{ marginLeft: 8, fontSize: 4, color: '#bbb', padding: '1px 4px', background: '#1e1e1e', borderRadius: 2 }}>src/engine/strategy.ts</div>
+              <div style={{ fontSize: 4, color: '#888', padding: '1px 4px' }}>src/engine/order.ts</div>
+              <div style={{ fontSize: 4, color: '#888', padding: '1px 4px' }}>src/engine/broker.ts</div>
+              <div style={{ marginLeft: 'auto', fontSize: 3, color: '#666' }}>TypeScript</div>
             </>}
             {m && ['#ff5f56', '#ffbd2e', '#27c93f'].map(clr => <div key={clr} style={{ width: 2, height: 2, borderRadius: 99, background: clr }} />)}
           </div>
@@ -292,9 +292,9 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
           {!m && <div style={{ height: 14, background: '#161616', borderTop: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', padding: '0 6px', gap: 8 }}>
             <div style={{ fontSize: 3.5, color: '#34d399' }}>0 errors</div>
             <div style={{ fontSize: 3.5, color: '#f59e0b' }}>2 warnings</div>
-            <div style={{ marginLeft: 'auto', fontSize: 3.5, color: '#555' }}>Ln 21, Col 34</div>
-            <div style={{ fontSize: 3.5, color: '#555' }}>UTF-8</div>
-            <div style={{ fontSize: 3.5, color: '#555' }}>TS</div>
+            <div style={{ marginLeft: 'auto', fontSize: 3.5, color: '#888' }}>Ln 21, Col 34</div>
+            <div style={{ fontSize: 3.5, color: '#888' }}>UTF-8</div>
+            <div style={{ fontSize: 3.5, color: '#888' }}>TS</div>
           </div>}
         </div>
       </div>
@@ -312,7 +312,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             ...(!m ? [{ label: 'Leverage', val: '3x', c: '#f59e0b' }] : []),
           ].slice(0, m ? 2 : 4).map((kpi, i) => (
             <div key={i} style={{ flex: 1, background: '#0e0e0e', borderRadius: f(3), padding: f(3), border: '1px solid #1a1a1a' }}>
-              <div style={{ fontSize: f(4), color: '#555', marginBottom: f(1) }}>{kpi.label}</div>
+              <div style={{ fontSize: f(4), color: '#888', marginBottom: f(1) }}>{kpi.label}</div>
               <div style={{ fontSize: f(7), fontWeight: 700, color: kpi.c }}>{kpi.val}</div>
             </div>
           ))}
@@ -320,7 +320,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
         {!m && <>
           <div style={{ display: 'flex', gap: 3, flex: 1 }}>
             <div style={{ flex: 1, background: '#0e0e0e', borderRadius: 3, padding: 4, border: '1px solid #1a1a1a', overflow: 'hidden' }}>
-              <div style={{ fontSize: 4, color: '#555', marginBottom: 3 }}>Portfolio Exposure by Asset</div>
+              <div style={{ fontSize: 4, color: '#888', marginBottom: 3 }}>Portfolio Exposure by Asset</div>
               <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 28 }}>
                 {[
                   { label: 'BTC', v: 85, c: '#f59e0b' },
@@ -331,13 +331,13 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                 ].map((bar, i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                     <div style={{ width: '80%', height: `${bar.v}%`, background: bar.v > 70 ? `${bar.c}` : `${bar.c}80`, borderRadius: '1px 1px 0 0', border: bar.v > 70 ? '1px solid #f8717150' : 'none' }} />
-                    <div style={{ fontSize: 3, color: '#555' }}>{bar.label}</div>
+                    <div style={{ fontSize: 3, color: '#888' }}>{bar.label}</div>
                   </div>
                 ))}
               </div>
             </div>
             <div style={{ flex: 1, background: '#0e0e0e', borderRadius: 3, padding: 4, border: '1px solid #1a1a1a' }}>
-              <div style={{ fontSize: 4, color: '#555', marginBottom: 3 }}>Safety Rules</div>
+              <div style={{ fontSize: 4, color: '#888', marginBottom: 3 }}>Safety Rules</div>
               {[
                 { rule: 'Max loss per trade: 1%', ok: true },
                 { rule: 'Daily loss limit: 3%', ok: true },
@@ -346,7 +346,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               ].map((r, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 2, fontSize: 4 }}>
                   <div style={{ width: 4, height: 4, borderRadius: 1, background: r.ok ? '#34d39940' : '#f8717140', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 3, color: r.ok ? '#34d399' : '#f87171' }}>{r.ok ? '✓' : '!'}</div>
-                  <span style={{ color: '#888' }}>{r.rule}</span>
+                  <span style={{ color: '#b0b0b0' }}>{r.rule}</span>
                 </div>
               ))}
             </div>
@@ -360,10 +360,10 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
     <div style={base}>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
         {!m && <div style={{ height: 10, background: '#0e0e0e', borderBottom: '1px solid #1a1a1a', display: 'flex', alignItems: 'center', padding: '0 6px', gap: 4 }}>
-          <div style={{ fontSize: 4, color: '#888', fontWeight: 600 }}>Notifications</div>
+          <div style={{ fontSize: 4, color: '#b0b0b0', fontWeight: 600 }}>Notifications</div>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 3 }}>
             {['All', 'Trades', 'Risk', 'System'].map((tab, i) => (
-              <div key={i} style={{ fontSize: 3, color: i === 0 ? sc : '#555', padding: '1px 3px', borderRadius: 2, background: i === 0 ? `${sc}15` : 'transparent' }}>{tab}</div>
+              <div key={i} style={{ fontSize: 3, color: i === 0 ? sc : '#888', padding: '1px 3px', borderRadius: 2, background: i === 0 ? `${sc}15` : 'transparent' }}>{tab}</div>
             ))}
           </div>
         </div>}
@@ -379,9 +379,9 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: f(1) }}>
                   <div style={{ fontSize: f(5), fontWeight: 600, color: '#ccc' }}>{n.title}</div>
-                  <div style={{ fontSize: f(3), color: '#444', flexShrink: 0 }}>{n.t}</div>
+                  <div style={{ fontSize: f(3), color: '#777', flexShrink: 0 }}>{n.t}</div>
                 </div>
-                {!m && <div style={{ fontSize: 4, color: '#666', marginBottom: 2 }}>{n.desc}</div>}
+                {!m && <div style={{ fontSize: 4, color: '#999', marginBottom: 2 }}>{n.desc}</div>}
                 {!m && <div style={{ fontSize: 3, color: n.c, background: `${n.c}10`, padding: '1px 3px', borderRadius: 2, display: 'inline-block' }}>{n.channel}</div>}
               </div>
             </div>
@@ -402,7 +402,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             ...(!m ? [{ l: 'Win Rate', v: '64%', c: '#60a5fa' }] : []),
           ].slice(0, m ? 2 : 4).map((s, i) => (
             <div key={i} style={{ flex: 1, background: '#0e0e0e', borderRadius: f(3), padding: f(3), border: '1px solid #1a1a1a' }}>
-              <div style={{ fontSize: f(4), color: '#555' }}>{s.l}</div>
+              <div style={{ fontSize: f(4), color: '#888' }}>{s.l}</div>
               <div style={{ fontSize: f(7), fontWeight: 700, color: s.c }}>{s.v}</div>
             </div>
           ))}
@@ -410,8 +410,8 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
         <div style={{ flex: 1, display: 'flex', gap: f(3) }}>
           <div style={{ flex: 3, background: '#0e0e0e', borderRadius: f(3), border: '1px solid #1a1a1a', position: 'relative', overflow: 'hidden', padding: f(4) }}>
             {!m && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-              <div style={{ fontSize: 4, color: '#555' }}>Equity Curve — 6 Month Backtest</div>
-              <div style={{ fontSize: 3, color: '#444' }}>Jan 2024 — Jun 2024</div>
+              <div style={{ fontSize: 4, color: '#888' }}>Equity Curve — 6 Month Backtest</div>
+              <div style={{ fontSize: 3, color: '#777' }}>Jan 2024 — Jun 2024</div>
             </div>}
             <svg viewBox="0 0 120 35" style={{ width: '100%', height: m ? '100%' : 'calc(100% - 10px)' }} preserveAspectRatio="none">
               <defs><linearGradient id="eq" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={sc} stopOpacity="0.3" /><stop offset="100%" stopColor={sc} stopOpacity="0.02" /></linearGradient></defs>
@@ -422,7 +422,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
           </div>
           {!m && <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
             <div style={{ flex: 1, background: '#0e0e0e', borderRadius: 3, border: '1px solid #1a1a1a', padding: 4 }}>
-              <div style={{ fontSize: 4, color: '#555', marginBottom: 3 }}>Trade Log (Last 5)</div>
+              <div style={{ fontSize: 4, color: '#888', marginBottom: 3 }}>Trade Log (Last 5)</div>
               {[
                 { pair: 'BTC Long', result: '+4.2%', c: '#34d399' },
                 { pair: 'ETH Short', result: '-1.1%', c: '#f87171' },
@@ -430,13 +430,13 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                 { pair: 'BTC Short', result: '+1.5%', c: '#34d399' },
               ].map((t, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 4, marginBottom: 2 }}>
-                  <span style={{ color: '#888' }}>{t.pair}</span>
+                  <span style={{ color: '#b0b0b0' }}>{t.pair}</span>
                   <span style={{ color: t.c, fontWeight: 600 }}>{t.result}</span>
                 </div>
               ))}
             </div>
             <div style={{ height: 18, background: '#0e0e0e', borderRadius: 3, border: '1px solid #1a1a1a', padding: 4 }}>
-              <div style={{ fontSize: 4, color: '#555', marginBottom: 2 }}>Monthly Returns</div>
+              <div style={{ fontSize: 4, color: '#888', marginBottom: 2 }}>Monthly Returns</div>
               <div style={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: 8 }}>
                 {[5,8,-2,6,9,4].map((v,i) => <div key={i} style={{ flex: 1, height: Math.abs(v), background: v > 0 ? '#34d39960' : '#f8717160', borderRadius: '1px 1px 0 0' }} />)}
               </div>
@@ -453,10 +453,10 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
         <div style={{ height: f(9), background: '#0a0a0a', borderBottom: '1px solid #151515', display: 'flex', alignItems: 'center', padding: `0 ${f(6)}px`, justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: f(3) }}>
             <div style={{ fontSize: f(5), fontWeight: 800, color: '#fff', letterSpacing: f(2) }}>M</div>
-            {!m && <div style={{ fontSize: 4, fontWeight: 700, color: '#888', letterSpacing: 1.5 }}>MASSA</div>}
+            {!m && <div style={{ fontSize: 4, fontWeight: 700, color: '#b0b0b0', letterSpacing: 1.5 }}>MASSA</div>}
           </div>
           {!m && <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {['Features', 'How It Works', 'Pricing', 'Docs'].map((t, i) => <div key={i} style={{ fontSize: 3.5, color: '#666' }}>{t}</div>)}
+            {['Features', 'How It Works', 'Pricing', 'Docs'].map((t, i) => <div key={i} style={{ fontSize: 3.5, color: '#999' }}>{t}</div>)}
             <div style={{ fontSize: 3.5, color: '#fff', background: sc, padding: '2px 6px', borderRadius: 2, fontWeight: 600 }}>Get Started</div>
           </div>}
         </div>
@@ -465,18 +465,18 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: m ? 4 : 8, fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: f(3) }}>{m ? 'Build with AI' : 'Build anything with'}</div>
               {!m && <div style={{ fontSize: 8, fontWeight: 800, color: sc, lineHeight: 1.2, marginBottom: 4 }}>AI agents, in parallel</div>}
-              <div style={{ fontSize: f(3), color: '#555', lineHeight: 1.4, marginBottom: f(4), maxWidth: m ? '100%' : 70 }}>{m ? '' : 'Describe what you want. MASSA architects, builds, and deploys — running multiple agents simultaneously.'}</div>
+              <div style={{ fontSize: f(3), color: '#888', lineHeight: 1.4, marginBottom: f(4), maxWidth: m ? '100%' : 70 }}>{m ? '' : 'Describe what you want. MASSA architects, builds, and deploys — running multiple agents simultaneously.'}</div>
               {!m && <div style={{ display: 'flex', gap: 4 }}>
                 <div style={{ fontSize: 4, color: '#fff', background: sc, padding: '3px 8px', borderRadius: 3, fontWeight: 600 }}>Start Building</div>
-                <div style={{ fontSize: 4, color: '#999', background: 'transparent', border: '1px solid #2a3040', padding: '3px 8px', borderRadius: 3 }}>Watch Demo</div>
+                <div style={{ fontSize: 4, color: '#bbb', background: 'transparent', border: '1px solid #2a3040', padding: '3px 8px', borderRadius: 3 }}>Watch Demo</div>
               </div>}
             </div>
             {!m && <div style={{ width: 60, height: 45, background: '#0a0a0a', borderRadius: 4, border: '1px solid #1a1a1a', padding: 4, position: 'relative', overflow: 'hidden' }}>
-              <div style={{ fontSize: 3, color: '#444', marginBottom: 2 }}>Live Preview</div>
+              <div style={{ fontSize: 3, color: '#777', marginBottom: 2 }}>Live Preview</div>
               <div style={{ display: 'flex', gap: 2, marginBottom: 3 }}>
                 {[{ l: 'Agents', v: '4', c: sc }, { l: 'Builds', v: '12', c: '#60a5fa' }].map((k, i) => (
                   <div key={i} style={{ flex: 1, background: '#111', borderRadius: 2, padding: '2px 3px', border: '1px solid #1a1a1a' }}>
-                    <div style={{ fontSize: 2.5, color: '#444' }}>{k.l}</div>
+                    <div style={{ fontSize: 2.5, color: '#777' }}>{k.l}</div>
                     <div style={{ fontSize: 5, fontWeight: 700, color: k.c }}>{k.v}</div>
                   </div>
                 ))}
@@ -489,7 +489,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
           {!m && <>
             <div style={{ padding: '0 8px 4px', display: 'flex', justifyContent: 'center', gap: 6 }}>
               {['Claude', 'Lovable', 'Replit', 'n8n'].map((t, i) => (
-                <div key={i} style={{ fontSize: 3, color: '#333', display: 'flex', alignItems: 'center', gap: 2 }}>
+                <div key={i} style={{ fontSize: 3, color: '#666', display: 'flex', alignItems: 'center', gap: 2 }}>
                   <div style={{ width: 4, height: 4, borderRadius: 1, background: '#151920' }} />{t}
                 </div>
               ))}
@@ -503,7 +503,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                 <div key={i} style={{ flex: 1, background: '#0a0a0a', borderRadius: 3, padding: 5, border: '1px solid #151515' }}>
                   <div style={{ fontSize: 6, marginBottom: 2 }}>{feat.icon}</div>
                   <div style={{ fontSize: 4, fontWeight: 600, color: '#ccc', marginBottom: 1 }}>{feat.title}</div>
-                  <div style={{ fontSize: 3, color: '#555', lineHeight: 1.3 }}>{feat.desc}</div>
+                  <div style={{ fontSize: 3, color: '#888', lineHeight: 1.3 }}>{feat.desc}</div>
                 </div>
               ))}
             </div>
@@ -517,20 +517,20 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
     <div style={base}>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
         {!m && <div style={{ height: 10, background: '#0e0e0e', borderBottom: '1px solid #1a1a1a', display: 'flex', alignItems: 'center', padding: '0 6px' }}>
-          <div style={{ fontSize: 4, color: '#888', fontWeight: 600 }}>API Connections</div>
+          <div style={{ fontSize: 4, color: '#b0b0b0', fontWeight: 600 }}>API Connections</div>
           <div style={{ marginLeft: 'auto', width: 16, height: 5, borderRadius: 2, background: `${sc}20`, border: `1px solid ${sc}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 3, color: sc }}>+ Add</div>
         </div>}
         <div style={{ flex: 1, padding: f(4), display: 'flex', flexDirection: 'column', gap: f(3) }}>
           {[
             { name: 'Binance', status: 'Connected', c: '#34d399', keys: '••••R4xK', latency: '42ms' },
             { name: 'Coinbase Pro', status: 'API Key Set', c: sc, keys: '••••9mPq', latency: '68ms' },
-            { name: 'Kraken', status: 'Not configured', c: '#444', keys: '—', latency: '—' },
+            { name: 'Kraken', status: 'Not configured', c: '#777', keys: '—', latency: '—' },
           ].slice(0, m ? 2 : 3).map((api, i) => (
-            <div key={i} style={{ background: '#0e0e0e', borderRadius: f(3), padding: f(4), border: `1px solid ${api.c === '#444' ? '#1a1a1a' : api.c + '30'}`, display: 'flex', alignItems: 'center', gap: f(4) }}>
+            <div key={i} style={{ background: '#0e0e0e', borderRadius: f(3), padding: f(4), border: `1px solid ${api.c === '#777' ? '#1a1a1a' : api.c + '30'}`, display: 'flex', alignItems: 'center', gap: f(4) }}>
               <div style={{ width: f(10), height: f(10), borderRadius: f(2), background: `${api.c}15`, border: `1px solid ${api.c}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: f(5), fontWeight: 700, color: api.c, flexShrink: 0 }}>{api.name[0]}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: f(5), fontWeight: 600, color: '#ccc', marginBottom: f(1) }}>{api.name}</div>
-                {!m && <div style={{ display: 'flex', gap: 6, fontSize: 3, color: '#555' }}>
+                {!m && <div style={{ display: 'flex', gap: 6, fontSize: 3, color: '#888' }}>
                   <span>Key: {api.keys}</span>
                   <span>Latency: {api.latency}</span>
                 </div>}
@@ -550,9 +550,9 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
           <div style={{ height: f(7), background: '#161616', borderBottom: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', padding: `0 ${f(4)}px`, gap: f(3) }}>
             {['#ff5f56', '#ffbd2e', '#27c93f'].map(clr => <div key={clr} style={{ width: m ? 2 : 4, height: m ? 2 : 4, borderRadius: 99, background: clr }} />)}
             {!m && <>
-              <div style={{ fontSize: 4, color: '#888', marginLeft: 6 }}>~/massa/crawler</div>
+              <div style={{ fontSize: 4, color: '#b0b0b0', marginLeft: 6 }}>~/massa/crawler</div>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 4, alignItems: 'center' }}>
-                <div style={{ fontSize: 3, color: '#555' }}>PID 4821</div>
+                <div style={{ fontSize: 3, color: '#888' }}>PID 4821</div>
                 <div style={{ fontSize: 3, color: '#34d399', background: '#34d39915', padding: '1px 3px', borderRadius: 2 }}>Running</div>
               </div>
             </>}
@@ -564,8 +564,8 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               { l: 'Errors', v: '0', pct: 0 },
             ].map((stat, i) => (
               <div key={i} style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 3, color: '#555', marginBottom: 1 }}>
-                  <span>{stat.l}</span><span style={{ color: i === 2 ? '#34d399' : '#888' }}>{stat.v}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 3, color: '#888', marginBottom: 1 }}>
+                  <span>{stat.l}</span><span style={{ color: i === 2 ? '#34d399' : '#b0b0b0' }}>{stat.v}</span>
                 </div>
                 <div style={{ height: 2, background: '#151920', borderRadius: 1 }}>
                   <div style={{ height: '100%', width: `${stat.pct}%`, background: i === 2 ? '#34d399' : sc, borderRadius: 1 }} />
@@ -577,9 +577,9 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
             {[
               { pre: '$ ', txt: 'massa crawl --target competitor-data.io --depth 3 --proxy-rotate', c: '#ccc' },
               { pre: '', txt: '', c: '' },
-              { pre: '[init] ', txt: 'Headless Chromium 121.0 ready', c: '#555' },
-              { pre: '[init] ', txt: 'Proxy pool: 12 endpoints loaded (3 regions)', c: '#555' },
-              { pre: '[init] ', txt: 'Rate limit: 200ms delay, 3 concurrent', c: '#555' },
+              { pre: '[init] ', txt: 'Headless Chromium 121.0 ready', c: '#888' },
+              { pre: '[init] ', txt: 'Proxy pool: 12 endpoints loaded (3 regions)', c: '#888' },
+              { pre: '[init] ', txt: 'Rate limit: 200ms delay, 3 concurrent', c: '#888' },
               { pre: '', txt: '', c: '' },
               { pre: '  → ', txt: 'GET /api/products?page=1 (200 OK, 142ms)', c: sc },
               { pre: '  → ', txt: 'GET /api/products?page=2 (200 OK, 156ms)', c: sc },
@@ -588,12 +588,12 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
               { pre: '  → ', txt: 'GET /api/categories?page=1 (200 OK, 98ms)', c: sc },
               { pre: '  ✓ ', txt: 'Batch INSERT INTO products (412 rows, 89ms)', c: '#34d399' },
               { pre: '  → ', txt: 'GET /api/products?page=3 (200 OK, 131ms)', c: sc },
-              { pre: '  ✓ ', txt: 'Dedup: 6 duplicates removed', c: '#555' },
+              { pre: '  ✓ ', txt: 'Dedup: 6 duplicates removed', c: '#888' },
               { pre: '', txt: '', c: '' },
               { pre: '[eta]  ', txt: 'Progress: 67% — est. 1m 14s remaining', c: '#60a5fa' },
             ].slice(0, m ? 2 : 16).map((line, i) => (
               <div key={i} style={{ fontSize: m ? 3 : 4.5, marginBottom: m ? 1 : 1.5, whiteSpace: 'nowrap', overflow: 'hidden', lineHeight: 1.5, height: line.txt === '' ? (m ? 3 : 5) : undefined }}>
-                <span style={{ color: '#444' }}>{line.pre}</span><span style={{ color: line.c }}>{line.txt}</span>
+                <span style={{ color: '#777' }}>{line.pre}</span><span style={{ color: line.c }}>{line.txt}</span>
               </div>
             ))}
           </div>
@@ -606,27 +606,27 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
     <div style={base}>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
         {!m && <div style={{ height: 12, background: '#0e0e0e', borderBottom: '1px solid #1a1a1a', display: 'flex', alignItems: 'center', padding: '0 6px', gap: 6 }}>
-          <div style={{ fontSize: 4, color: '#888', fontWeight: 600 }}>Scheduled Jobs</div>
+          <div style={{ fontSize: 4, color: '#b0b0b0', fontWeight: 600 }}>Scheduled Jobs</div>
           <div style={{ display: 'flex', gap: 2, marginLeft: 6 }}>
             {['Active', 'History', 'Config'].map((tab, i) => (
-              <div key={i} style={{ fontSize: 3, color: i === 0 ? '#fff' : '#555', padding: '1px 4px', background: i === 0 ? `${sc}20` : 'transparent', borderRadius: 2 }}>{tab}</div>
+              <div key={i} style={{ fontSize: 3, color: i === 0 ? '#fff' : '#888', padding: '1px 4px', background: i === 0 ? `${sc}20` : 'transparent', borderRadius: 2 }}>{tab}</div>
             ))}
           </div>
-          <div style={{ marginLeft: 'auto', fontSize: 3, color: '#444' }}>Timezone: UTC</div>
+          <div style={{ marginLeft: 'auto', fontSize: 3, color: '#777' }}>Timezone: UTC</div>
         </div>}
         <div style={{ flex: 1, display: 'flex', flexDirection: m ? 'column' : 'row' }}>
           <div style={{ flex: 3, padding: f(4), display: 'flex', flexDirection: 'column', gap: f(2) }}>
             {[
               { time: '06:00', task: 'Daily competitor crawl', status: 'Completed', c: '#34d399', dur: '3m 42s', cron: '0 6 * * *' },
               { time: '12:00', task: 'Export CSV + push to S3', status: 'Pending', c: '#f59e0b', dur: '~45s', cron: '0 12 * * *' },
-              { time: '18:00', task: 'Email digest to team', status: 'Queued', c: '#555', dur: '~10s', cron: '0 18 * * *' },
-              { time: '00:00', task: 'Database cleanup + archive', status: 'Queued', c: '#555', dur: '~2m', cron: '0 0 * * *' },
+              { time: '18:00', task: 'Email digest to team', status: 'Queued', c: '#888', dur: '~10s', cron: '0 18 * * *' },
+              { time: '00:00', task: 'Database cleanup + archive', status: 'Queued', c: '#888', dur: '~2m', cron: '0 0 * * *' },
             ].slice(0, m ? 2 : 4).map((job, i) => (
-              <div key={i} style={{ background: '#0e0e0e', borderRadius: f(3), padding: f(3), border: `1px solid ${job.c === '#555' ? '#1a1a1a' : job.c + '25'}`, display: 'flex', alignItems: 'center', gap: f(4) }}>
-                <div style={{ fontSize: f(6), color: job.c === '#555' ? '#444' : job.c, fontFamily: 'monospace', minWidth: f(16), flexShrink: 0, fontWeight: 600 }}>{job.time}</div>
+              <div key={i} style={{ background: '#0e0e0e', borderRadius: f(3), padding: f(3), border: `1px solid ${job.c === '#888' ? '#1a1a1a' : job.c + '25'}`, display: 'flex', alignItems: 'center', gap: f(4) }}>
+                <div style={{ fontSize: f(6), color: job.c === '#888' ? '#777' : job.c, fontFamily: 'monospace', minWidth: f(16), flexShrink: 0, fontWeight: 600 }}>{job.time}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: f(5), color: '#ccc', marginBottom: f(1) }}>{job.task}</div>
-                  {!m && <div style={{ display: 'flex', gap: 6, fontSize: 3, color: '#444' }}>
+                  {!m && <div style={{ display: 'flex', gap: 6, fontSize: 3, color: '#777' }}>
                     <span>{job.cron}</span>
                     <span>Est: {job.dur}</span>
                   </div>}
@@ -637,7 +637,7 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
           </div>
           {!m && <div style={{ flex: 2, borderLeft: '1px solid #1a1a1a', padding: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div>
-              <div style={{ fontSize: 4, color: '#555', marginBottom: 3 }}>Run History (7d)</div>
+              <div style={{ fontSize: 4, color: '#888', marginBottom: 3 }}>Run History (7d)</div>
               <div style={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: 22 }}>
                 {[4,4,3,4,4,2,4,4,4,3,4,4,1,4].map((v, i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -647,19 +647,19 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
                   </div>
                 ))}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 3, color: '#333', marginTop: 2 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 3, color: '#666', marginTop: 2 }}>
                 <span>Mon</span><span>Thu</span><span>Sun</span>
               </div>
             </div>
             <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: 4 }}>
-              <div style={{ fontSize: 4, color: '#555', marginBottom: 3 }}>Stats</div>
+              <div style={{ fontSize: 4, color: '#888', marginBottom: 3 }}>Stats</div>
               {[
                 { l: 'Success rate', v: '96.4%', c: '#34d399' },
-                { l: 'Avg duration', v: '2m 18s', c: '#888' },
-                { l: 'Total runs', v: '52', c: '#888' },
+                { l: 'Avg duration', v: '2m 18s', c: '#b0b0b0' },
+                { l: 'Total runs', v: '52', c: '#b0b0b0' },
               ].map((s, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 4, marginBottom: 2 }}>
-                  <span style={{ color: '#555' }}>{s.l}</span>
+                  <span style={{ color: '#888' }}>{s.l}</span>
                   <span style={{ color: s.c, fontWeight: 600 }}>{s.v}</span>
                 </div>
               ))}
@@ -1192,7 +1192,7 @@ export function Overview() {
     alt: isDark ? '#131619' : '#f8fbf6',
     border: isDark ? '#252a35' : '#d8e5d7',
     text: isDark ? '#e8eaed' : '#101410',
-    muted: isDark ? '#6b7280' : '#556155',
+    muted: isDark ? '#9ca3af' : '#556155',
     green: isDark ? '#34d399' : '#1a7a18',
     greenSoft: isDark ? 'rgba(52,211,153,0.08)' : 'rgba(56,212,48,0.06)',
     blackGreen: isDark ? '#141820' : '#f0f0f0',
@@ -1286,7 +1286,7 @@ export function Overview() {
       style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none' }}
     >
       <span style={{ fontSize: 8, color: '#9ca3af', transform: collapsedSections[key] ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>&#9660;</span>
-      <span className="panel-header" style={{ color: '#6b7280' }}>{label}</span>
+      <span className="panel-header" style={{ color: '#9ca3af' }}>{label}</span>
       {extra}
     </div>
   )
@@ -1403,9 +1403,9 @@ export function Overview() {
       <div style={{ height: 56, border: `1px solid #1e2330`, background: '#080a0e', display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
         {!isDesktop && (
           <button onClick={() => setMobileNavOpen(!mobileNavOpen)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 6, display: 'flex', flexDirection: 'column', gap: 4, zIndex: 2 }}>
-            <div style={{ width: 18, height: 2, background: '#6b7280' }} />
-            <div style={{ width: 18, height: 2, background: '#6b7280' }} />
-            <div style={{ width: 18, height: 2, background: '#6b7280' }} />
+            <div style={{ width: 18, height: 2, background: '#9ca3af' }} />
+            <div style={{ width: 18, height: 2, background: '#9ca3af' }} />
+            <div style={{ width: 18, height: 2, background: '#9ca3af' }} />
           </button>
         )}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1414,7 +1414,7 @@ export function Overview() {
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
           <TenantSelector />
-          <span style={{ fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', display: isDesktop ? 'block' : 'none' }}>v2.4.1</span>
+          <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: isDesktop ? 'block' : 'none' }}>v2.4.1</span>
           <div style={{ width: 30, height: 30, borderRadius: 4, background: 'rgba(52,211,153,0.06)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid rgba(52,211,153,0.15)`, fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>M</div>
         </div>
       </div>
@@ -1533,7 +1533,7 @@ export function Overview() {
                               width: 22, height: 22, borderRadius: 3,
                               border: `1px solid ${step.active ? 'rgba(232,234,237,0.2)' : '#252a35'}`,
                               background: step.active ? 'rgba(232,234,237,0.04)' : '#080a0e',
-                              color: step.active ? '#e8eaed' : '#6b7280',
+                              color: step.active ? '#e8eaed' : '#9ca3af',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                               fontWeight: 700, fontSize: 10,
                               fontFamily: '"JetBrains Mono", Menlo, monospace',
@@ -1582,7 +1582,7 @@ export function Overview() {
                         onMouseLeave={() => setHoveredArchBtn(null)}
                         style={{ border: '1px solid #1e2330', padding: '5px 10px', borderRadius: 4, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' ? '#0f1215' : '#0a0d10', fontSize: 9, cursor: 'default', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                         <span style={{ color: '#9ca3af', marginRight: 4 }}>llm:</span>
-                        <span style={{ color: '#6b7280' }}>sonnet-4.6</span>
+                        <span style={{ color: '#9ca3af' }}>sonnet-4.6</span>
                       </div>
                     </ModelTooltip>
                     <div style={{ position: 'relative' }}
@@ -1645,7 +1645,7 @@ export function Overview() {
                             onMouseEnter={() => setShowSuggestionsTooltip(true)}
                             onMouseLeave={() => setShowSuggestionsTooltip(false)}
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: 'help', opacity: 0.7 }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: 'help', opacity: 0.7 }}>
                               <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                             </svg>
                             {showSuggestionsTooltip && (
@@ -1674,9 +1674,9 @@ export function Overview() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                           {visibleSuggestions.map((s, i) => (
                             <div key={`${i}-${s}`} onClick={() => { setRawInput(s); setIgnoredAll(true); setAiSuggestions([]) }}
-                              style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: '#6b7280', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 10, padding: '8px 10px 8px 14px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
+                              style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: '#9ca3af', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 10, padding: '8px 10px 8px 14px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
                               onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#34d399'; e.currentTarget.style.color = '#d1d5db'; e.currentTarget.style.boxShadow = '0 0 12px rgba(52,211,153,0.08)' }}
-                              onMouseLeave={e => { e.currentTarget.style.background = '#080a0e'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.boxShadow = 'none' }}>
+                              onMouseLeave={e => { e.currentTarget.style.background = '#080a0e'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.boxShadow = 'none' }}>
                               <span style={{ display: 'flex', alignItems: 'flex-start', gap: 4, flex: 1, minWidth: 0 }}>
                                 <span style={{ color: '#34d399', fontWeight: 700, opacity: 0.5, flexShrink: 0, marginTop: 1 }}>{'›'}</span>
                                 <span>{s}</span>
@@ -1722,7 +1722,7 @@ export function Overview() {
                   title="Row view"
                   aria-label="Row view"
                   aria-pressed={viewMode === 'row'}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'row' ? 'rgba(52,211,153,0.04)' : 'transparent', color: viewMode === 'row' ? c.green : '#6b7280', borderRight: `1px solid ${c.border}`, transition: 'background 0.12s, color 0.12s', borderBottom: viewMode === 'row' ? '1px solid #34d399' : '1px solid transparent' }}>
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'row' ? 'rgba(52,211,153,0.04)' : 'transparent', color: viewMode === 'row' ? c.green : '#9ca3af', borderRight: `1px solid ${c.border}`, transition: 'background 0.12s, color 0.12s', borderBottom: viewMode === 'row' ? '1px solid #34d399' : '1px solid transparent' }}>
                   <svg width="13" height="11" viewBox="0 0 13 11" fill="none">
                     <rect x="0" y="0" width="13" height="3" rx="0" fill="currentColor" />
                     <rect x="0" y="4" width="13" height="3" rx="0" fill="currentColor" />
@@ -1734,7 +1734,7 @@ export function Overview() {
                   title="Card view"
                   aria-label="Card view"
                   aria-pressed={viewMode === 'card'}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'card' ? 'rgba(52,211,153,0.04)' : 'transparent', color: viewMode === 'card' ? c.green : '#6b7280', transition: 'background 0.12s, color 0.12s', borderBottom: viewMode === 'card' ? '1px solid #34d399' : '1px solid transparent' }}>
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'card' ? 'rgba(52,211,153,0.04)' : 'transparent', color: viewMode === 'card' ? c.green : '#9ca3af', transition: 'background 0.12s, color 0.12s', borderBottom: viewMode === 'card' ? '1px solid #34d399' : '1px solid transparent' }}>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                     <rect x="0" y="0" width="5" height="5" rx="0" fill="currentColor" />
                     <rect x="7" y="0" width="5" height="5" rx="0" fill="currentColor" />
@@ -2092,7 +2092,7 @@ export function Overview() {
                   onMouseLeave={e => { if (readyBuildsCount > 0) e.currentTarget.style.background = '#0c1210' }}
                   style={{
                     background: readyBuildsCount > 0 ? '#0c1210' : '#080a0e',
-                    color: readyBuildsCount > 0 ? '#34d399' : '#6b7280',
+                    color: readyBuildsCount > 0 ? '#34d399' : '#9ca3af',
                     border: `1px solid ${readyBuildsCount > 0 ? 'rgba(52,211,153,0.2)' : '#1e2330'}`,
                     borderRadius: 4,
                     padding: '6px 12px',
@@ -2174,7 +2174,7 @@ export function Overview() {
                   {visibleSorted.length === 0 ? (
                     <div style={{ padding: '16px 12px', textAlign: 'center' }}>
                       <span style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>✓ All clear</span>
-                      <div className="panel-header" style={{ color: '#6b7280', fontSize: 8, marginTop: 4 }}>NO ACTIONS PENDING</div>
+                      <div className="panel-header" style={{ color: '#9ca3af', fontSize: 8, marginTop: 4 }}>NO ACTIONS PENDING</div>
                     </div>
                   ) : (
                     visibleSorted.map((item, idx) => (
@@ -2194,7 +2194,7 @@ export function Overview() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4 }}>{item.projectName}</div>
-                            <div style={{ fontSize: 9, color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2 }}>{item.title}</div>
+                            <div style={{ fontSize: 9, color: '#9ca3af', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2 }}>{item.title}</div>
                           </div>
                           <button
                             onClick={() => {
@@ -2287,7 +2287,7 @@ export function Overview() {
                   }
                   return (
                     <div key={line.id} style={{ padding: '2px 12px', lineHeight: 1.5 }}>
-                      <span style={{ color: isDark ? '#555' : '#aaa' }}>{line.file}:{line.lineNo} </span>
+                      <span style={{ color: isDark ? '#888' : '#aaa' }}>{line.file}:{line.lineNo} </span>
                       {renderCodeLine(line.content, isDark)}
                     </div>
                   )
@@ -2526,7 +2526,7 @@ export function Overview() {
                         <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 2 }}>2 queued</div>
                       </div>
                     </div>
-                    <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 10, border: `1px solid ${c.border}`, fontSize: 11, lineHeight: 1.8, color: '#888', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 10, border: `1px solid ${c.border}`, fontSize: 11, lineHeight: 1.8, color: '#b0b0b0', overflow: 'hidden' }}>
                       <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=142 <span style={{ color: '#9ca3af' }}>200 OK 234ms</span></div>
                       <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=143 <span style={{ color: '#9ca3af' }}>200 OK 189ms</span></div>
                       <div><span style={{ color: '#60a5fa' }}>[PARSE]</span> Extracting 48 records from response...</div>
@@ -2557,7 +2557,7 @@ export function Overview() {
                         <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 2 }}>Below target</div>
                       </div>
                     </div>
-                    <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 10, border: `1px solid ${c.border}`, fontSize: 11, lineHeight: 1.8, color: '#888', overflow: 'hidden' }}>
+                    <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 10, border: `1px solid ${c.border}`, fontSize: 11, lineHeight: 1.8, color: '#b0b0b0', overflow: 'hidden' }}>
                       <div><span style={{ color: '#f87171' }}>[ERR]</span> KafkaConsumerError: Connection refused to broker-3 <span style={{ color: '#9ca3af' }}>14:23:01</span></div>
                       <div><span style={{ color: '#f59e0b' }}>[WARN]</span> Consumer lag growing: partition 7 = 4,291 messages behind</div>
                       <div><span style={{ color: '#34d399' }}>[OK]</span> Transform batch #12847 completed — 512 records normalized</div>
@@ -2625,7 +2625,7 @@ export function Overview() {
                       <div key={b.id} onClick={() => setChatProjectBuildId(b.id)}
                         style={{ padding: '10px 14px', cursor: 'pointer', background: isActive ? c.alt : 'transparent', borderLeft: isActive ? `2px solid ${bsc}` : '2px solid transparent', transition: 'all 0.15s' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                          <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#34d399' : bMsgs.length > 0 ? '#f59e0b' : '#6b7280', flexShrink: 0 }} />
+                          <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#34d399' : bMsgs.length > 0 ? '#f59e0b' : '#9ca3af', flexShrink: 0 }} />
                           <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? '#fff' : c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.title}</div>
                         </div>
                         <div style={{ fontSize: 10, color: c.muted, marginLeft: 11 }}>{b.agent}</div>
@@ -2674,8 +2674,8 @@ export function Overview() {
                     <button
                       onClick={() => setShowAttachMenu(showAttachMenu === 'projchat' ? null : 'projchat')}
                       onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-                      onMouseLeave={e => { if (showAttachMenu !== 'projchat') e.currentTarget.style.color = '#555' }}
-                      style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'projchat' ? '#fff' : '#555', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
+                      onMouseLeave={e => { if (showAttachMenu !== 'projchat') e.currentTarget.style.color = '#888' }}
+                      style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'projchat' ? '#fff' : '#888', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
                       title="Attach files"
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
@@ -2691,7 +2691,7 @@ export function Overview() {
                             onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
-                            <span style={{ color: '#888', display: 'flex' }}>{item.icon}</span>
+                            <span style={{ color: '#b0b0b0', display: 'flex' }}>{item.icon}</span>
                             {item.label}
                           </div>
                         ))}
@@ -2782,8 +2782,8 @@ export function Overview() {
                           <button
                             onClick={() => setShowAttachMenu(showAttachMenu === 'buildchat' ? null : 'buildchat')}
                             onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-                            onMouseLeave={e => { if (showAttachMenu !== 'buildchat') e.currentTarget.style.color = '#555' }}
-                            style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'buildchat' ? '#fff' : '#555', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
+                            onMouseLeave={e => { if (showAttachMenu !== 'buildchat') e.currentTarget.style.color = '#888' }}
+                            style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'buildchat' ? '#fff' : '#888', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
                             title="Attach files"
                           >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
@@ -2799,7 +2799,7 @@ export function Overview() {
                                   onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
                                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                   style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
-                                  <span style={{ color: '#888', display: 'flex' }}>{item.icon}</span>
+                                  <span style={{ color: '#b0b0b0', display: 'flex' }}>{item.icon}</span>
                                   {item.label}
                                 </div>
                               ))}
@@ -2929,7 +2929,7 @@ export function Overview() {
                 <span style={{ fontSize: 10, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', opacity: 0.5 }}>$</span>
                 <span className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>INPUT</span>
               </div>
-              <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{rawInput}</div>
+              <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{rawInput}</div>
             </div>
 
             {clarifyHistory.length > 0 && (
@@ -2978,13 +2978,13 @@ export function Overview() {
                       opt === 'Other' ? (
                         <div key={i}>
                           <div
-                            style={{ fontSize: 12, color: '#6b7280', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
+                            style={{ fontSize: 12, color: '#9ca3af', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
                             onClick={() => {
                               const el = document.getElementById('clarify-other-input')
                               if (el) el.focus()
                             }}
                             onMouseEnter={e => { e.currentTarget.style.borderColor = '#252a35'; e.currentTarget.style.color = '#9ca3af' }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#6b7280' }}>
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#9ca3af' }}>
                             <span style={{ color: '#9ca3af', fontWeight: 700, fontSize: 10, flexShrink: 0 }}>{String.fromCharCode(65 + i)}.</span>
                             <input
                               id="clarify-other-input"
@@ -3006,9 +3006,9 @@ export function Overview() {
                       ) : (
                         <div key={i}
                           onClick={() => handleClarifyAnswer(opt)}
-                          style={{ fontSize: 12, color: '#6b7280', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
+                          style={{ fontSize: 12, color: '#9ca3af', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
                           onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.2)'; e.currentTarget.style.color = '#9ca3af' }}
-                          onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#6b7280' }}>
+                          onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#9ca3af' }}>
                           <span style={{ color: '#34d399', fontWeight: 700, fontSize: 10, opacity: 0.5, flexShrink: 0 }}>{String.fromCharCode(65 + i)}.</span>
                           {opt}
                         </div>

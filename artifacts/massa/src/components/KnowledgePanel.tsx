@@ -119,8 +119,8 @@ export function KnowledgePanel({ projectId, files, onAddFiles, onRemoveFile }: K
             : "border-[#252a35] bg-[#0d1117] hover:border-[#3a4050] hover:bg-[#0f141c]"
         )}
       >
-        <span className="text-2xl opacity-60">↑</span>
-        <p className="text-xs font-mono text-[#7a8294] text-center">
+        <span className="text-2xl opacity-80">↑</span>
+        <p className="text-xs font-mono text-[#a0a8b8] text-center">
           {isDragging ? (
             <span className="text-emerald-400">Drop files here</span>
           ) : (
@@ -130,7 +130,7 @@ export function KnowledgePanel({ projectId, files, onAddFiles, onRemoveFile }: K
             </>
           )}
         </p>
-        <p className="text-[10px] font-mono text-[#4a5060]">
+        <p className="text-[10px] font-mono text-[#7a8294]">
           PDF, TXT, MD, images, CSV, JSON, and more
         </p>
         <input
@@ -145,11 +145,11 @@ export function KnowledgePanel({ projectId, files, onAddFiles, onRemoveFile }: K
 
       {files.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-xs font-mono text-[#4a5060]">No files uploaded yet</p>
+          <p className="text-xs font-mono text-[#7a8294]">No files uploaded yet</p>
         </div>
       ) : (
         <div className="flex flex-col gap-1 overflow-y-auto flex-1">
-          <p className="text-[10px] font-mono text-[#4a5060] uppercase tracking-widest mb-1">
+          <p className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest mb-1">
             {files.length} file{files.length !== 1 ? "s" : ""}
           </p>
           {files.map((file) => (
@@ -162,13 +162,13 @@ export function KnowledgePanel({ projectId, files, onAddFiles, onRemoveFile }: K
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-mono text-[#c0c5cf] truncate">{file.name}</p>
-                <p className="text-[10px] font-mono text-[#4a5060]">
+                <p className="text-[10px] font-mono text-[#7a8294]">
                   {formatFileSize(file.size)} · {formatDate(file.uploadedAt)}
                 </p>
               </div>
               <button
                 onClick={() => onRemoveFile(projectId, file.id)}
-                className="text-[#4a5060] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-mono px-1"
+                className="text-[#7a8294] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-mono px-1"
                 title="Remove file"
               >
                 ✕
