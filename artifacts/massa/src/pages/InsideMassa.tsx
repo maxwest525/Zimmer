@@ -52,8 +52,6 @@ export function InsideMassa() {
     green: '#2d8a32',
     soft: isDark ? 'rgba(45,138,50,0.10)' : 'rgba(45,138,50,0.08)',
     greenDark: isDark ? '#091409' : '#e4f7e2',
-    terminalBg: isDark ? '#0a0a0a' : '#f5f5f5',
-    terminalBorder: isDark ? '#2a2a2a' : '#d0d0d0',
   }
 
   const nav = [
@@ -397,77 +395,84 @@ export function InsideMassa() {
             </div>
           </div>
 
-          {/* TERMINAL SWITCHING EXAMPLES */}
+          {/* SWITCHING EXAMPLES TABLE */}
           <div>
             <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 14 }}>WHEN MASSA SWITCHES</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{
+              border: `1px solid ${c.border}`,
+              borderRadius: 10,
+              overflow: 'hidden',
+              background: c.panel,
+            }}>
+              {!isMobile && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '2fr 1.2fr 1fr',
+                  gap: 0,
+                  padding: '8px 16px',
+                  borderBottom: `1px solid ${c.border}`,
+                  background: c.alt,
+                }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: c.muted, textTransform: 'uppercase' }}>Input</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: c.muted, textTransform: 'uppercase' }}>Routed To</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: c.muted, textTransform: 'uppercase' }}>Reason</div>
+                </div>
+              )}
               {examples.map((ex, i) => {
-                const animDelay = `${i * 0.12}s`
-                return (
+                const animDelay = `${i * 0.1}s`
+                const isLast = i === examples.length - 1
+                return isMobile ? (
                   <div key={i} style={{
-                    borderRadius: 14,
-                    border: `1px solid ${c.terminalBorder}`,
-                    background: c.terminalBg,
-                    overflow: 'hidden',
+                    padding: '12px 14px',
+                    borderBottom: isLast ? 'none' : `1px solid ${c.border}`,
                     animation: `fadeInRow 0.4s ease both`,
                     animationDelay: animDelay,
-                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
                   }}>
-                    {/* Scanline texture overlay */}
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 3px, ${isDark ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.03)'} 3px, ${isDark ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.03)'} 4px)`,
-                      pointerEvents: 'none',
-                      borderRadius: 14,
-                      zIndex: 0,
-                    }} />
-                    {/* Terminal header bar */}
-                    <div style={{
-                      padding: '8px 14px',
-                      borderBottom: `1px solid ${c.terminalBorder}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      position: 'relative',
-                      zIndex: 1,
-                    }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff5f57' }} />
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#febc2e' }} />
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.green }} />
-                      <span style={{ marginLeft: 8, fontSize: 10, color: c.muted, fontFamily: 'monospace', letterSpacing: 0.5 }}>massa — terminal</span>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: c.text, lineHeight: 1.4 }}>{ex.input}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {ex.uses.map(u => (
+                        <span key={u} style={{
+                          fontSize: 10,
+                          background: c.soft,
+                          color: c.green,
+                          border: `1px solid ${c.border}`,
+                          padding: '2px 7px',
+                          borderRadius: 999,
+                          fontWeight: 600,
+                        }}>{u}</span>
+                      ))}
                     </div>
-                    <div style={{ padding: '14px 18px', display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16, alignItems: 'center', position: 'relative', zIndex: 1 }}>
-                      <div>
-                        <div style={{ fontFamily: 'monospace', fontSize: 11, color: c.green, opacity: 0.7, marginBottom: 4 }}>$ massa run</div>
-                        <div style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 600, lineHeight: 1.5, color: isDark ? '#d4f5d2' : '#1a3d18' }}>
-                          <span style={{ color: c.green, opacity: 0.8 }}>›</span> {ex.input}
-                        </div>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6, fontFamily: 'monospace', letterSpacing: 0.5 }}>ROUTING TO</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                          {ex.uses.map(u => {
-                            return (
-                              <span key={u} style={{
-                                fontSize: 11,
-                                background: c.soft,
-                                color: c.text,
-                                border: `1px solid ${c.border}`,
-                                padding: '3px 9px',
-                                borderRadius: 999,
-                                fontWeight: 600,
-                                fontFamily: 'monospace',
-                              }}>{u}</span>
-                            )
-                          })}
-                        </div>
-                      </div>
-                      <div style={{ minWidth: 160 }}>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 4, fontFamily: 'monospace', letterSpacing: 0.5 }}>REASON</div>
-                        <div style={{ fontSize: 12, color: c.muted, fontFamily: 'monospace' }}>{ex.why}</div>
-                      </div>
+                    <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.3 }}>{ex.why}</div>
+                  </div>
+                ) : (
+                  <div key={i} style={{
+                    display: 'grid',
+                    gridTemplateColumns: '2fr 1.2fr 1fr',
+                    gap: 0,
+                    padding: '10px 16px',
+                    borderBottom: isLast ? 'none' : `1px solid ${c.border}`,
+                    alignItems: 'center',
+                    animation: `fadeInRow 0.4s ease both`,
+                    animationDelay: animDelay,
+                  }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: c.text, lineHeight: 1.4, paddingRight: 12 }}>{ex.input}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {ex.uses.map(u => (
+                        <span key={u} style={{
+                          fontSize: 10,
+                          background: c.soft,
+                          color: c.green,
+                          border: `1px solid ${c.border}`,
+                          padding: '2px 7px',
+                          borderRadius: 999,
+                          fontWeight: 600,
+                        }}>{u}</span>
+                      ))}
                     </div>
+                    <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.3 }}>{ex.why}</div>
                   </div>
                 )
               })}
