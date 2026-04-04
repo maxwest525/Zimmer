@@ -920,6 +920,20 @@ export function Overview() {
   const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [, navigate] = useLocation()
+  const [typedPlaceholder, setTypedPlaceholder] = useState('')
+  const [showSuggestionsTooltip, setShowSuggestionsTooltip] = useState(false)
+
+  useEffect(() => {
+    const fullText = '> describe what you want to build...'
+    let i = 0
+    setTypedPlaceholder('')
+    const interval = setInterval(() => {
+      i++
+      setTypedPlaceholder(fullText.slice(0, i))
+      if (i >= fullText.length) clearInterval(interval)
+    }, 45)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     setIgnoredAll(false)
@@ -1528,7 +1542,7 @@ export function Overview() {
                     <textarea
                       value={rawInput}
                       onChange={e => setRawInput(e.target.value)}
-                      placeholder="> describe what you want to build..."
+                      placeholder={typedPlaceholder}
                       style={{ width: '100%', minHeight: 80, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaed', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: '"JetBrains Mono", Menlo, monospace', boxSizing: 'border-box', letterSpacing: '-0.01em' }}
                     />
                   </div>
@@ -1604,10 +1618,23 @@ export function Overview() {
                   const showSection = !ignoredAll && (suggestionsLoading || visibleSuggestions.length > 0)
                   if (!showSection) return null
                   return (
-                    <div style={{ width: 260, flexShrink: 0, background: '#0c0f14', border: '1px solid #252a35', borderRadius: 12, padding: '10px 12px', boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.05)', animation: 'suggestion-slide-in 0.25s ease both', alignSelf: 'flex-start' }}>
+                    <div style={{ width: 340, flexShrink: 0, background: '#0c0f14', border: '1px solid #252a35', borderRadius: 12, padding: '12px 14px', boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.05)', animation: 'suggestion-slide-in 0.25s ease both', alignSelf: 'flex-start' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <div className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>AI SUGGESTIONS</div>
+                          <div style={{ position: 'relative', display: 'inline-flex' }}
+                            onMouseEnter={() => setShowSuggestionsTooltip(true)}
+                            onMouseLeave={() => setShowSuggestionsTooltip(false)}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: 'help', opacity: 0.7 }}>
+                              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            {showSuggestionsTooltip && (
+                              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: '#0f1215', border: '1px solid #252a35', borderRadius: 6, padding: '6px 10px', fontSize: 10, color: '#9ca3af', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', zIndex: 20, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                                Let us help improve your prompt
+                              </div>
+                            )}
+                          </div>
                           {suggestionsLoading && <div style={{ width: 4, height: 4, borderRadius: 999, background: '#34d399', animation: 'subtle-glow 1s ease-in-out infinite' }} />}
                         </div>
                         <button
@@ -1628,7 +1655,7 @@ export function Overview() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                           {visibleSuggestions.map((s, i) => (
                             <div key={`${i}-${s}`} onClick={() => setRawInput(s)}
-                              style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 11, color: '#6b7280', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 10, padding: '6px 8px 6px 12px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
+                              style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: '#6b7280', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 10, padding: '8px 10px 8px 14px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
                               onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#34d399'; e.currentTarget.style.color = '#d1d5db'; e.currentTarget.style.boxShadow = '0 0 12px rgba(52,211,153,0.08)' }}
                               onMouseLeave={e => { e.currentTarget.style.background = '#080a0e'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.boxShadow = 'none' }}>
                               <span style={{ display: 'flex', alignItems: 'flex-start', gap: 4, flex: 1, minWidth: 0 }}>
