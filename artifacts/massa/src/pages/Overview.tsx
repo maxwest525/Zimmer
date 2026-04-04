@@ -1979,14 +1979,14 @@ export function Overview() {
               <div>
                 {sectionHeader('ACTION REQUIRED', 'actionRequired', visibleSorted.length > 0 ? <span style={{ fontSize: 9, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{visibleSorted.length}</span> : undefined)}
                 {!collapsedSections.actionRequired && (
-                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 6 * 58, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#1e293b #080a0e' }}>
                     {visibleSorted.length === 0 ? (
                       <div style={{ background: '#080a0e', border: '1px solid #1e2330', borderRadius: 4, padding: '14px 12px', textAlign: 'center' }}>
                         <span style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>✓ All clear</span>
                         <div className="panel-header" style={{ color: '#9ca3af', fontSize: 8, marginTop: 4 }}>NO BUILDS NEED ATTENTION</div>
                       </div>
                     ) : (
-                      visibleSorted.slice(0, 6).map(item => (
+                      visibleSorted.map(item => (
                         <div
                           key={item.id}
                           data-action-item
