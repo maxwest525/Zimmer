@@ -59,6 +59,55 @@ export const COMPANY_LOGOS: Record<string, LogoInfo> = {
     fallbackUrl: ANTHROPIC_FALLBACK,
     label: 'Anthropic',
   },
+  'GPT-4o': {
+    url: 'https://logo.clearbit.com/openai.com',
+    fallbackUrl: toDataUrl(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0d0d0d"/><text x="12" y="16" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="700" font-family="sans-serif">GPT</text></svg>`
+    ),
+    label: 'OpenAI',
+  },
+  'Gemini': {
+    url: 'https://logo.clearbit.com/deepmind.google',
+    fallbackUrl: toDataUrl(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0a1628"/><circle cx="12" cy="12" r="6" fill="none" stroke="#60a5fa" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="#60a5fa"/></svg>`
+    ),
+    label: 'Gemini',
+  },
+  'Cursor': {
+    url: 'https://logo.clearbit.com/cursor.sh',
+    fallbackUrl: toDataUrl(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0d0d1a"/><path d="M6 4l12 8-12 8z" fill="#818cf8"/></svg>`
+    ),
+    label: 'Cursor',
+  },
+  'Bolt': {
+    url: 'https://logo.clearbit.com/bolt.new',
+    fallbackUrl: toDataUrl(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a1500"/><path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="#fbbf24"/></svg>`
+    ),
+    label: 'Bolt',
+  },
+  'Windsurf': {
+    url: 'https://logo.clearbit.com/codeium.com',
+    fallbackUrl: toDataUrl(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#061a1a"/><path d="M4 16 Q8 8 12 12 Q16 16 20 8" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/></svg>`
+    ),
+    label: 'Windsurf',
+  },
+  'Perplexity': {
+    url: 'https://logo.clearbit.com/perplexity.ai',
+    fallbackUrl: toDataUrl(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a1408"/><circle cx="12" cy="12" r="7" fill="none" stroke="#f59e0b" stroke-width="2"/><line x1="12" y1="5" x2="12" y2="19" stroke="#f59e0b" stroke-width="1.5"/><line x1="5" y1="12" x2="19" y2="12" stroke="#f59e0b" stroke-width="1.5"/></svg>`
+    ),
+    label: 'Perplexity',
+  },
+  'Mistral': {
+    url: 'https://logo.clearbit.com/mistral.ai',
+    fallbackUrl: toDataUrl(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a0e04"/><rect x="4" y="4" width="4" height="4" rx="1" fill="#fb923c"/><rect x="10" y="4" width="4" height="4" rx="1" fill="#fb923c"/><rect x="16" y="4" width="4" height="4" rx="1" fill="#fb923c"/><rect x="4" y="10" width="4" height="4" rx="1" fill="#fb923c"/><rect x="16" y="10" width="4" height="4" rx="1" fill="#fb923c"/><rect x="4" y="16" width="4" height="4" rx="1" fill="#fb923c"/><rect x="10" y="16" width="4" height="4" rx="1" fill="#fb923c"/><rect x="16" y="16" width="4" height="4" rx="1" fill="#fb923c"/></svg>`
+    ),
+    label: 'Mistral',
+  },
 }
 
 export function getLogoInfo(name: string): LogoInfo | null {

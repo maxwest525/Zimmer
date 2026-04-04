@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
 import { CompanyLogo, DualCompanyLogo } from '@/components/CompanyLogo'
+import { MODEL_REGISTRY } from '@/data/modelRegistry'
 
 const KEYFRAMES = `
 @keyframes fadeInRow {
@@ -75,65 +76,41 @@ export function InsideMassa() {
     { label: 'Build', desc: 'The selected layers execute in parallel.' },
   ]
 
-  const systems: Array<{
-    name: string
-    label: string
-    role: string
-    for: string[]
-    why: string
-    color: string
-    logoNames?: string[]
-  }> = [
-    {
-      name: 'Claude',
-      label: 'Think',
-      role: 'Thinking layer',
-      for: ['Intent', 'Refinement', 'Planning', 'Classification'],
-      why: 'Used before anything is built.',
-      color: c.green,
-    },
-    {
-      name: 'Claude Code',
-      label: 'Build',
-      role: 'Build engine',
-      for: ['Backend', 'APIs', 'Logic', 'Infrastructure'],
-      why: 'Used for technical depth and code.',
-      color: '#5aad58',
-    },
-    {
-      name: 'Lovable / Replit',
-      label: 'Interface',
-      role: 'Interface layer',
-      for: ['Dashboards', 'Front-end', 'Control panels', 'UI'],
-      why: 'Used when the output needs a visual surface.',
-      color: '#5080b8',
-      logoNames: ['Lovable', 'Replit'],
-    },
-    {
-      name: 'n8n',
-      label: 'Automate',
-      role: 'Automation layer',
-      for: ['Routing', 'Triggers', 'Scheduling', 'Notifications'],
-      why: 'Used to connect, schedule, and orchestrate.',
-      color: '#9a9d48',
-    },
-  ]
+  const systems = MODEL_REGISTRY.map(m => ({
+    name: m.name,
+    label: m.label,
+    role: m.role,
+    for: m.capabilities,
+    why: m.reasons.default,
+    color: m.color,
+    logoNames: m.logoNames,
+  }))
 
   const examples = [
     {
       input: 'Build me an automated trading bot with alerts and a dashboard.',
-      uses: ['Claude', 'Claude Code', 'Lovable', 'n8n'],
-      why: 'Backend logic + interface + automation',
+      uses: ['Claude', 'GPT-4o', 'Claude Code', 'Lovable', 'n8n'],
+      why: 'Deep reasoning + backend logic + interface + automation',
     },
     {
       input: 'Make me a landing page for my new app.',
-      uses: ['Claude', 'Lovable'],
-      why: 'Front-end focused request',
+      uses: ['Claude', 'Bolt', 'Lovable'],
+      why: 'Fast scaffolding + polished UI output',
     },
     {
       input: 'Create a scraper that emails me a report every morning.',
-      uses: ['Claude', 'Claude Code', 'n8n'],
-      why: 'Scraper logic + scheduling',
+      uses: ['Claude', 'Claude Code', 'n8n', 'Mistral'],
+      why: 'Scraper logic + scheduling + fast triage',
+    },
+    {
+      input: 'Analyze competitor pricing and build a comparison dashboard.',
+      uses: ['Perplexity', 'Gemini', 'Replit'],
+      why: 'Research + multimodal analysis + full-stack deploy',
+    },
+    {
+      input: 'Refactor our entire auth module to use OAuth2.',
+      uses: ['Claude', 'Cursor', 'Windsurf'],
+      why: 'Planning + precise edits + cross-file refactoring',
     },
   ]
 
@@ -267,14 +244,14 @@ export function InsideMassa() {
                 backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(57,214,50,0.03)' : 'rgba(57,214,50,0.05)'} 1px, transparent 1px)`,
                 backgroundSize: '24px 24px',
               }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 18, position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 18, position: 'relative', zIndex: 1, overflowX: 'auto', paddingBottom: 4 }}>
                 {systems.map((sys, i) => (
-                  <div key={sys.name} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                  <div key={sys.name} style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center' }}>
                     <div style={{
-                      flex: 1,
+                      minWidth: 100,
                       border: `1px solid ${sys.color}cc`,
                       borderRadius: 14,
-                      padding: '16px 12px',
+                      padding: '14px 10px',
                       background: c.panel,
                       position: 'relative',
                       textAlign: 'center',
@@ -293,11 +270,11 @@ export function InsideMassa() {
                     </div>
                     {/* Animated SVG arrow between cards */}
                     {i < systems.length - 1 && (
-                      <div style={{ padding: '0 4px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-                        <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
-                          <line x1="2" y1="8" x2="26" y2="8" stroke={c.muted} strokeWidth="1.5" />
+                      <div style={{ padding: '0 2px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                        <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
+                          <line x1="1" y1="6" x2="15" y2="6" stroke={c.muted} strokeWidth="1.2" />
                           <polyline
-                            points="22,4 28,8 22,12"
+                            points="13,3 17,6 13,9"
                             fill="none"
                             stroke={c.green}
                             strokeWidth="1.5"
@@ -319,7 +296,7 @@ export function InsideMassa() {
           {/* SYSTEM CARDS — Glassmorphism */}
           <div style={{ marginBottom: 36 }}>
             <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 14 }}>THE SYSTEMS</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12 }}>
               {systems.map((sys) => (
                 <div key={sys.name} style={{
                   borderRadius: 14,

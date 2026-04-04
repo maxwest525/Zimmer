@@ -4,6 +4,8 @@ import { InlineCompanyLogo } from '@/components/CompanyLogo'
 import { NodeGraph } from '@/components/NodeGraph'
 import { TimelineSwimlane } from '@/components/TimelineSwimlane'
 import { ChatView } from '@/components/ChatView'
+import { ModelTooltip } from '@/components/ModelTooltip'
+import { MODEL_COLORS, getModelReason } from '@/data/modelRegistry'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -18,6 +20,7 @@ type Build = {
   agent: string
   agentRole?: string
   dependsOn?: string[]
+  buildContext?: string
 }
 
 type Project = {
@@ -29,23 +32,21 @@ type Project = {
 }
 
 const SKILL_COLORS: Record<string, string> = {
-  'n8n': '#a3b535',
-  'Lovable': '#60a5fa',
-  'Replit': '#60a5fa',
-  'Claude Code': '#4ade80',
+  ...MODEL_COLORS,
   'APIs': '#f59e0b',
-  'Claude': '#34d399',
 }
 
+const SKILL_PRIORITY = ['n8n', 'Perplexity', 'Lovable', 'Replit', 'Bolt', 'Windsurf', 'Cursor', 'Claude Code', 'Gemini', 'GPT-4o', 'Mistral', 'APIs', 'Claude']
+
 function skillColor(stack: string[]): string {
-  for (const s of ['n8n', 'Lovable', 'Replit', 'Claude Code', 'APIs']) {
-    if (stack.includes(s)) return SKILL_COLORS[s]
+  for (const s of SKILL_PRIORITY) {
+    if (stack.includes(s)) return SKILL_COLORS[s] || '#34d399'
   }
   return SKILL_COLORS['Claude']
 }
 
 function primarySkill(stack: string[]): string {
-  for (const s of ['n8n', 'Lovable', 'Replit', 'Claude Code', 'APIs', 'Claude']) {
+  for (const s of SKILL_PRIORITY) {
     if (stack.includes(s)) return s
   }
   return stack[0] || 'Claude'
@@ -92,7 +93,7 @@ function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: 
 
 function getBuildType(stack: string[], title: string): 'ui' | 'backend' | 'database' | 'automation' {
   const t = title.toLowerCase()
-  if (t.includes('ui') || t.includes('dashboard') || t.includes('homepage') || t.includes('site') || stack.includes('Lovable') || stack.includes('Replit')) return 'ui'
+  if (t.includes('ui') || t.includes('dashboard') || t.includes('homepage') || t.includes('site') || stack.includes('Lovable') || stack.includes('Replit') || stack.includes('Bolt')) return 'ui'
   if (t.includes('alert') || t.includes('scheduler') || t.includes('automation') || stack.includes('n8n')) return 'automation'
   if (t.includes('data') || t.includes('pipeline') || t.includes('schema')) return 'database'
   return 'backend'
@@ -832,11 +833,11 @@ export function Overview() {
       goal: 'Automated trading bot with dashboard, risk controls, and alerts',
       status: 'running',
       builds: [
-        { id: 'core-engine', title: 'Core Engine', summary: 'Strategy loop, execution logic, and order handling', status: 'running', progress: 58, stack: ['Claude', 'Claude Code', 'APIs'], agent: 'System Builder', agentRole: 'Backend Architect' },
-        { id: 'risk-module', title: 'Risk Module', summary: 'Position sizing, loss limits, and safety rules', status: 'running', progress: 46, stack: ['Claude', 'Claude Code'], agent: 'Risk Agent', agentRole: 'Safety Engineer', dependsOn: ['core-engine'] },
-        { id: 'dashboard-ui', title: 'Dashboard UI', summary: 'Bot controls, positions, and performance views', status: 'queued', progress: 14, stack: ['Claude', 'Lovable'], agent: 'UI Agent', agentRole: 'Frontend Designer', dependsOn: ['core-engine', 'risk-module'] },
-        { id: 'alerts', title: 'Alerts', summary: 'Slack, email, and critical event notifications', status: 'complete', progress: 100, stack: ['Claude', 'n8n', 'APIs'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['core-engine'] },
-        { id: 'backtester', title: 'Backtester', summary: 'Historical simulation engine and result reporter', status: 'queued', progress: 0, stack: ['Claude', 'Claude Code'], agent: 'Data Agent', agentRole: 'Data Engineer', dependsOn: ['core-engine'] },
+        { id: 'core-engine', title: 'Core Engine', summary: 'Strategy loop, execution logic, and order handling', status: 'running', progress: 58, stack: ['Claude', 'Claude Code', 'APIs'], agent: 'System Builder', agentRole: 'Backend Architect', buildContext: 'backend' },
+        { id: 'risk-module', title: 'Risk Module', summary: 'Position sizing, loss limits, and safety rules', status: 'running', progress: 46, stack: ['GPT-4o', 'Claude Code'], agent: 'Risk Agent', agentRole: 'Safety Engineer', dependsOn: ['core-engine'], buildContext: 'backend' },
+        { id: 'dashboard-ui', title: 'Dashboard UI', summary: 'Bot controls, positions, and performance views', status: 'queued', progress: 14, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'UI Agent', agentRole: 'Frontend Designer', dependsOn: ['core-engine', 'risk-module'], buildContext: 'ui' },
+        { id: 'alerts', title: 'Alerts', summary: 'Slack, email, and critical event notifications', status: 'complete', progress: 100, stack: ['Mistral', 'n8n', 'APIs'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['core-engine'], buildContext: 'automation' },
+        { id: 'backtester', title: 'Backtester', summary: 'Historical simulation engine and result reporter', status: 'queued', progress: 0, stack: ['Claude', 'Claude Code', 'Gemini'], agent: 'Data Agent', agentRole: 'Data Engineer', dependsOn: ['core-engine'], buildContext: 'backend' },
       ],
     },
     {
@@ -845,8 +846,8 @@ export function Overview() {
       goal: 'Homepage, funnel, API settings, and workflow pages',
       status: 'running',
       builds: [
-        { id: 'homepage', title: 'Homepage', summary: 'Main marketing page and product explanation', status: 'running', progress: 71, stack: ['Claude', 'Lovable'], agent: 'UI Agent', agentRole: 'Frontend Designer' },
-        { id: 'api-settings', title: 'API Settings', summary: 'Provider cards, keys, and connection states', status: 'queued', progress: 24, stack: ['Claude', 'Replit'], agent: 'Settings Agent', agentRole: 'Integration Engineer', dependsOn: ['homepage'] },
+        { id: 'homepage', title: 'Homepage', summary: 'Main marketing page and product explanation', status: 'running', progress: 71, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'UI Agent', agentRole: 'Frontend Designer', buildContext: 'ui' },
+        { id: 'api-settings', title: 'API Settings', summary: 'Provider cards, keys, and connection states', status: 'queued', progress: 24, stack: ['Claude', 'Replit', 'Cursor'], agent: 'Settings Agent', agentRole: 'Integration Engineer', dependsOn: ['homepage'], buildContext: 'backend' },
       ],
     },
     {
@@ -855,8 +856,8 @@ export function Overview() {
       goal: 'Source intake, parsing, and scheduled export flow',
       status: 'queued',
       builds: [
-        { id: 'crawler', title: 'Crawler', summary: 'Fetch pipeline and retry handling', status: 'queued', progress: 12, stack: ['Claude', 'Claude Code'], agent: 'Crawler Agent', agentRole: 'Data Engineer' },
-        { id: 'scheduler', title: 'Scheduler', summary: 'Daily export and email delivery', status: 'queued', progress: 0, stack: ['Claude', 'n8n'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['crawler'] },
+        { id: 'crawler', title: 'Crawler', summary: 'Fetch pipeline and retry handling', status: 'queued', progress: 12, stack: ['Claude', 'Claude Code', 'Perplexity'], agent: 'Crawler Agent', agentRole: 'Data Engineer', buildContext: 'backend' },
+        { id: 'scheduler', title: 'Scheduler', summary: 'Daily export and email delivery', status: 'queued', progress: 0, stack: ['Mistral', 'n8n', 'Windsurf'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['crawler'], buildContext: 'automation' },
       ],
     },
   ])
@@ -1515,7 +1516,7 @@ export function Overview() {
                               <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                                   <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                                  <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
+                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
                                 </div>
                                 <div style={{ fontSize: 10, color: isRunning ? sc : isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
                               </div>
@@ -1548,7 +1549,7 @@ export function Overview() {
                                     onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
                                     onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
                                   >💬</button>
-                                  <span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0 }}>{ps}</span>
+                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
                                 </div>
                               </div>
                               <div style={{ height: 3, background: isDark ? '#131619' : '#dfe8de', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
@@ -2001,10 +2002,12 @@ export function Overview() {
               <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>SKILL LEGEND</div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 {Object.entries(SKILL_COLORS).map(([skill, color]) => (
-                  <div key={skill} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: 3, background: color }} />
-                    <span style={{ fontSize: 12, color: c.muted }}>{skill}</span>
-                  </div>
+                  <ModelTooltip key={skill} text={getModelReason(skill)}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'default' }}>
+                      <div style={{ width: 10, height: 10, borderRadius: 3, background: color }} />
+                      <span style={{ fontSize: 12, color: c.muted }}>{skill}</span>
+                    </div>
+                  </ModelTooltip>
                 ))}
               </div>
             </div>
@@ -2183,7 +2186,7 @@ export function Overview() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ fontWeight: 800, fontSize: 16 }}>{activeBuild.title}</div>
-                      <span style={{ fontSize: 10, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '1px 6px', borderRadius: 5, background: `${sc}14` }}>{primarySkill(activeBuild.stack)}</span>
+                      <ModelTooltip text={getModelReason(primarySkill(activeBuild.stack), activeBuild.buildContext)}><span style={{ fontSize: 10, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '1px 6px', borderRadius: 5, background: `${sc}14`, cursor: 'default' }}>{primarySkill(activeBuild.stack)}</span></ModelTooltip>
                     </div>
                     <div style={{ fontSize: 11, color: c.muted }}>{activeBuild.agent} · {activeBuild.agentRole}</div>
                   </div>
@@ -2385,7 +2388,7 @@ export function Overview() {
                         <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
                           <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>STACK</div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                            {expandedBuild.build.stack.map(s => <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '4px 10px', borderRadius: 999, color: '#ffffff', background: SKILL_COLORS[s] || c.green }}><InlineCompanyLogo name={s} size={14} />{s}</span>)}
+                            {expandedBuild.build.stack.map(s => <ModelTooltip key={s} text={getModelReason(s, expandedBuild.build.buildContext)}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '4px 10px', borderRadius: 999, color: '#ffffff', background: SKILL_COLORS[s] || c.green, cursor: 'default' }}><InlineCompanyLogo name={s} size={14} />{s}</span></ModelTooltip>)}
                           </div>
                         </div>
                       </div>

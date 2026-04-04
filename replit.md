@@ -104,6 +104,9 @@ React + Vite frontend-only workspace for the MASSA AI command workspace. Dark-th
 - Design: Terminal-inspired dark theme — bg `#0a0d10`, panel `#0a0d10`, terminal `#080a0e`, border `#14181e`/`#1c2028`, green accent `#34d399` with glow effects; monospace `JetBrains Mono` in UI chrome; `panel-header` CSS class for section labels; all inline styles, no Tailwind
 - Color palette: green `#34d399`, amber `#f59e0b`, red `#f87171`, blue `#60a5fa`, violet `#a78bfa`, text `#e8eaed`, muted `#6b7280`, dim `#4b5563`
 - Features: project cards (row/card views), build cards, chat modal, arch map modal, attachment menus, code stream
+- Model registry: `src/data/modelRegistry.ts` — central registry of 12 AI models/tools (Claude, Claude Code, GPT-4o, Gemini, Lovable, Replit, Cursor, Bolt, Windsurf, n8n, Perplexity, Mistral) with categories, colors, capabilities, and contextual "why chosen" reason strings
+- ModelTooltip component: `src/components/ModelTooltip.tsx` — custom hover tooltip with 300ms delay, fade animation, dark theme styling; used on all model pill/badge instances
+- Logos: `src/lib/logos.ts` — SVG fallback logos for all models
 
 ### `scripts` (`@workspace/scripts`)
 
