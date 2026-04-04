@@ -2046,30 +2046,28 @@ export function Overview() {
                             </div>
                           </>
                         ) : (
-                          <div style={{ padding: '10px 10px 8px' }}>
-                            <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25, marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{build.title}</div>
-                            <div style={{ fontSize: 10, color: c.muted, lineHeight: 1.3, marginBottom: 5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{build.summary}</div>
-                            <div style={{ fontSize: 10, color: isFailed ? '#f87171' : isComplete ? '#34d399' : '#f59e0b', fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14, marginBottom: 8 }}>
-                              {isRunning ? (build.progress < 30 ? 'Thinking…' : build.progress < 60 ? 'Planning…' : 'Building…') : isComplete ? 'Completed' : isFailed ? 'Failed — action required' : statusText}
+                          <>
+                            <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
+                            <div style={{ padding: '8px 10px 8px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                                <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{build.title}</div>
+                                <ModelTooltip text={getModelReason(ps, build.buildContext)}>
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, color: '#fff', fontWeight: 700, flexShrink: 0, cursor: 'default', marginLeft: 6 }}>
+                                    <span style={{ width: 14, height: 14, borderRadius: 99, background: '#1e2330', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                                    </span>
+                                    {ps}
+                                  </span>
+                                </ModelTooltip>
+                              </div>
+                              <div style={{ height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden', marginBottom: 4 }}>
+                                <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
+                              </div>
+                              <div style={{ fontSize: 10, color: isFailed ? '#f87171' : isComplete ? '#34d399' : '#f59e0b', fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>
+                                {isRunning ? (build.progress < 30 ? 'Thinking…' : build.progress < 60 ? 'Planning…' : 'Building…') : isComplete ? 'Completed' : isFailed ? 'Failed — action required' : statusText}
+                              </div>
                             </div>
-                            <div style={{ display: 'flex', gap: 3 }}>
-                              {[
-                                { label: 'Chat', tab: 'chat' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> },
-                                { label: 'Code', tab: 'code' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> },
-                                { label: 'Think', tab: 'thinking' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> },
-                                { label: 'Revert', tab: 'revert' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> },
-                                { label: 'Preview', tab: 'preview' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> },
-                              ].map(btn => (
-                                <button key={btn.label}
-                                  onClick={(e) => { e.stopPropagation(); setBuildModalTab(btn.tab); setExpandedBuildId(build.id) }}
-                                  title={btn.label}
-                                  style={{ flex: 1, height: 26, borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, transition: 'color 0.15s, border-color 0.15s, background 0.15s' }}
-                                  onMouseEnter={e => { e.currentTarget.style.color = sc; e.currentTarget.style.borderColor = sc; e.currentTarget.style.background = `${sc}10` }}
-                                  onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border; e.currentTarget.style.background = 'transparent' }}
-                                >{btn.icon}</button>
-                              ))}
-                            </div>
-                          </div>
+                          </>
                         )}
                       </div>
                     )
