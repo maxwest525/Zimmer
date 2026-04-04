@@ -1278,7 +1278,7 @@ export function Overview() {
                   if (item.path) navigate(item.path)
                   setMobileNavOpen(false)
                 }}
-                style={{ padding: '7px 10px', borderRadius: 0, cursor: 'pointer', color: active ? '#34d399' : '#4b5563', fontSize: 12, fontWeight: active ? 600 : 500, borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #1c2028' : '1px solid transparent', background: active ? 'rgba(52,211,153,0.04)' : 'transparent', marginBottom: 0, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #14181e' }}>
+                style={{ padding: '7px 10px', borderRadius: 0, cursor: 'pointer', color: active ? '#34d399' : '#9ca3af', fontSize: 12, fontWeight: active ? 600 : 500, borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #1c2028' : '1px solid transparent', background: active ? 'rgba(52,211,153,0.04)' : 'transparent', marginBottom: 0, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #14181e' }}>
                 {active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}
               </div>
               )
@@ -1311,7 +1311,7 @@ export function Overview() {
                 <div key={item.label} onClick={() => {
                   if (item.view) { setActiveView(item.view) }
                   else if (item.path) { navigate(item.path) }
-                }} style={{ padding: '7px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#4b5563', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #1c2028' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #14181e' }}>
+                }} style={{ padding: '7px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #1c2028' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #14181e' }}>
                   {active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}
                 </div>
               )
