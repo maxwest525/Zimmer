@@ -93,14 +93,19 @@ router.delete("/ideas/:id", async (req, res) => {
 
 router.post("/ideas/inbound", async (req, res) => {
   try {
-    const { subject, body: emailBody, from, text: smsText } = req.body;
-    const content = smsText || emailBody || subject || "";
+    const { Body, From, subject, body: emailBody, text: smsText } = req.body;
+    const isTwilio = !!Body && !!From;
+    const content = Body || smsText || emailBody || subject || "";
     if (!content || content.trim().length === 0) {
+      if (isTwilio) {
+        res.type("text/xml").send("<Response></Response>");
+        return;
+      }
       res.status(400).json({ error: "No content provided" });
       return;
     }
-    const source = smsText ? "sms" : "email";
-    const [idea] = await db
+    const source = isTwilio || smsText ? "sms" : "email";
+    await db
       .insert(ideasTable)
       .values({
         content: content.trim(),
@@ -108,9 +113,19 @@ router.post("/ideas/inbound", async (req, res) => {
         source,
       })
       .returning();
-    res.json(idea);
+    if (isTwilio) {
+      res.type("text/xml").send(
+        `<Response><Message>Idea saved to MASSA.</Message></Response>`
+      );
+      return;
+    }
+    res.json({ success: true });
   } catch (err) {
     console.error("Failed to create idea from inbound:", err);
+    if (req.body?.Body) {
+      res.type("text/xml").send("<Response></Response>");
+      return;
+    }
     res.status(500).json({ error: "Failed to process inbound" });
   }
 });

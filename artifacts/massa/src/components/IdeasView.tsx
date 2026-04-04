@@ -274,7 +274,7 @@ export function IdeasView() {
           {filteredIdeas.length} idea{filteredIdeas.length !== 1 ? 's' : ''}
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: c.muted, fontSize: 10, fontFamily: c.font, opacity: 0.7 }}>TIP: email ideas to your inbound endpoint</span>
+          <span style={{ color: c.muted, fontSize: 10, fontFamily: c.font, opacity: 0.7 }}>TIP: text ideas to <span style={{ color: c.text, opacity: 0.8 }}>(877) 766-3212</span></span>
         </div>
       </div>
 
@@ -417,7 +417,7 @@ export function IdeasView() {
         padding: '12px 16px',
       }}>
         <div style={{ color: c.muted, fontSize: 10, fontFamily: c.font, lineHeight: 1.6, opacity: 0.7 }}>
-          <span style={{ color: c.green, opacity: 0.6 }}>{'>'}</span> Send ideas from your phone: POST to <span style={{ color: c.text, opacity: 0.8 }}>/api/ideas/inbound</span> with <span style={{ color: c.text, opacity: 0.8 }}>{'{ "text": "your idea" }'}</span> — works with email webhooks (Mailgun, SendGrid) or SMS (Twilio). Set up forwarding once, capture ideas anywhere.
+          <span style={{ color: c.green, opacity: 0.6 }}>{'>'}</span> Text your ideas to <span style={{ color: c.text, opacity: 0.8 }}>(877) 766-3212</span> — they'll appear here tagged as SMS. You'll get a confirmation reply. Works from any phone, anywhere.
         </div>
       </div>
     </div>
