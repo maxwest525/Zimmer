@@ -91,8 +91,20 @@ router.delete("/ideas/:id", async (req, res) => {
   }
 });
 
+router.get("/ideas/inbound", (_req, res) => {
+  res.json({
+    status: "ok",
+    endpoint: "/api/ideas/inbound",
+    message: "Webhook endpoint is active. Configure your Twilio SMS webhook to POST to this URL.",
+  });
+});
+
 router.post("/ideas/inbound", async (req, res) => {
   try {
+    console.log(
+      `[inbound] ${req.method} /ideas/inbound | content-type: ${req.headers["content-type"] ?? "none"} | has body: ${!!req.body && Object.keys(req.body).length > 0}`,
+    );
+
     const { Body, From, subject, body: emailBody, text: smsText } = req.body;
     const isTwilio = !!Body && !!From;
     const content = Body || smsText || emailBody || subject || "";
