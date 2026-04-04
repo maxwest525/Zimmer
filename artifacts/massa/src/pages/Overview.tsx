@@ -1397,12 +1397,6 @@ export function Overview() {
               )
             })}
           </div>
-          <div>
-            <div style={{ border: `1px solid ${c.border}`, background: c.blackGreen, borderRadius: 10, padding: 10 }}>
-              <div className="panel-header" style={{ color: '#9ca3af', marginBottom: 4 }}>ACTIVE</div>
-              <div style={{ color: c.green, fontWeight: 700, fontSize: 13 }}>{selectedProject.name}</div>
-            </div>
-          </div>
         </div>}
 
         {/* CENTER + RIGHT AREA */}
