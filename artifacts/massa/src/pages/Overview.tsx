@@ -1581,44 +1581,40 @@ export function Overview() {
                       style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
                       <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>EXECUTE
                     </button>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div
-                        onMouseEnter={() => setHoveredArchBtn('claude-rec')}
-                        onMouseLeave={() => setHoveredArchBtn(null)}
-                        style={{ border: '1px solid #1e2330', padding: '5px 12px', borderRadius: 4, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' ? '#0f1215' : '#0a0d10', fontSize: 10, fontWeight: 700, cursor: 'default', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                    <div style={{ position: 'relative', display: 'inline-block' }}
+                      onMouseEnter={() => setHoveredArchBtn('claude-rec')}
+                      onMouseLeave={() => setHoveredArchBtn(null)}
+                    >
+                      <div style={{ border: '1px solid #1e2330', padding: '5px 12px', borderRadius: 4, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' ? '#0f1215' : '#0a0d10', fontSize: 10, fontWeight: 700, cursor: 'default', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                         <span style={{ color: '#9ca3af', marginRight: 4 }}>llm:</span>
                         <span style={{ color: '#9ca3af' }}>sonnet-4.6</span>
                       </div>
-                      <div style={{ position: 'relative' }}
+                      <span
                         onMouseEnter={() => setHoveredArchBtn('llm-tip')}
                         onMouseLeave={() => setHoveredArchBtn(null)}
-                      >
-                        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', border: '1px solid #333', color: '#666', fontSize: 9, fontWeight: 700, cursor: 'help', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.2s ease', background: hoveredArchBtn === 'llm-tip' ? '#1e2330' : 'transparent' }}>?</span>
-                        {hoveredArchBtn === 'llm-tip' && (
-                          <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#9ca3af', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                            {getModelReason('Claude')}
-                          </div>
-                        )}
-                      </div>
+                        style={{ position: 'absolute', top: -4, right: -4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 11, height: 11, borderRadius: '50%', border: '1px solid #333', color: '#555', fontSize: 7, fontWeight: 700, cursor: 'help', fontFamily: '"JetBrains Mono", Menlo, monospace', background: '#0a0d10', lineHeight: 1, zIndex: 2 }}>?</span>
+                      {hoveredArchBtn === 'llm-tip' && (
+                        <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#9ca3af', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                          {getModelReason('Claude')}
+                        </div>
+                      )}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
                       <button
                         onClick={() => setVagueMode(v => !v)}
                         onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
                         onMouseLeave={e => { e.currentTarget.style.background = vagueMode ? 'rgba(52,211,153,0.06)' : '#0c0f14'; e.currentTarget.style.color = vagueMode ? '#34d399' : '#9ca3af' }}
                         style={{ padding: '5px 12px', borderRadius: 4, border: vagueMode ? '1px solid rgba(52,211,153,0.3)' : '1px solid #1e2330', background: vagueMode ? 'rgba(52,211,153,0.06)' : '#0c0f14', color: vagueMode ? '#34d399' : '#9ca3af', fontWeight: 700, fontSize: 10, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'nowrap' }}>nebulous mode</button>
-                      <div style={{ position: 'relative' }}
+                      <span
                         onMouseEnter={() => setHoveredArchBtn('nebulous-tip')}
                         onMouseLeave={() => setHoveredArchBtn(null)}
-                      >
-                        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', border: '1px solid #333', color: '#666', fontSize: 9, fontWeight: 700, cursor: 'help', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.2s ease', background: hoveredArchBtn === 'nebulous-tip' ? '#1e2330' : 'transparent' }}>?</span>
-                        {hoveredArchBtn === 'nebulous-tip' && (
-                          <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#9ca3af', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                            <div style={{ fontWeight: 700, color: '#e8eaed', marginBottom: 4, fontSize: 10 }}>NEBULOUS MODE {vagueMode ? '[ON]' : '[OFF]'}</div>
-                            When enabled, MASSA will ask clarifying questions before building if your prompt is broad or ambiguous.
-                          </div>
-                        )}
-                      </div>
+                        style={{ position: 'absolute', top: -4, right: -4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 11, height: 11, borderRadius: '50%', border: '1px solid #333', color: '#555', fontSize: 7, fontWeight: 700, cursor: 'help', fontFamily: '"JetBrains Mono", Menlo, monospace', background: '#0a0d10', lineHeight: 1, zIndex: 2 }}>?</span>
+                      {hoveredArchBtn === 'nebulous-tip' && (
+                        <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#9ca3af', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                          <div style={{ fontWeight: 700, color: '#e8eaed', marginBottom: 4, fontSize: 10 }}>NEBULOUS MODE {vagueMode ? '[ON]' : '[OFF]'}</div>
+                          When enabled, MASSA will ask clarifying questions before building if your prompt is broad or ambiguous.
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
