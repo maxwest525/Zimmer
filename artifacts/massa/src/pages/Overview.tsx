@@ -1860,15 +1860,38 @@ export function Overview() {
 
           {/* ACTION REQUIRED Panel */}
           {(() => {
+            type ActionType = 'response-ready' | 'review-plan' | 'run-build' | 'fix-error' | 'apply-changes'
+            const getActionInfo = (build: Build & { projectName: string }): { type: ActionType; label: string; color: string; tab: 'chat' | 'details' } => {
+              const msgs = chatMessages[build.id]
+              const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
+              const agentReplied = lastMsg?.role === 'agent'
+
+              if (build.status === 'failed') return { type: 'fix-error', label: 'Fix Error', color: '#f87171', tab: 'chat' }
+              if (build.status === 'running' && agentReplied) return { type: 'response-ready', label: 'Response Ready', color: '#34d399', tab: 'chat' }
+              if (build.status === 'running') return { type: 'review-plan', label: 'Review Plan', color: '#f59e0b', tab: 'details' }
+              if (build.status === 'queued') return { type: 'run-build', label: 'Run Build', color: '#f59e0b', tab: 'details' }
+              if (build.status === 'complete' && agentReplied) return { type: 'apply-changes', label: 'Apply Changes', color: '#34d399', tab: 'chat' }
+              return { type: 'run-build', label: 'Run Build', color: '#f59e0b', tab: 'details' }
+            }
+
             const actionItems = projects.flatMap(p =>
               p.builds
-                .filter(b => b.status === 'failed' || b.status === 'queued' || b.status === 'running')
+                .filter(b => {
+                  if (b.status === 'failed' || b.status === 'queued' || b.status === 'running') return true
+                  if (b.status === 'complete') {
+                    const msgs = chatMessages[b.id]
+                    const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
+                    return lastMsg?.role === 'agent'
+                  }
+                  return false
+                })
                 .map(b => ({ ...b, projectName: p.name }))
             )
-            const statusOrder: Record<string, number> = { failed: 0, running: 1, queued: 2 }
-            const sorted = [...actionItems].sort((a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3))
-            const statusColor: Record<string, string> = { failed: '#f87171', running: '#34d399', queued: '#f59e0b' }
-            const statusLabel: Record<string, string> = { failed: 'Failed', running: 'Running', queued: 'Queued' }
+
+            const actionPriority: Record<ActionType, number> = { 'fix-error': 0, 'response-ready': 1, 'review-plan': 2, 'apply-changes': 3, 'run-build': 4 }
+            const sorted = [...actionItems]
+              .map(item => ({ ...item, action: getActionInfo(item) }))
+              .sort((a, b) => (actionPriority[a.action.type] ?? 5) - (actionPriority[b.action.type] ?? 5))
 
             return (
               <div>
@@ -1884,21 +1907,29 @@ export function Overview() {
                       sorted.map(item => (
                         <div
                           key={item.id}
-                          onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(item.id) }}
+                          onClick={() => { setBuildModalTab(item.action.tab); setExpandedBuildId(item.id) }}
                           style={{ background: '#080a0e', border: '1px solid #14181e', borderRadius: 4, padding: '8px 10px', cursor: 'pointer', transition: 'border-color 0.15s' }}
-                          onMouseEnter={e => (e.currentTarget.style.borderColor = statusColor[item.status] || '#14181e')}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = item.action.color)}
                           onMouseLeave={e => (e.currentTarget.style.borderColor = '#14181e')}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{item.title}</span>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, color: statusColor[item.status], fontWeight: 600, flexShrink: 0 }}>
-                              <span style={{ width: 6, height: 6, borderRadius: 999, background: statusColor[item.status], display: 'inline-block', boxShadow: item.status === 'running' ? `0 0 4px ${statusColor[item.status]}80` : 'none' }} />
-                              {statusLabel[item.status]}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                            <span className="panel-header" style={{ fontSize: 8, color: '#4b5563' }}>{item.projectName}</span>
-                            <span style={{ fontSize: 8, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{item.agent}</span>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                            <div style={{ flex: 1, overflow: 'hidden' }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 3 }}>{item.projectName}</div>
+                              <div style={{ fontSize: 9, color: '#4b5563', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{item.title}</div>
+                            </div>
+                            <span style={{
+                              flexShrink: 0,
+                              fontSize: 9,
+                              fontWeight: 700,
+                              color: item.action.color,
+                              background: `${item.action.color}15`,
+                              border: `1px solid ${item.action.color}40`,
+                              borderRadius: 4,
+                              padding: '3px 8px',
+                              fontFamily: '"JetBrains Mono", Menlo, monospace',
+                              whiteSpace: 'nowrap',
+                              marginTop: 1
+                            }}>{item.action.label}</span>
                           </div>
                         </div>
                       ))
