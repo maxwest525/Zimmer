@@ -7,6 +7,10 @@ type Idea = {
   source: string
   starred: boolean
   archived: boolean
+  enrichmentSummary: string | null
+  enrichmentUrls: string | null
+  enrichmentTechnologies: string | null
+  enrichmentError: string | null
   createdAt: string
   updatedAt: string
 }
@@ -77,6 +81,9 @@ export function IdeasView() {
         setIdeas(prev => [idea, ...prev])
         setInputValue('')
         setSelectedCategory('general')
+        if (/instagram\.com\//i.test(idea.content)) {
+          setTimeout(() => fetchIdeas(), 8000)
+        }
       }
     } catch (err) {
       console.error('Failed to add idea:', err)
@@ -364,6 +371,93 @@ export function IdeasView() {
                       }}
                     >
                       {idea.content}
+                    </div>
+                  )}
+                  {idea.enrichmentSummary && (
+                    <div style={{
+                      marginTop: 10,
+                      padding: '10px 12px',
+                      background: '#0d1117',
+                      border: `1px solid ${c.border}`,
+                      borderRadius: 6,
+                    }}>
+                      <div style={{ color: '#a78bfa', fontSize: 9, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, opacity: 0.8 }}>
+                        AI Summary
+                      </div>
+                      <div style={{ color: c.text, fontSize: 11, fontFamily: c.font, lineHeight: 1.6, opacity: 0.9 }}>
+                        {idea.enrichmentSummary}
+                      </div>
+                      {idea.enrichmentUrls && (() => {
+                        try {
+                          const urls = JSON.parse(idea.enrichmentUrls) as string[];
+                          if (urls.length === 0) return null;
+                          return (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ color: '#60a5fa', fontSize: 9, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, opacity: 0.8 }}>
+                                Mentioned Links
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                {urls.map((url, i) => (
+                                  <a
+                                    key={i}
+                                    href={url.startsWith('http') ? url : `https://${url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ color: '#60a5fa', fontSize: 11, fontFamily: c.font, textDecoration: 'none', opacity: 0.9 }}
+                                    onMouseEnter={e => { (e.target as HTMLElement).style.textDecoration = 'underline' }}
+                                    onMouseLeave={e => { (e.target as HTMLElement).style.textDecoration = 'none' }}
+                                  >
+                                    {url}
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        } catch { return null; }
+                      })()}
+                      {idea.enrichmentTechnologies && (() => {
+                        try {
+                          const techs = JSON.parse(idea.enrichmentTechnologies) as string[];
+                          if (techs.length === 0) return null;
+                          return (
+                            <div style={{ marginTop: 8 }}>
+                              <div style={{ color: '#fbbf24', fontSize: 9, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, opacity: 0.8 }}>
+                                Technologies
+                              </div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                                {techs.map((tech, i) => (
+                                  <span
+                                    key={i}
+                                    style={{
+                                      background: '#fbbf2415',
+                                      border: '1px solid #fbbf2430',
+                                      color: '#fbbf24',
+                                      padding: '2px 8px',
+                                      borderRadius: 4,
+                                      fontSize: 10,
+                                      fontFamily: c.font,
+                                    }}
+                                  >
+                                    {tech}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        } catch { return null; }
+                      })()}
+                    </div>
+                  )}
+                  {idea.enrichmentError && !idea.enrichmentSummary && (
+                    <div style={{
+                      marginTop: 8,
+                      color: c.muted,
+                      fontSize: 10,
+                      fontFamily: c.font,
+                      opacity: 0.6,
+                      fontStyle: 'italic',
+                    }}>
+                      Enrichment unavailable
                     </div>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>

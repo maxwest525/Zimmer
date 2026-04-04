@@ -2,6 +2,8 @@ import { Router } from "express";
 import { db, ideasTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { getResendClient } from "../lib/resend";
+import { hasInstagramUrl } from "../lib/instagram";
+import { enrichIdea } from "../lib/enrichment";
 
 const BACKUP_EMAIL = "Maxw@trumoveinc.com";
 
@@ -60,6 +62,11 @@ router.post("/ideas", async (req, res) => {
       })
       .returning();
     emailIdea(content.trim(), cat, src);
+    if (hasInstagramUrl(content.trim())) {
+      void enrichIdea(idea.id, content.trim()).catch(err =>
+        console.error("[enrichment] Unhandled error:", err)
+      );
+    }
     res.json(idea);
   } catch (err) {
     console.error("Failed to create idea:", err);
@@ -156,6 +163,14 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .idea-content{font-size:13px;line-height:1.5;color:#e8eaed;white-space:pre-wrap;word-break:break-word}
 .idea-meta{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;color:#6b7280}
 .idea-star{color:#f59e0b}
+.enrichment{margin-top:8px;padding:8px 10px;background:#0d1117;border:1px solid #1c2028;border-radius:6px}
+.enrichment-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;opacity:.8}
+.enrichment-summary{font-size:11px;line-height:1.5;color:#e8eaed;opacity:.9}
+.enrichment-links a{color:#60a5fa;font-size:11px;text-decoration:none;display:block;margin-top:2px}
+.enrichment-links a:hover{text-decoration:underline}
+.enrichment-tech{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.enrichment-tech span{background:#fbbf2415;border:1px solid #fbbf2430;color:#fbbf24;padding:2px 8px;border-radius:4px;font-size:10px}
+.enrichment-error{font-size:10px;color:#6b7280;opacity:.6;font-style:italic;margin-top:6px}
 .empty{text-align:center;color:#6b7280;font-size:13px;padding:24px 0}
 .loading{text-align:center;color:#6b7280;font-size:13px;padding:24px 0}
 .tabs{display:flex;gap:4px;margin-bottom:12px}
@@ -193,14 +208,30 @@ function showToast(msg,ok){toast.textContent=msg;toast.style.background=ok?'#34d
 
 function timeAgo(d){const s=Math.floor((Date.now()-new Date(d).getTime())/1000);if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'}
 
+function renderEnrichment(i){
+  let h='';
+  if(i.enrichment_summary||i.enrichmentSummary){
+    const sum=i.enrichment_summary||i.enrichmentSummary;
+    h+='<div class="enrichment"><div class="enrichment-label" style="color:#a78bfa">AI Summary</div><div class="enrichment-summary">'+escHtml(sum)+'</div>';
+    const urlsRaw=i.enrichment_urls||i.enrichmentUrls;
+    if(urlsRaw){try{const urls=JSON.parse(urlsRaw);if(urls.length){h+='<div style="margin-top:6px"><div class="enrichment-label" style="color:#60a5fa">Mentioned Links</div><div class="enrichment-links">'+urls.map(u=>{const safe=escAttr(u.startsWith('http')?u:'https://'+u);return '<a href="'+safe+'" target="_blank" rel="noopener">'+escHtml(u)+'</a>'}).join('')+'</div></div>';}}catch{}}
+    const techRaw=i.enrichment_technologies||i.enrichmentTechnologies;
+    if(techRaw){try{const techs=JSON.parse(techRaw);if(techs.length){h+='<div style="margin-top:6px"><div class="enrichment-label" style="color:#fbbf24">Technologies</div><div class="enrichment-tech">'+techs.map(t=>'<span>'+escHtml(t)+'</span>').join('')+'</div></div>';}}catch{}}
+    h+='</div>';
+  } else if(i.enrichment_error||i.enrichmentError){
+    h+='<div class="enrichment-error">Enrichment unavailable</div>';
+  }
+  return h;
+}
 function renderIdeas(){
   const ideas=currentFilter==='starred'?allIdeas.filter(i=>i.starred):allIdeas;
   countBadge.textContent=ideas.length;
   if(!ideas.length){container.innerHTML='<div class="empty">'+(currentFilter==='starred'?'No starred ideas yet':'No ideas yet — add one above!')+'</div>';return}
-  container.innerHTML='<div class="ideas-list">'+ideas.map(i=>'<div class="idea-card"><div class="idea-content">'+(i.starred?'<span class="idea-star">&#9733; </span>':'')+escHtml(i.content)+'</div><div class="idea-meta"><span>'+escHtml(i.source)+'</span><span>'+timeAgo(i.created_at||i.createdAt)+'</span></div></div>').join('')+'</div>';
+  container.innerHTML='<div class="ideas-list">'+ideas.map(i=>'<div class="idea-card"><div class="idea-content">'+(i.starred?'<span class="idea-star">&#9733; </span>':'')+escHtml(i.content)+'</div>'+renderEnrichment(i)+'<div class="idea-meta"><span>'+escHtml(i.source)+'</span><span>'+timeAgo(i.created_at||i.createdAt)+'</span></div></div>').join('')+'</div>';
 }
 
 function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function escAttr(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 async function loadIdeas(){
   try{
@@ -230,6 +261,7 @@ btn.addEventListener('click',async()=>{
     txt.value='';len.textContent='0';showToast('Idea saved + emailed!',true);
     allIdeas.unshift(idea);
     renderIdeas();
+    if(/instagram\\.com\\//i.test(idea.content||''))setTimeout(loadIdeas,8000);
   }catch{showToast('Failed to save',false)}
   finally{btn.disabled=false;btn.textContent='Send'}
 });

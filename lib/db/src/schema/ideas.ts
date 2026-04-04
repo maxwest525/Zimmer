@@ -9,6 +9,10 @@ export const ideasTable = pgTable("ideas", {
   source: text("source").default("web"),
   starred: boolean("starred").default(false),
   archived: boolean("archived").default(false),
+  enrichmentSummary: text("enrichment_summary"),
+  enrichmentUrls: text("enrichment_urls"),
+  enrichmentTechnologies: text("enrichment_technologies"),
+  enrichmentError: text("enrichment_error"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
