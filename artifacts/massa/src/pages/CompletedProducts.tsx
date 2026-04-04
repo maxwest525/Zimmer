@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useProjects } from "@/contexts/ProjectContext";
-import { CompletedProduct } from "@/data/mock";
+import { CompletedProduct, ProjectLifecycle } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -15,6 +15,18 @@ import {
   ExternalLink,
   Link2,
 } from "lucide-react";
+
+const c = {
+  bg: '#080a0e',
+  alt: '#0c0f14',
+  border: '#1e2330',
+  green: '#34d399',
+  greenSoft: 'rgba(52,211,153,0.08)',
+  muted: '#6b7280',
+  text: '#f0f0f0',
+  red: '#f87171',
+  yellow: '#fbbf24',
+}
 
 function DomainStep({
   product,
@@ -301,46 +313,285 @@ function ProductCard({ product }: { product: CompletedProduct }) {
   );
 }
 
+type LifecycleTab = 'completed' | 'archived' | 'deleted' | 'published';
+
+const TABS: { key: LifecycleTab; label: string; icon: string }[] = [
+  { key: 'completed', label: 'Completed', icon: '✓' },
+  { key: 'archived', label: 'Archived', icon: '▪' },
+  { key: 'deleted', label: 'Deleted', icon: '✕' },
+  { key: 'published', label: 'Published', icon: '◉' },
+]
+
+function getInitialTab(): LifecycleTab {
+  const params = new URLSearchParams(window.location.search)
+  const tab = params.get('tab')
+  if (tab === 'published' || tab === 'completed' || tab === 'archived' || tab === 'deleted') return tab
+  return 'completed'
+}
+
+function LifecycleProjectCard({ project, lifecycle, onRestore, onArchive, onDelete }: {
+  project: { id: string; name: string };
+  lifecycle: LifecycleTab;
+  onRestore: () => void;
+  onArchive?: () => void;
+  onDelete?: () => void;
+}) {
+  return (
+    <div style={{
+      border: `1px solid ${c.border}`,
+      borderRadius: 10,
+      padding: '12px 16px',
+      background: c.alt,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      fontFamily: '"JetBrains Mono", Menlo, monospace',
+    }}>
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: c.text }}>{project.name}</div>
+        <div style={{ fontSize: 10, color: c.muted, marginTop: 2 }}>
+          {lifecycle === 'completed' ? 'Marked complete' : lifecycle === 'archived' ? 'Archived' : 'Marked for deletion'}
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <button
+          onClick={onRestore}
+          style={{
+            border: `1px solid ${c.green}`,
+            background: c.greenSoft,
+            color: c.green,
+            padding: '4px 10px',
+            borderRadius: 4,
+            cursor: 'pointer',
+            fontSize: 10,
+            fontWeight: 600,
+            fontFamily: '"JetBrains Mono", Menlo, monospace',
+          }}
+        >Restore</button>
+        {lifecycle === 'completed' && onArchive && (
+          <button
+            onClick={onArchive}
+            style={{
+              border: `1px solid ${c.border}`,
+              background: 'transparent',
+              color: c.muted,
+              padding: '4px 10px',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontSize: 10,
+              fontWeight: 600,
+              fontFamily: '"JetBrains Mono", Menlo, monospace',
+            }}
+          >Archive</button>
+        )}
+        {lifecycle !== 'deleted' && onDelete && (
+          <button
+            onClick={onDelete}
+            style={{
+              border: `1px solid ${c.border}`,
+              background: 'transparent',
+              color: c.red,
+              padding: '4px 10px',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontSize: 10,
+              fontWeight: 600,
+              fontFamily: '"JetBrains Mono", Menlo, monospace',
+            }}
+          >Delete</button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function CompletedProducts() {
   const [, navigate] = useLocation();
-  const { completedProducts } = useProjects();
+  const { activeProjects, completedProducts, projectLifecycles, restoreProject, archiveProject, deleteProject } = useProjects();
+  const [activeTab, setActiveTab] = useState<LifecycleTab>(getInitialTab);
+
+  const publishedProducts = useMemo(() => completedProducts.filter(p => p.publishStatus === 'live'), [completedProducts])
+
+  const projectsByLifecycle = useMemo(() => {
+    const result: Record<'completed' | 'archived' | 'deleted', { id: string; name: string }[]> = {
+      completed: [],
+      archived: [],
+      deleted: [],
+    }
+    for (const p of activeProjects) {
+      const lc = projectLifecycles[p.id] || 'active'
+      if (lc === 'completed') result.completed.push(p)
+      else if (lc === 'archived') result.archived.push(p)
+      else if (lc === 'deleted') result.deleted.push(p)
+    }
+    return result
+  }, [activeProjects, projectLifecycles])
+
+  const tabCounts: Record<LifecycleTab, number> = useMemo(() => ({
+    completed: projectsByLifecycle.completed.length,
+    archived: projectsByLifecycle.archived.length,
+    deleted: projectsByLifecycle.deleted.length,
+    published: publishedProducts.length,
+  }), [projectsByLifecycle, publishedProducts])
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
+    <div style={{ minHeight: '100vh', background: c.bg, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+      <header style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        borderBottom: `1px solid ${c.border}`,
+        background: 'rgba(8,10,14,0.9)',
+        backdropFilter: 'blur(8px)',
+      }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             onClick={() => navigate("/")}
-            className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: `1px solid ${c.border}`,
+              background: 'transparent',
+              color: c.muted,
+              cursor: 'pointer',
+              fontSize: 14,
+              transition: 'color 0.12s, background 0.12s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = c.text; e.currentTarget.style.background = c.alt }}
+            onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.background = 'transparent' }}
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft size={16} />
           </button>
           <div>
-            <h1 className="text-lg font-semibold">Completed Products</h1>
-            <p className="text-xs text-muted-foreground">
-              {completedProducts.length} product{completedProducts.length !== 1 ? "s" : ""} &middot; Manage domains, deployments & publishing
+            <h1 style={{ fontSize: 16, fontWeight: 700, letterSpacing: 0.5 }}>Current Projects</h1>
+            <p style={{ fontSize: 10, color: c.muted, marginTop: 2 }}>
+              Manage completed, archived, and deleted projects
             </p>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-5">
-        {completedProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
-              <CheckCircle2 className="w-7 h-7 text-muted-foreground" />
-            </div>
-            <h2 className="text-base font-medium mb-1">No completed products yet</h2>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              When you mark a project as complete, it will appear here with tools to connect a domain, deploy, and publish.
-            </p>
-          </div>
-        ) : (
-          completedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))
-        )}
-      </main>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px' }}>
+        <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${c.border}`, marginTop: 8 }}>
+          {TABS.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={{
+                padding: '10px 18px',
+                fontSize: 11,
+                fontWeight: 600,
+                color: activeTab === tab.key ? c.green : c.muted,
+                background: 'transparent',
+                border: 'none',
+                borderBottom: activeTab === tab.key ? `2px solid ${c.green}` : '2px solid transparent',
+                cursor: 'pointer',
+                fontFamily: '"JetBrains Mono", Menlo, monospace',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                transition: 'color 0.12s',
+              }}
+            >
+              <span>{tab.icon}</span>
+              {tab.label}
+              {tabCounts[tab.key] > 0 && (
+                <span style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  background: activeTab === tab.key ? c.greenSoft : 'rgba(107,114,128,0.12)',
+                  color: activeTab === tab.key ? c.green : c.muted,
+                  padding: '1px 5px',
+                  borderRadius: 999,
+                }}>{tabCounts[tab.key]}</span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {activeTab === 'published' ? (
+            publishedProducts.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {publishedProducts.map(product => (
+                  <div key={product.id} style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 10, padding: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: c.text }}>{product.name}</div>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: c.green, background: c.greenSoft, padding: '2px 8px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.green, boxShadow: `0 0 4px ${c.green}` }} />
+                        LIVE
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 10, color: '#666', marginBottom: 8 }}>{product.summary}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10 }}>
+                      {product.domain && (
+                        <span style={{ color: c.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Link2 size={12} /> {product.domain}
+                        </span>
+                      )}
+                      <span style={{ color: '#555' }}>Completed {product.completedAt}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', textAlign: 'center' }}>
+                <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◉</div>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>No published products</div>
+                <div style={{ fontSize: 11, color: c.muted, maxWidth: 320 }}>Deploy and publish a completed product to see it here.</div>
+              </div>
+            )
+          ) : (
+            <>
+              {activeTab === 'completed' && completedProducts.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, color: c.muted, marginBottom: 10, fontWeight: 600 }}>DEPLOY & PUBLISH</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {completedProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {projectsByLifecycle[activeTab as 'completed' | 'archived' | 'deleted'].length > 0 ? (
+                projectsByLifecycle[activeTab as 'completed' | 'archived' | 'deleted'].map(project => (
+                  <LifecycleProjectCard
+                    key={project.id}
+                    project={project}
+                    lifecycle={activeTab}
+                    onRestore={() => restoreProject(project.id)}
+                    onArchive={activeTab === 'completed' ? () => archiveProject(project.id) : undefined}
+                    onDelete={activeTab !== 'deleted' ? () => deleteProject(project.id) : undefined}
+                  />
+                ))
+              ) : (
+                completedProducts.length === 0 || activeTab !== 'completed' ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', textAlign: 'center' }}>
+                    <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>
+                      {activeTab === 'completed' ? '✓' : activeTab === 'archived' ? '▪' : '✕'}
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
+                      No {activeTab} projects
+                    </div>
+                    <div style={{ fontSize: 11, color: c.muted, maxWidth: 320 }}>
+                      {activeTab === 'completed'
+                        ? 'Mark a project complete from the dashboard to move it here.'
+                        : activeTab === 'archived'
+                          ? 'Archived projects will appear here for safekeeping.'
+                          : 'Deleted projects can be restored from here.'}
+                    </div>
+                  </div>
+                ) : null
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -14,8 +14,11 @@ interface ProjectContextValue {
   completedProducts: CompletedProduct[];
   pushToCompleted: (projectId: string, summary: string) => void;
   updateCompletedProduct: (id: string, updates: Partial<CompletedProduct>) => void;
-  setProjectLifecycle: (projectId: string, lifecycle: ProjectLifecycle) => void;
+  archiveProject: (projectId: string) => void;
+  deleteProject: (projectId: string) => void;
   restoreProject: (projectId: string) => void;
+  completeProject: (projectId: string) => void;
+  projectLifecycles: Record<string, ProjectLifecycle>;
 }
 
 const ProjectContext = createContext<ProjectContextValue>({
@@ -23,13 +26,21 @@ const ProjectContext = createContext<ProjectContextValue>({
   completedProducts: INITIAL_COMPLETED_PRODUCTS,
   pushToCompleted: () => {},
   updateCompletedProduct: () => {},
-  setProjectLifecycle: () => {},
+  archiveProject: () => {},
+  deleteProject: () => {},
   restoreProject: () => {},
+  completeProject: () => {},
+  projectLifecycles: {},
 });
 
 export function ProjectProvider({ children }: { children: ReactNode }) {
   const [activeProjects, setActiveProjects] = useState<Project[]>(PROJECTS);
   const [completedProducts, setCompletedProducts] = useState<CompletedProduct[]>(INITIAL_COMPLETED_PRODUCTS);
+  const [projectLifecycles, setProjectLifecycles] = useState<Record<string, ProjectLifecycle>>({});
+
+  const setLifecycle = useCallback((projectId: string, lifecycle: ProjectLifecycle) => {
+    setProjectLifecycles(prev => ({ ...prev, [projectId]: lifecycle }));
+  }, []);
 
   const pushToCompleted = useCallback((projectId: string, summary: string) => {
     const project = activeProjects.find((p) => p.id === projectId);
@@ -54,11 +65,12 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       publishStatus: "unpublished" as PublishStatus,
     };
 
-    setCompletedProducts((prev) => [newProduct, ...prev]);
-    setActiveProjects((prev) =>
-      prev.map((p) => p.id === projectId ? { ...p, lifecycle: "completed" as ProjectLifecycle } : p)
-    );
-  }, [activeProjects]);
+    setCompletedProducts((prev) => {
+      if (prev.some(p => p.projectId === projectId)) return prev;
+      return [newProduct, ...prev];
+    });
+    setLifecycle(projectId, "completed");
+  }, [activeProjects, setLifecycle]);
 
   const updateCompletedProduct = useCallback((id: string, updates: Partial<CompletedProduct>) => {
     setCompletedProducts((prev) =>
@@ -66,21 +78,40 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const setProjectLifecycle = useCallback((projectId: string, lifecycle: ProjectLifecycle) => {
-    setActiveProjects((prev) =>
-      prev.map((p) => p.id === projectId ? { ...p, lifecycle } : p)
-    );
-  }, []);
+  const archiveProject = useCallback((projectId: string) => {
+    setLifecycle(projectId, "archived");
+  }, [setLifecycle]);
+
+  const deleteProject = useCallback((projectId: string) => {
+    setLifecycle(projectId, "deleted");
+  }, [setLifecycle]);
 
   const restoreProject = useCallback((projectId: string) => {
-    setActiveProjects((prev) =>
-      prev.map((p) => p.id === projectId ? { ...p, lifecycle: "active" as ProjectLifecycle } : p)
-    );
-  }, []);
+    setLifecycle(projectId, "active");
+  }, [setLifecycle]);
+
+  const completeProject = useCallback((projectId: string) => {
+    const project = activeProjects.find((p) => p.id === projectId);
+    if (project) {
+      pushToCompleted(projectId, "");
+    } else {
+      setLifecycle(projectId, "completed");
+    }
+  }, [activeProjects, pushToCompleted, setLifecycle]);
 
   return (
     <ProjectContext.Provider
-      value={{ activeProjects, completedProducts, pushToCompleted, updateCompletedProduct, setProjectLifecycle, restoreProject }}
+      value={{
+        activeProjects,
+        completedProducts,
+        pushToCompleted,
+        updateCompletedProduct,
+        archiveProject,
+        deleteProject,
+        restoreProject,
+        completeProject,
+        projectLifecycles,
+      }}
     >
       {children}
     </ProjectContext.Provider>

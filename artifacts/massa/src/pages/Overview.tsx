@@ -880,139 +880,10 @@ function ScrollableBuildStrip({ children, arrowColor, borderColor }: { children:
   )
 }
 
-function CurrentProjectsView({ projects, setProjects, onBack }: { projects: Project[]; setProjects: React.Dispatch<React.SetStateAction<Project[]>>; onBack: () => void }) {
-  const [currentTab, setCurrentTab] = useState<'completed' | 'archived' | 'deleted'>('completed')
-  const { completedProducts, updateCompletedProduct } = useProjects()
-
-  const tabProjects = useMemo(() => projects.filter(p => p.lifecycle === currentTab), [projects, currentTab])
-
-  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
-
-  return (
-    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
-          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
-        >←</button>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Current Projects</div>
-          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Manage completed, archived, and deleted projects</div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: '#131619', borderRadius: 6, padding: 3, width: 'fit-content' }}>
-        {(['completed', 'archived', 'deleted'] as const).map(tab => {
-          const count = projects.filter(p => p.lifecycle === tab).length
-          return (
-            <button key={tab} onClick={() => setCurrentTab(tab)}
-              style={{ border: 'none', background: currentTab === tab ? '#1e2430' : 'transparent', color: currentTab === tab ? '#f0f0f0' : c.muted, padding: '6px 14px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: currentTab === tab ? 700 : 500, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}>
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              {count > 0 && <span style={{ fontSize: 9, background: currentTab === tab ? '#252a35' : '#1a1f28', padding: '1px 5px', borderRadius: 10, color: currentTab === tab ? '#f0f0f0' : c.muted }}>{count}</span>}
-            </button>
-          )
-        })}
-      </div>
-
-      {tabProjects.length === 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
-          <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>{currentTab === 'completed' ? '✓' : currentTab === 'archived' ? '▪' : '✕'}</div>
-          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>No {currentTab} projects</div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {tabProjects.map(project => (
-            <div key={project.id} style={{ border: `1px solid ${c.border}`, background: '#131619', borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 2 }}>{project.name}</div>
-                <div style={{ fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{project.goal} — {project.builds.length} build{project.builds.length !== 1 ? 's' : ''}</div>
-              </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'active' } : p))}
-                  style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.green, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.08)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                >Restore</button>
-                {currentTab !== 'deleted' && (
-                  <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'deleted' } : p))}
-                    style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: '#f87171', cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.08)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                  >Delete</button>
-                )}
-                {currentTab === 'completed' && (
-                  <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'archived' } : p))}
-                    style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1f28' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                  >Archive</button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function PublishedView({ onBack }: { onBack: () => void }) {
-  const { completedProducts } = useProjects()
-  const publishedProducts = useMemo(() => completedProducts.filter(p => p.publishStatus === 'live'), [completedProducts])
-
-  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
-
-  return (
-    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
-          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
-        >←</button>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Published</div>
-          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{publishedProducts.length} live product{publishedProducts.length !== 1 ? 's' : ''}</div>
-        </div>
-      </div>
-
-      {publishedProducts.length === 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
-          <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◉</div>
-          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>No published products yet</div>
-          <div style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Deploy and publish a completed product to see it here</div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {publishedProducts.map(product => (
-            <div key={product.id} style={{ border: `1px solid ${c.border}`, background: '#131619', borderRadius: 8, padding: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{product.name}</div>
-                <span style={{ fontSize: 9, fontWeight: 700, color: c.green, background: 'rgba(52,211,153,0.1)', padding: '2px 8px', borderRadius: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.green, boxShadow: `0 0 4px ${c.green}` }} />
-                  LIVE
-                </span>
-              </div>
-              <div style={{ fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{product.summary}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                {product.domain && (
-                  <span style={{ color: c.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 12 }}>🔗</span> {product.domain}
-                  </span>
-                )}
-                <span style={{ color: '#555' }}>Completed {product.completedAt}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
 export function Overview() {
   const { isMobile, isTablet, isDesktop } = useScreenSize()
   const { selectedTenantId } = useTenant()
-  const { pushToCompleted } = useProjects()
+  const { completeProject, archiveProject, deleteProject, projectLifecycles } = useProjects()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [livePreviewProject, setLivePreviewProject] = useState<string | null>(null)
@@ -1102,7 +973,7 @@ export function Overview() {
   const [clarifyDone, setClarifyDone] = useState(false)
   const [clarifySummary, setClarifySummary] = useState('')
   const [clarifyOtherText, setClarifyOtherText] = useState('')
-  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas' | 'currentProjects' | 'published'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [chatOriginBuildId, setChatOriginBuildId] = useState<string | null>(null)
   const [enhancingId, setEnhancingId] = useState<number | null>(null)
@@ -1362,10 +1233,10 @@ export function Overview() {
   }, [chatMessages, expandedBuildId])
 
   const filteredProjects = useMemo(() => {
-    const active = projects.filter(p => p.lifecycle === 'active')
+    const active = projects.filter(p => (projectLifecycles[p.id] || p.lifecycle) === 'active')
     if (!selectedTenantId) return active
     return active.filter(p => p.id === selectedTenantId)
-  }, [projects, selectedTenantId])
+  }, [projects, selectedTenantId, projectLifecycles])
 
   const selectedProject = projects.find(p => p.id === selectedProjectId) || projects[0]
   const expandedBuild = useMemo(() => {
@@ -1627,8 +1498,8 @@ export function Overview() {
               { label: 'APIs', view: null, path: '' },
               { label: 'Web Scraper', view: null, path: '' },
               { label: 'Inside MASSA', view: null, path: '' },
-              { label: 'Current Projects', view: 'currentProjects' as const, path: '' },
-              { label: 'Published', view: 'published' as const, path: '' },
+              { label: 'Current Projects', view: null, path: '/completed' },
+              { label: 'Published', view: null, path: '/completed?tab=published' },
             ].map(item => {
               const active = item.view === activeView || (item.label === 'Dashboard' && activeView === 'dashboard')
               return (
@@ -1674,8 +1545,8 @@ export function Overview() {
               { label: 'APIs', icon: '⟡', view: null, path: '' },
               { label: 'Web Scraper', icon: '⊘', view: null, path: '' },
               { label: 'Inside MASSA', icon: '⊞', view: null, path: '' },
-              { label: 'Current Projects', icon: '☰', view: 'currentProjects' as const, path: '' },
-              { label: 'Published', icon: '◉', view: 'published' as const, path: '' },
+              { label: 'Current Projects', icon: '☰', view: null, path: '/completed' },
+              { label: 'Published', icon: '◉', view: null, path: '/completed?tab=published' },
             ].map(item => {
               const active = item.view ? activeView === item.view : false
               const clickable = item.view !== null || item.path !== ''
@@ -1724,10 +1595,6 @@ export function Overview() {
               }
             }} />
           </div>
-        ) : activeView === 'currentProjects' ? (
-          <CurrentProjectsView projects={projects} setProjects={setProjects} onBack={() => setActiveView('dashboard')} />
-        ) : activeView === 'published' ? (
-          <PublishedView onBack={() => setActiveView('dashboard')} />
         ) : <>
         {/* CENTER MAIN */}
         <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
@@ -2171,9 +2038,12 @@ export function Overview() {
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       if (action.lifecycle === 'completed') {
-                                        pushToCompleted(project.id, project.goal)
+                                        completeProject(project.id)
+                                      } else if (action.lifecycle === 'archived') {
+                                        archiveProject(project.id)
+                                      } else if (action.lifecycle === 'deleted') {
+                                        deleteProject(project.id)
                                       }
-                                      setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: action.lifecycle } : p))
                                       setProjectMenuOpen(null)
                                     }}
                                     style={{ padding: '6px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, color: action.color || '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.1s, color 0.1s', whiteSpace: 'nowrap' }}
@@ -2282,7 +2152,7 @@ export function Overview() {
                   ) : (
                     /* ── CARD VIEW ── */
                     <div onClick={() => setSelectedProjectId(project.id)}
-                      style={{ border: `1px solid ${isSel ? c.green : c.border}`, borderRadius: 12, padding: 16, cursor: 'pointer', background: isSel ? c.blackGreen : c.alt, position: 'relative', overflow: 'hidden' }}>
+                      style={{ border: `1px solid ${isSel ? c.green : c.border}`, borderRadius: 12, padding: 16, cursor: 'pointer', background: isSel ? c.blackGreen : c.alt, position: 'relative' }}>
                       <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: isSel ? c.green : 'transparent', borderRadius: '12px 0 0 12px' }} />
 
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -2291,7 +2161,7 @@ export function Overview() {
                           {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
                           <span style={{ fontSize: 10, color: c.muted }}>{project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done</span>
                         </div>
-                        <div style={{ display: 'flex', gap: 4 }}>
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                           <button onClick={(e) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }}
                             onMouseEnter={() => setHoveredArchBtn(project.id + '-card-chat')}
                             onMouseLeave={() => setHoveredArchBtn(null)}
@@ -2310,6 +2180,44 @@ export function Overview() {
                             style={{ border: `1px solid #1e2330`, background: hoveredArchBtn === project.id + '-card-preview' ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
                             Preview
                           </button>
+                          <div style={{ position: 'relative' }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setProjectMenuOpen(projectMenuOpen === project.id ? null : project.id) }}
+                              style={{ border: 'none', background: 'transparent', color: '#6b7280', cursor: 'pointer', fontSize: 16, fontWeight: 700, padding: '2px 6px', borderRadius: 4, lineHeight: 1, transition: 'color 0.12s, background 0.12s' }}
+                              onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.background = '#1a1f28' }}
+                              onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.background = 'transparent' }}
+                              title="Project actions"
+                            >⋯</button>
+                            {projectMenuOpen === project.id && (
+                              <div style={{ position: 'absolute', top: 28, right: 0, background: '#0f1215', border: `1px solid ${c.border}`, borderRadius: 6, padding: 4, zIndex: 30, minWidth: 150, boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
+                                {[
+                                  { label: 'Mark Complete', icon: '✓', lifecycle: 'completed' as const },
+                                  { label: 'Archive', icon: '▪', lifecycle: 'archived' as const },
+                                  { label: 'Delete', icon: '✕', lifecycle: 'deleted' as const, color: '#f87171' },
+                                ].map(action => (
+                                  <div
+                                    key={action.label}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      if (action.lifecycle === 'completed') {
+                                        completeProject(project.id)
+                                      } else if (action.lifecycle === 'archived') {
+                                        archiveProject(project.id)
+                                      } else if (action.lifecycle === 'deleted') {
+                                        deleteProject(project.id)
+                                      }
+                                      setProjectMenuOpen(null)
+                                    }}
+                                    style={{ padding: '6px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, color: action.color || '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.1s, color 0.1s', whiteSpace: 'nowrap' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1f28'; e.currentTarget.style.color = action.color || '#f0f0f0' }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = action.color || '#9ca3af' }}
+                                  >
+                                    <span style={{ fontSize: 13 }}>{action.icon}</span> {action.label}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                       {buildCards(false, true)}
