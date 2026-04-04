@@ -1,12 +1,9 @@
 import { cn } from "@/lib/utils";
 import { ActivityItem, ActivityStatus } from "@/data/mock";
 import { Loader2, CheckCircle2, Clock, XCircle } from "lucide-react";
-import { useLocation } from "wouter";
-
-export type EnrichedActivityItem = ActivityItem & { projectName?: string; projectId?: string };
 
 interface ActivityItemProps {
-  item: EnrichedActivityItem;
+  item: ActivityItem & { projectName?: string };
 }
 
 function statusIcon(status: ActivityStatus) {
@@ -22,43 +19,12 @@ function statusIcon(status: ActivityStatus) {
   return <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />;
 }
 
-function displayLabel(item: EnrichedActivityItem): string {
-  if (item.status === "waiting") {
-    return "Response ready — click to view";
-  }
-  return item.label;
-}
-
 function ActivityItemRow({ item }: ActivityItemProps) {
-  const [, setLocation] = useLocation();
-  const isClickable = item.status === "waiting" && item.projectId;
-
-  function handleClick() {
-    if (isClickable) {
-      const hash = item.cardId ? `#card-${item.cardId}` : "";
-      setLocation(`/workspace/${item.projectId}${hash}`);
-    }
-  }
-
   return (
-    <div
-      className={cn(
-        "flex items-start gap-2.5 py-2.5 px-3",
-        isClickable && "cursor-pointer hover:bg-accent/50 transition-colors rounded-sm"
-      )}
-      onClick={handleClick}
-      role={isClickable ? "button" : undefined}
-      tabIndex={isClickable ? 0 : undefined}
-      onKeyDown={isClickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } } : undefined}
-    >
+    <div className="flex items-start gap-2.5 py-2.5 px-3">
       <div className="mt-0.5">{statusIcon(item.status)}</div>
       <div className="flex-1 min-w-0">
-        <div className={cn(
-          "text-xs leading-snug",
-          isClickable ? "text-amber-400 font-medium" : "text-foreground"
-        )}>
-          {displayLabel(item)}
-        </div>
+        <div className="text-xs text-foreground leading-snug">{item.label}</div>
         {item.projectName && (
           <div className="text-[10px] text-emerald-400/80 font-medium mt-0.5 truncate">
             {item.projectName}
@@ -78,7 +44,7 @@ function ActivityItemRow({ item }: ActivityItemProps) {
 }
 
 interface ActivitySidebarProps {
-  items: EnrichedActivityItem[];
+  items: (ActivityItem & { projectName?: string })[];
   isGlobal?: boolean;
 }
 

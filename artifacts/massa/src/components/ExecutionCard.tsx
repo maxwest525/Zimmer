@@ -43,7 +43,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
       icon: <XCircle className="w-3 h-3" />,
     },
     "needs-review": {
-      label: "Response Ready",
+      label: "Needs Review",
       className: "bg-amber-500/10 text-amber-400 border-amber-500/20",
       icon: <Clock className="w-3 h-3" />,
     },
@@ -54,8 +54,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
     <span
       className={cn(
         "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border",
-        className,
-        status === "needs-review" && "cursor-pointer hover:bg-amber-500/20 transition-colors"
+        className
       )}
     >
       {icon}
@@ -92,24 +91,18 @@ function ProgressBar({ value, status }: ProgressBarProps) {
 
 interface ExecutionCardProps {
   card: ExecutionCardData;
-  highlighted?: boolean;
-  onBadgeClick?: () => void;
 }
 
-export function ExecutionCard({ card, highlighted, onBadgeClick }: ExecutionCardProps) {
+export function ExecutionCard({ card }: ExecutionCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   const isCompleted = card.status === "completed";
 
   return (
-    <div
-      id={`card-${card.id}`}
-      className={cn(
-        "border rounded-lg bg-card overflow-hidden transition-all duration-500",
-        isCompleted ? "border-blue-500/20 opacity-60" : "border-border hover:border-emerald-500/10",
-        highlighted && "ring-2 ring-amber-500/60 border-amber-500/30"
-      )}
-    >
+    <div className={cn(
+      "border rounded-lg bg-card overflow-hidden transition-all duration-200",
+      isCompleted ? "border-blue-500/20 opacity-60" : "border-border hover:border-emerald-500/10"
+    )}>
       <div className="px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -119,10 +112,6 @@ export function ExecutionCard({ card, highlighted, onBadgeClick }: ExecutionCard
               </h3>
               {isCompleted ? (
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-400/60 shrink-0" />
-              ) : card.status === "needs-review" && onBadgeClick ? (
-                <button onClick={onBadgeClick} className="focus:outline-none">
-                  <StatusBadge status={card.status} />
-                </button>
               ) : (
                 <StatusBadge status={card.status} />
               )}

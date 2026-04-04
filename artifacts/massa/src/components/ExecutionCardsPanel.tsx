@@ -4,11 +4,9 @@ import { Inbox } from "lucide-react";
 
 interface ExecutionCardsPanelProps {
   cards: ExecutionCardData[];
-  highlightedCardId?: string | null;
-  onCardBadgeClick?: (cardId: string) => void;
 }
 
-export function ExecutionCardsPanel({ cards, highlightedCardId, onCardBadgeClick }: ExecutionCardsPanelProps) {
+export function ExecutionCardsPanel({ cards }: ExecutionCardsPanelProps) {
   if (cards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-36 text-center px-6 text-muted-foreground">
@@ -35,12 +33,7 @@ export function ExecutionCardsPanel({ cards, highlightedCardId, onCardBadgeClick
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
         {cards.map((card) => (
-          <ExecutionCard
-            key={card.id}
-            card={card}
-            highlighted={highlightedCardId === card.id}
-            onBadgeClick={card.status === "needs-review" && onCardBadgeClick ? () => onCardBadgeClick(card.id) : undefined}
-          />
+          <ExecutionCard key={card.id} card={card} />
         ))}
       </div>
     </div>

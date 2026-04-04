@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
+import { ActivityItem } from "@/data/mock";
 import { X } from "lucide-react";
-import { ActivitySidebar, EnrichedActivityItem } from "./ActivitySidebar";
+import { ActivitySidebar } from "./ActivitySidebar";
 
 interface ActivityDrawerProps {
-  items: EnrichedActivityItem[];
+  items: ActivityItem[];
   open: boolean;
   onClose: () => void;
   isGlobal?: boolean;

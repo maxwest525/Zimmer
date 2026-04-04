@@ -55,7 +55,7 @@ function StatusIcon({ status, className }: StatusIconProps) {
 
 function statusLabel(status: ProjectStatus) {
   if (status === "running") return "Running";
-  if (status === "needs-review") return "Response Ready";
+  if (status === "needs-review") return "Needs review";
   if (status === "failed") return "Failed";
   return "Idle";
 }
