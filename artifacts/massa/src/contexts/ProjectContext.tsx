@@ -6,6 +6,7 @@ import {
   INITIAL_COMPLETED_PRODUCTS,
   DeployStatus,
   PublishStatus,
+  ProjectLifecycle,
 } from "@/data/mock";
 
 interface ProjectContextValue {
@@ -13,6 +14,8 @@ interface ProjectContextValue {
   completedProducts: CompletedProduct[];
   pushToCompleted: (projectId: string, summary: string) => void;
   updateCompletedProduct: (id: string, updates: Partial<CompletedProduct>) => void;
+  setProjectLifecycle: (projectId: string, lifecycle: ProjectLifecycle) => void;
+  restoreProject: (projectId: string) => void;
 }
 
 const ProjectContext = createContext<ProjectContextValue>({
@@ -20,6 +23,8 @@ const ProjectContext = createContext<ProjectContextValue>({
   completedProducts: INITIAL_COMPLETED_PRODUCTS,
   pushToCompleted: () => {},
   updateCompletedProduct: () => {},
+  setProjectLifecycle: () => {},
+  restoreProject: () => {},
 });
 
 export function ProjectProvider({ children }: { children: ReactNode }) {
@@ -50,7 +55,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     };
 
     setCompletedProducts((prev) => [newProduct, ...prev]);
-    setActiveProjects((prev) => prev.filter((p) => p.id !== projectId));
+    setActiveProjects((prev) =>
+      prev.map((p) => p.id === projectId ? { ...p, lifecycle: "completed" as ProjectLifecycle } : p)
+    );
   }, [activeProjects]);
 
   const updateCompletedProduct = useCallback((id: string, updates: Partial<CompletedProduct>) => {
@@ -59,9 +66,21 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const setProjectLifecycle = useCallback((projectId: string, lifecycle: ProjectLifecycle) => {
+    setActiveProjects((prev) =>
+      prev.map((p) => p.id === projectId ? { ...p, lifecycle } : p)
+    );
+  }, []);
+
+  const restoreProject = useCallback((projectId: string) => {
+    setActiveProjects((prev) =>
+      prev.map((p) => p.id === projectId ? { ...p, lifecycle: "active" as ProjectLifecycle } : p)
+    );
+  }, []);
+
   return (
     <ProjectContext.Provider
-      value={{ activeProjects, completedProducts, pushToCompleted, updateCompletedProduct }}
+      value={{ activeProjects, completedProducts, pushToCompleted, updateCompletedProduct, setProjectLifecycle, restoreProject }}
     >
       {children}
     </ProjectContext.Provider>

@@ -9,6 +9,7 @@ import { ModelTooltip } from '@/components/ModelTooltip'
 import { MODEL_COLORS, getModelReason } from '@/data/modelRegistry'
 import { TenantSelector } from '@/components/TenantSelector'
 import { useTenant } from '@/contexts/TenantContext'
+import { useProjects } from '@/contexts/ProjectContext'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -32,6 +33,7 @@ type Project = {
   goal: string
   status: Status
   builds: Build[]
+  lifecycle: 'active' | 'completed' | 'archived' | 'deleted'
 }
 
 const SKILL_COLORS: Record<string, string> = {
@@ -878,9 +880,139 @@ function ScrollableBuildStrip({ children, arrowColor, borderColor }: { children:
   )
 }
 
+function CurrentProjectsView({ projects, setProjects, onBack }: { projects: Project[]; setProjects: React.Dispatch<React.SetStateAction<Project[]>>; onBack: () => void }) {
+  const [currentTab, setCurrentTab] = useState<'completed' | 'archived' | 'deleted'>('completed')
+  const { completedProducts, updateCompletedProduct } = useProjects()
+
+  const tabProjects = useMemo(() => projects.filter(p => p.lifecycle === currentTab), [projects, currentTab])
+
+  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
+        >←</button>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Current Projects</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Manage completed, archived, and deleted projects</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: '#131619', borderRadius: 6, padding: 3, width: 'fit-content' }}>
+        {(['completed', 'archived', 'deleted'] as const).map(tab => {
+          const count = projects.filter(p => p.lifecycle === tab).length
+          return (
+            <button key={tab} onClick={() => setCurrentTab(tab)}
+              style={{ border: 'none', background: currentTab === tab ? '#1e2430' : 'transparent', color: currentTab === tab ? '#f0f0f0' : c.muted, padding: '6px 14px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: currentTab === tab ? 700 : 500, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}>
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {count > 0 && <span style={{ fontSize: 9, background: currentTab === tab ? '#252a35' : '#1a1f28', padding: '1px 5px', borderRadius: 10, color: currentTab === tab ? '#f0f0f0' : c.muted }}>{count}</span>}
+            </button>
+          )
+        })}
+      </div>
+
+      {tabProjects.length === 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>{currentTab === 'completed' ? '✓' : currentTab === 'archived' ? '▪' : '✕'}</div>
+          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>No {currentTab} projects</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {tabProjects.map(project => (
+            <div key={project.id} style={{ border: `1px solid ${c.border}`, background: '#131619', borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 2 }}>{project.name}</div>
+                <div style={{ fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{project.goal} — {project.builds.length} build{project.builds.length !== 1 ? 's' : ''}</div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'active' } : p))}
+                  style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.green, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.08)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >Restore</button>
+                {currentTab !== 'deleted' && (
+                  <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'deleted' } : p))}
+                    style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: '#f87171', cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.08)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >Delete</button>
+                )}
+                {currentTab === 'completed' && (
+                  <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'archived' } : p))}
+                    style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1f28' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >Archive</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PublishedView({ onBack }: { onBack: () => void }) {
+  const { completedProducts } = useProjects()
+  const publishedProducts = useMemo(() => completedProducts.filter(p => p.publishStatus === 'live'), [completedProducts])
+
+  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
+        >←</button>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Published</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{publishedProducts.length} live product{publishedProducts.length !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+
+      {publishedProducts.length === 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◉</div>
+          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>No published products yet</div>
+          <div style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Deploy and publish a completed product to see it here</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {publishedProducts.map(product => (
+            <div key={product.id} style={{ border: `1px solid ${c.border}`, background: '#131619', borderRadius: 8, padding: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{product.name}</div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: c.green, background: 'rgba(52,211,153,0.1)', padding: '2px 8px', borderRadius: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.green, boxShadow: `0 0 4px ${c.green}` }} />
+                  LIVE
+                </span>
+              </div>
+              <div style={{ fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{product.summary}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                {product.domain && (
+                  <span style={{ color: c.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 12 }}>🔗</span> {product.domain}
+                  </span>
+                )}
+                <span style={{ color: '#555' }}>Completed {product.completedAt}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function Overview() {
   const { isMobile, isTablet, isDesktop } = useScreenSize()
   const { selectedTenantId } = useTenant()
+  const { pushToCompleted } = useProjects()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [livePreviewProject, setLivePreviewProject] = useState<string | null>(null)
@@ -951,6 +1083,7 @@ export function Overview() {
   const [pendingDropdown, setPendingDropdown] = useState<string | null>(null)
   const [expandedBuildCard, setExpandedBuildCard] = useState<string | null>(null)
   const [leftNavCollapsed, setLeftNavCollapsed] = useState(false)
+  const [projectMenuOpen, setProjectMenuOpen] = useState<string | null>(null)
   const [archTab, setArchTab] = useState<'tree' | 'graph' | 'timeline'>('tree')
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const panelWasCollapsedBeforeSuggestions = useRef(false)
@@ -969,7 +1102,7 @@ export function Overview() {
   const [clarifyDone, setClarifyDone] = useState(false)
   const [clarifySummary, setClarifySummary] = useState('')
   const [clarifyOtherText, setClarifyOtherText] = useState('')
-  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas' | 'currentProjects' | 'published'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [chatOriginBuildId, setChatOriginBuildId] = useState<string | null>(null)
   const [enhancingId, setEnhancingId] = useState<number | null>(null)
@@ -1078,6 +1211,7 @@ export function Overview() {
       name: 'Trading Bot',
       goal: 'Automated trading bot with dashboard, risk controls, and alerts',
       status: 'running',
+      lifecycle: 'active',
       builds: [
         { id: 'core-engine', title: 'Core Engine', summary: 'Strategy loop, execution logic, and order handling', status: 'running', progress: 58, stack: ['Claude', 'Claude Code', 'APIs'], agent: 'System Builder', agentRole: 'Backend Architect', buildContext: 'backend' },
         { id: 'risk-module', title: 'Risk Module', summary: 'Position sizing, loss limits, and safety rules', status: 'running', progress: 46, stack: ['GPT-4o', 'Claude Code'], agent: 'Risk Agent', agentRole: 'Safety Engineer', dependsOn: ['core-engine'], buildContext: 'backend' },
@@ -1091,6 +1225,7 @@ export function Overview() {
       name: 'Massa Marketing Site',
       goal: 'Homepage, funnel, API settings, and workflow pages',
       status: 'running',
+      lifecycle: 'active',
       builds: [
         { id: 'homepage', title: 'Homepage', summary: 'Main marketing page and product explanation', status: 'running', progress: 71, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'UI Agent', agentRole: 'Frontend Designer', buildContext: 'ui' },
         { id: 'api-settings', title: 'API Settings', summary: 'Provider cards, keys, and connection states', status: 'queued', progress: 24, stack: ['Claude', 'Replit', 'Cursor'], agent: 'Settings Agent', agentRole: 'Integration Engineer', dependsOn: ['homepage'], buildContext: 'backend' },
@@ -1101,6 +1236,7 @@ export function Overview() {
       name: 'Web Scraper',
       goal: 'Source intake, parsing, and scheduled export flow',
       status: 'queued',
+      lifecycle: 'active',
       builds: [
         { id: 'crawler', title: 'Crawler', summary: 'Fetch pipeline and retry handling', status: 'queued', progress: 12, stack: ['Claude', 'Claude Code', 'Perplexity'], agent: 'Crawler Agent', agentRole: 'Data Engineer', buildContext: 'backend' },
         { id: 'scheduler', title: 'Scheduler', summary: 'Daily export and email delivery', status: 'queued', progress: 0, stack: ['Mistral', 'n8n', 'Windsurf'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['crawler'], buildContext: 'automation' },
@@ -1111,6 +1247,7 @@ export function Overview() {
       name: 'Data Pipeline',
       goal: 'ETL pipeline for ingesting, transforming, and storing analytics data',
       status: 'failed',
+      lifecycle: 'active',
       builds: [
         { id: 'ingestion', title: 'Ingestion Layer', summary: 'Stream connectors and batch import handlers', status: 'failed', progress: 38, stack: ['Claude', 'Claude Code', 'Kafka'], agent: 'Data Agent', agentRole: 'Data Engineer', buildContext: 'backend' },
         { id: 'transform', title: 'Transform Engine', summary: 'Data cleaning, normalization, and enrichment', status: 'queued', progress: 0, stack: ['GPT-4o', 'Claude Code'], agent: 'Transform Agent', agentRole: 'Data Engineer', dependsOn: ['ingestion'], buildContext: 'backend' },
@@ -1121,6 +1258,7 @@ export function Overview() {
       name: 'User Portal',
       goal: 'Self-service portal for account management and billing',
       status: 'idle',
+      lifecycle: 'active',
       builds: [
         { id: 'auth-flow', title: 'Auth Flow', summary: 'Login, signup, and session management', status: 'queued', progress: 0, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'Auth Agent', agentRole: 'Security Engineer', buildContext: 'backend' },
         { id: 'billing-ui', title: 'Billing Dashboard', summary: 'Subscription management and invoice history', status: 'queued', progress: 0, stack: ['Claude', 'Replit', 'Stripe'], agent: 'UI Agent', agentRole: 'Frontend Designer', dependsOn: ['auth-flow'], buildContext: 'ui' },
@@ -1224,8 +1362,9 @@ export function Overview() {
   }, [chatMessages, expandedBuildId])
 
   const filteredProjects = useMemo(() => {
-    if (!selectedTenantId) return projects
-    return projects.filter(p => p.id === selectedTenantId)
+    const active = projects.filter(p => p.lifecycle === 'active')
+    if (!selectedTenantId) return active
+    return active.filter(p => p.id === selectedTenantId)
   }, [projects, selectedTenantId])
 
   const selectedProject = projects.find(p => p.id === selectedProjectId) || projects[0]
@@ -1478,7 +1617,7 @@ export function Overview() {
           <div onClick={e => e.stopPropagation()} style={{ width: 260, height: '100%', background: '#0a0d10', border: `1px solid #1e2330`, padding: 16, overflowY: 'auto' }}>
             <div className="panel-header" style={{ color: '#9ca3af', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid #1e2330' }}>SYS://NAV</div>
             {[
-              { label: 'Dashboard', view: 'dashboard' as const, path: '/' },
+              { label: 'Dashboard', view: 'dashboard' as const, path: '' },
               { label: 'Chats', view: 'chats' as const, path: '' },
               { label: 'Ideas', view: 'ideas' as const, path: '' },
               { label: 'History', view: null, path: '' },
@@ -1487,8 +1626,9 @@ export function Overview() {
               { label: 'Skills', view: null, path: '' },
               { label: 'APIs', view: null, path: '' },
               { label: 'Web Scraper', view: null, path: '' },
-              { label: 'Inside MASSA', view: null, path: '/inside' },
-              { label: 'Completed Products', view: null, path: '/completed' },
+              { label: 'Inside MASSA', view: null, path: '' },
+              { label: 'Current Projects', view: 'currentProjects' as const, path: '' },
+              { label: 'Published', view: 'published' as const, path: '' },
             ].map(item => {
               const active = item.view === activeView || (item.label === 'Dashboard' && activeView === 'dashboard')
               return (
@@ -1524,7 +1664,7 @@ export function Overview() {
               ><span style={{ display: 'inline-block', transform: leftNavCollapsed ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>«</span></button>
             </div>
             {[
-              { label: 'Dashboard', icon: '⌂', view: 'dashboard' as const, path: '/' },
+              { label: 'Dashboard', icon: '⌂', view: 'dashboard' as const, path: '' },
               { label: 'Chats', icon: '◈', view: 'chats' as const, path: '' },
               { label: 'Ideas', icon: '◇', view: 'ideas' as const, path: '' },
               { label: 'History', icon: '↻', view: null, path: '' },
@@ -1533,8 +1673,9 @@ export function Overview() {
               { label: 'Skills', icon: '⬡', view: null, path: '' },
               { label: 'APIs', icon: '⟡', view: null, path: '' },
               { label: 'Web Scraper', icon: '⊘', view: null, path: '' },
-              { label: 'Inside MASSA', icon: '⊞', view: null, path: '/inside' },
-              { label: 'Completed Products', icon: '✓', view: null, path: '/completed' },
+              { label: 'Inside MASSA', icon: '⊞', view: null, path: '' },
+              { label: 'Current Projects', icon: '☰', view: 'currentProjects' as const, path: '' },
+              { label: 'Published', icon: '◉', view: 'published' as const, path: '' },
             ].map(item => {
               const active = item.view ? activeView === item.view : false
               const clickable = item.view !== null || item.path !== ''
@@ -1583,6 +1724,10 @@ export function Overview() {
               }
             }} />
           </div>
+        ) : activeView === 'currentProjects' ? (
+          <CurrentProjectsView projects={projects} setProjects={setProjects} onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'published' ? (
+          <PublishedView onBack={() => setActiveView('dashboard')} />
         ) : <>
         {/* CENTER MAIN */}
         <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
@@ -1999,11 +2144,49 @@ export function Overview() {
                   {viewMode === 'row' ? (
                     /* ── ROW VIEW — left info + right builds ── */
                     <div
-                      style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '260px minmax(0, 1fr)', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: isMobile ? 10 : 14, background: c.alt, overflow: 'hidden' }}>
+                      style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '260px minmax(0, 1fr)', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: isMobile ? 10 : 14, background: c.alt }}>
 
                       <div onClick={() => setSelectedProjectId(project.id)} style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ fontWeight: 700, fontSize: 17, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>
-                          {project.name}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <div style={{ fontWeight: 700, fontSize: 17, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                            {project.name}
+                          </div>
+                          <div style={{ position: 'relative', flexShrink: 0 }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setProjectMenuOpen(projectMenuOpen === project.id ? null : project.id) }}
+                              style={{ width: 24, height: 24, borderRadius: 4, border: `1px solid ${c.border}`, background: projectMenuOpen === project.id ? `${c.border}` : 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s, border-color 0.15s, background 0.15s', lineHeight: 1 }}
+                              onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.borderColor = '#555' }}
+                              onMouseLeave={e => { if (projectMenuOpen !== project.id) { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = c.border } }}
+                              title="Project actions"
+                            >⋯</button>
+                            {projectMenuOpen === project.id && (
+                              <div style={{ position: 'absolute', top: 28, right: 0, background: '#0f1215', border: `1px solid ${c.border}`, borderRadius: 6, padding: 4, zIndex: 30, minWidth: 150, boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
+                                {[
+                                  { label: 'Mark Complete', icon: '✓', lifecycle: 'completed' as const },
+                                  { label: 'Archive', icon: '▪', lifecycle: 'archived' as const },
+                                  { label: 'Delete', icon: '✕', lifecycle: 'deleted' as const, color: '#f87171' },
+                                ].map(action => (
+                                  <div
+                                    key={action.label}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      if (action.lifecycle === 'completed') {
+                                        pushToCompleted(project.id, project.goal)
+                                      }
+                                      setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: action.lifecycle } : p))
+                                      setProjectMenuOpen(null)
+                                    }}
+                                    style={{ padding: '6px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, color: action.color || '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.1s, color 0.1s', whiteSpace: 'nowrap' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1f28'; e.currentTarget.style.color = action.color || '#f0f0f0' }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = action.color || '#9ca3af' }}
+                                  >
+                                    <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>{action.icon}</span>
+                                    {action.label}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <div style={{ fontSize: 11, color: '#666', lineHeight: 1.4, marginBottom: 10 }}>

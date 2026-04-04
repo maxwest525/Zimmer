@@ -1,4 +1,5 @@
 export type ProjectStatus = "running" | "idle" | "needs-review" | "failed" | "completed";
+export type ProjectLifecycle = "active" | "completed" | "archived" | "deleted";
 export type TaskStatus = "running" | "queued" | "completed" | "failed" | "needs-review";
 export type ActivityStatus = "running" | "completed" | "failed" | "waiting";
 
@@ -8,6 +9,7 @@ export interface Project {
   status: ProjectStatus;
   taskCount: number;
   lastActive: string;
+  lifecycle: ProjectLifecycle;
 }
 
 export type DeployStatus = "not-started" | "in-progress" | "deployed" | "failed";
@@ -51,6 +53,7 @@ export const PROJECTS: Project[] = [
     status: "running",
     taskCount: 4,
     lastActive: "2m ago",
+    lifecycle: "active",
   },
   {
     id: "p2",
@@ -58,6 +61,7 @@ export const PROJECTS: Project[] = [
     status: "needs-review",
     taskCount: 2,
     lastActive: "1h ago",
+    lifecycle: "active",
   },
   {
     id: "p3",
@@ -65,6 +69,7 @@ export const PROJECTS: Project[] = [
     status: "idle",
     taskCount: 0,
     lastActive: "3h ago",
+    lifecycle: "active",
   },
   {
     id: "p4",
@@ -72,6 +77,7 @@ export const PROJECTS: Project[] = [
     status: "failed",
     taskCount: 1,
     lastActive: "5h ago",
+    lifecycle: "active",
   },
   {
     id: "p5",
@@ -79,6 +85,7 @@ export const PROJECTS: Project[] = [
     status: "idle",
     taskCount: 0,
     lastActive: "1d ago",
+    lifecycle: "active",
   },
 ];
 
