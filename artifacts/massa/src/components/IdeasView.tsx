@@ -15,7 +15,6 @@ type Idea = {
   updatedAt: string
 }
 
-const CATEGORIES = ['general', 'feature', 'design', 'bug', 'research', 'marketing']
 const SOURCE_ICONS: Record<string, string> = {
   web: '⌨',
   email: '✉',
@@ -35,11 +34,10 @@ const c = {
   font: '"JetBrains Mono", Menlo, monospace',
 }
 
-export function IdeasView() {
+export function IdeasView({ onTurnIntoPrompt }: { onTurnIntoPrompt?: (content: string) => void }) {
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [loading, setLoading] = useState(true)
   const [inputValue, setInputValue] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('general')
   const [filter, setFilter] = useState<'all' | 'starred'>('all')
   const [submitting, setSubmitting] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -74,13 +72,12 @@ export function IdeasView() {
       const res = await fetch(`${apiBase}/ideas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: inputValue.trim(), category: selectedCategory, source: 'web' }),
+        body: JSON.stringify({ content: inputValue.trim(), category: 'general', source: 'web' }),
       })
       if (res.ok) {
         const idea = await res.json()
         setIdeas(prev => [idea, ...prev])
         setInputValue('')
-        setSelectedCategory('general')
         if (/instagram\.com\//i.test(idea.content)) {
           setTimeout(() => fetchIdeas(), 8000)
         }
@@ -207,29 +204,7 @@ export function IdeasView() {
             boxSizing: 'border-box',
           }}
         />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', flex: 1 }}>
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                style={{
-                  background: selectedCategory === cat ? `${c.green}18` : 'transparent',
-                  border: `1px solid ${selectedCategory === cat ? c.green + '44' : c.borderLight}`,
-                  color: selectedCategory === cat ? c.green : c.muted,
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  fontSize: 11,
-                  fontFamily: c.font,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                  textTransform: 'lowercase',
-                }}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, justifyContent: 'flex-end' }}>
           <button
             onClick={addIdea}
             disabled={!inputValue.trim() || submitting}
@@ -461,19 +436,6 @@ export function IdeasView() {
                     </div>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-                    <span style={{
-                      background: `${c.green}10`,
-                      border: `1px solid ${c.green}22`,
-                      color: c.green,
-                      padding: '2px 8px',
-                      borderRadius: 4,
-                      fontSize: 9,
-                      fontFamily: c.font,
-                      textTransform: 'lowercase',
-                      opacity: 0.8,
-                    }}>
-                      {idea.category}
-                    </span>
                     <span style={{ color: c.muted, fontSize: 10, fontFamily: c.font, opacity: 0.6 }}>
                       {SOURCE_ICONS[idea.source] || ''} {idea.source}
                     </span>
@@ -481,6 +443,17 @@ export function IdeasView() {
                       {formatDate(idea.createdAt)}
                     </span>
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+                      {onTurnIntoPrompt && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onTurnIntoPrompt(idea.content) }}
+                          style={{ background: 'none', border: 'none', color: c.green, fontSize: 10, fontFamily: c.font, cursor: 'pointer', opacity: 0.7, padding: '2px 6px', transition: 'opacity 0.15s' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
+                          title="Turn into Prompt"
+                        >
+                          {'>'} prompt
+                        </button>
+                      )}
                       <button
                         onClick={(e) => { e.stopPropagation(); archiveIdea(idea.id) }}
                         style={{ background: 'none', border: 'none', color: c.muted, fontSize: 10, fontFamily: c.font, cursor: 'pointer', opacity: 0.5, padding: '2px 6px' }}

@@ -1504,7 +1504,7 @@ export function Overview() {
           </div>
         ) : activeView === 'ideas' ? (
           <div style={{ gridColumn: isDesktop ? '2 / -1' : '1 / -1', border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
-            <IdeasView />
+            <IdeasView onTurnIntoPrompt={(content) => { setRawInput(content); setActiveView('dashboard') }} />
           </div>
         ) : <>
         {/* CENTER MAIN */}
