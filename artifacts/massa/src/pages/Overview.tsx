@@ -747,6 +747,87 @@ function useScreenSize() {
   return { isMobile: width < 768, isTablet: width >= 768 && width < 1024, isDesktop: width >= 1024, width }
 }
 
+function ScrollableBuildStrip({ children, arrowColor, borderColor }: { children: React.ReactNode, arrowColor: string, borderColor: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 1)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    checkScroll()
+    el.addEventListener('scroll', checkScroll, { passive: true })
+    const ro = new ResizeObserver(checkScroll)
+    ro.observe(el)
+    const mo = new MutationObserver(checkScroll)
+    mo.observe(el, { childList: true, subtree: true })
+    return () => {
+      el.removeEventListener('scroll', checkScroll)
+      ro.disconnect()
+      mo.disconnect()
+    }
+  }, [checkScroll])
+
+  const scroll = (dir: 'left' | 'right') => {
+    const el = scrollRef.current
+    if (!el) return
+    const firstChild = el.querySelector(':scope > * > *:first-child') as HTMLElement | null
+    const gap = 10
+    const step = firstChild ? firstChild.offsetWidth + gap : el.clientWidth * 0.8
+    el.scrollBy({ left: dir === 'left' ? -step : step, behavior: 'smooth' })
+  }
+
+  const arrowBtn = (dir: 'left' | 'right', visible: boolean) => (
+    <button
+      onClick={(e) => { e.stopPropagation(); scroll(dir) }}
+      style={{
+        position: 'absolute',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        [dir === 'left' ? 'left' : 'right']: -2,
+        zIndex: 5,
+        width: 24,
+        height: 48,
+        borderRadius: dir === 'left' ? '6px 4px 4px 6px' : '4px 6px 6px 4px',
+        border: `1px solid ${borderColor}`,
+        background: 'rgba(10,13,16,0.92)',
+        color: arrowColor,
+        cursor: 'pointer',
+        display: visible ? 'flex' : 'none',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 14,
+        padding: 0,
+        transition: 'opacity 0.15s',
+        opacity: 0.85,
+        backdropFilter: 'blur(4px)',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+      onMouseLeave={e => { e.currentTarget.style.opacity = '0.85' }}
+    >
+      {dir === 'left' ? '‹' : '›'}
+    </button>
+  )
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {arrowBtn('left', canScrollLeft)}
+      <style>{`.scrollable-build-strip::-webkit-scrollbar { display: none; }`}</style>
+      <div ref={scrollRef} className="scrollable-build-strip" style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
+        {children}
+      </div>
+      {arrowBtn('right', canScrollRight)}
+    </div>
+  )
+}
+
 export function Overview() {
   const { isMobile, isTablet, isDesktop } = useScreenSize()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -1538,7 +1619,7 @@ export function Overview() {
             {projects.map((project, pi) => {
               const isSel = selectedProjectId === project.id
               const buildCards = (column: boolean, wrap = false) => (
-                <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 10, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { overflowX: 'auto', paddingBottom: 6 }) }}>
+                <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 10, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { paddingBottom: 6 }) }}>
                   {project.builds.map((build) => {
                     const sc = skillColor(build.stack)
                     const ps = primarySkill(build.stack)
@@ -1693,7 +1774,9 @@ export function Overview() {
                       {/* Builds strip (horizontal scroll) */}
                       <div style={{ minWidth: 0 }}>
                         <div className="panel-header" style={{ color: '#4b5563', marginBottom: 7, fontSize: 9 }}>BUILDS</div>
-                        {buildCards(false)}
+                        <ScrollableBuildStrip arrowColor={c.muted} borderColor={c.border}>
+                          {buildCards(false)}
+                        </ScrollableBuildStrip>
                       </div>
                     </div>
                   ) : (
