@@ -10,6 +10,7 @@ import { InsideMassa } from "@/pages/InsideMassa";
 import { ImageGenerator } from "@/pages/ImageGenerator";
 import { VideoGenerator } from "@/pages/VideoGenerator";
 import { FigmaIntegration } from "@/pages/FigmaIntegration";
+import { QuickCapture } from "@/pages/QuickCapture";
 import { PROJECTS } from "@/data/mock";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/image-generator" component={ImageGenerator} />
       <Route path="/video-generator" component={VideoGenerator} />
       <Route path="/figma" component={FigmaIntegration} />
+      <Route path="/quick" component={QuickCapture} />
       <Route path="/workspace/:projectId">
         {(params) => <WorkspaceRoute projectId={params.projectId} />}
       </Route>
