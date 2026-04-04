@@ -950,6 +950,7 @@ export function Overview() {
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
   const [pendingDropdown, setPendingDropdown] = useState<string | null>(null)
   const [expandedBuildCard, setExpandedBuildCard] = useState<string | null>(null)
+  const [leftNavCollapsed, setLeftNavCollapsed] = useState(false)
   const [archTab, setArchTab] = useState<'tree' | 'graph' | 'timeline'>('tree')
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const panelWasCollapsedBeforeSuggestions = useRef(false)
@@ -1507,24 +1508,33 @@ export function Overview() {
       )}
 
       {/* 3-COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 0px' : 'minmax(0, 1fr) 260px') : (rightPanelCollapsed ? '180px minmax(0, 1fr) 0px' : '180px minmax(0, 1fr) 260px'), gap: isMobile ? 12 : (rightPanelCollapsed ? '12px 0px' : 12), minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 0px' : 'minmax(0, 1fr) 260px') : (`${leftNavCollapsed ? '42px' : '180px'} minmax(0, 1fr) ${rightPanelCollapsed ? '0px' : '260px'}`), gap: isMobile ? 12 : (rightPanelCollapsed ? '12px 0px' : 12), minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
 
         {/* LEFT SIDEBAR — hidden on mobile/tablet */}
-        {isDesktop && <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2 }}>
+        {isDesktop && <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: leftNavCollapsed ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2, overflow: 'hidden', transition: 'padding 0.3s ease' }}>
           <div>
-            <div className="panel-header" style={{ color: '#9ca3af', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid #1e2330' }}>SYS://NAV</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: leftNavCollapsed ? 'center' : 'space-between', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid #1e2330' }}>
+              {!leftNavCollapsed && <span className="panel-header" style={{ color: '#9ca3af' }}>SYS://NAV</span>}
+              <button
+                onClick={() => setLeftNavCollapsed(!leftNavCollapsed)}
+                title={leftNavCollapsed ? 'Expand nav' : 'Collapse nav'}
+                style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
+              ><span style={{ display: 'inline-block', transform: leftNavCollapsed ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>«</span></button>
+            </div>
             {[
-              { label: 'Dashboard', view: 'dashboard' as const, path: '/' },
-              { label: 'Chats', view: 'chats' as const, path: '' },
-              { label: 'Ideas', view: 'ideas' as const, path: '' },
-              { label: 'History', view: null, path: '' },
-              { label: 'Automations', view: null, path: '' },
-              { label: 'Marketing', view: null, path: '' },
-              { label: 'Skills', view: null, path: '' },
-              { label: 'APIs', view: null, path: '' },
-              { label: 'Web Scraper', view: null, path: '' },
-              { label: 'Inside MASSA', view: null, path: '/inside' },
-              { label: 'Completed Products', view: null, path: '/completed' },
+              { label: 'Dashboard', icon: '⌂', view: 'dashboard' as const, path: '/' },
+              { label: 'Chats', icon: '◈', view: 'chats' as const, path: '' },
+              { label: 'Ideas', icon: '◇', view: 'ideas' as const, path: '' },
+              { label: 'History', icon: '↻', view: null, path: '' },
+              { label: 'Automations', icon: '⚡', view: null, path: '' },
+              { label: 'Marketing', icon: '◎', view: null, path: '' },
+              { label: 'Skills', icon: '⬡', view: null, path: '' },
+              { label: 'APIs', icon: '⟡', view: null, path: '' },
+              { label: 'Web Scraper', icon: '⊘', view: null, path: '' },
+              { label: 'Inside MASSA', icon: '⊞', view: null, path: '/inside' },
+              { label: 'Completed Products', icon: '✓', view: null, path: '/completed' },
             ].map(item => {
               const active = item.view ? activeView === item.view : false
               const clickable = item.view !== null || item.path !== ''
@@ -1532,8 +1542,12 @@ export function Overview() {
                 <div key={item.label} onClick={() => {
                   if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
                   else if (item.path) { navigate(item.path) }
-                }} style={{ padding: '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330' }}>
-                  {active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}
+                }} title={leftNavCollapsed ? item.label : undefined} style={{ padding: leftNavCollapsed ? '8px 0' : '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330', textAlign: leftNavCollapsed ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                  {leftNavCollapsed ? (
+                    <span style={{ fontSize: 14 }}>{item.icon}</span>
+                  ) : (
+                    <>{active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}</>
+                  )}
                 </div>
               )
             })}
