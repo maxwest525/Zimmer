@@ -1853,7 +1853,7 @@ export function Overview() {
           })()}
 
           {/* Code Stream + Build Activity */}
-          <div style={{ border: `1px solid #14181e`, borderRadius: 4, display: 'flex', flexDirection: 'column', flex: collapsedSections.codeStream ? 'none' : 1, minHeight: 0, background: '#080a0e' }}>
+          <div style={{ border: `1px solid #14181e`, borderRadius: 4, display: 'flex', flexDirection: 'column', flex: 'none', maxHeight: collapsedSections.codeStream ? 'none' : 260, minHeight: 0, background: '#080a0e' }}>
             <div style={{ padding: '8px 12px 6px', borderBottom: collapsedSections.codeStream ? 'none' : `1px solid #14181e` }}>
               {sectionHeader('CODE STREAM', 'codeStream', <span style={{ width: 6, height: 6, borderRadius: 999, background: '#34d399', display: 'inline-block', boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />)}
             </div>
