@@ -1635,11 +1635,6 @@ export function Overview() {
                         onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(build.id) }}
                         style={{ ...(column ? { width: '100%' } : { minWidth: 176, maxWidth: 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : isComplete ? `${sc}30` : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s' }}>
 
-                        {isComplete && (
-                          <div style={{ position: 'absolute', top: column ? 6 : 6, right: 6, width: 16, height: 16, borderRadius: 999, background: `${sc}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
-                            <span style={{ fontSize: 9, color: sc }}>✓</span>
-                          </div>
-                        )}
 
                         {column ? (
                           <>
