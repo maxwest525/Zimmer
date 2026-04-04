@@ -1,0 +1,313 @@
+import { useState, useEffect } from “react”;
+
+const PROJECTS = [
+{
+id: 1, name: “Trading Bot”,
+description: “Automated trading bot with dashboard, risk controls, and alerts”,
+summary: “5 builds · 3 done · 2 active · Claude Code, Lovable, n8n”,
+thinking: [
+{ agent: “Risk Agent”, text: “Implementing Kelly Criterion with 2% hard cap…” },
+{ agent: “UI Agent”, text: “Compiling chart overlay component for P&L view…” },
+],
+codeStream: [
+{ file: “src/engine/strategy.ts:43”, code: “const price = await ctx.market.getLatestPrice(ctx.sym” },
+{ file: “src/risk/limits.ts:18”, code: “if (drawdown > this.maxDrawdown) this.circuit.trip()” },
+{ file: “src/db/schema.ts:5”, code: “export const orders = pgTable("orders", { id: serial(” },
+{ file: “src/api/client.ts:88”, code: “const res = await fetch(`${BASE_URL}/v1/orders`, { me” },
+],
+builds: [
+{ id: 1, name: “Core Engine”, tool: “Claude Code”, status: “done”, progress: 100, statusText: “6 files generated”, action: { type: “apply_changes”, label: “Apply Changes” }, thumb: “code” },
+{ id: 2, name: “Risk Module”, tool: “Claude Code”, status: “active”, progress: 85, statusText: “Building risk module…”, action: { type: “response_ready”, label: “Response Ready” }, thumb: “risk” },
+{ id: 3, name: “Dashboard UI”, tool: “Lovable”, status: “active”, progress: 72, statusText: “Compiling Bolt…”, action: null, thumb: “dash” },
+{ id: 4, name: “Alerts”, tool: “n8n”, status: “done”, progress: 100, statusText: “4 files generated”, action: null, thumb: “alerts” },
+{ id: 5, name: “Backtester”, tool: “Claude Code”, status: “queued”, progress: 0, statusText: “Waiting in queue”, action: { type: “run_build”, label: “Run Build” }, thumb: “perf” },
+],
+},
+{
+id: 2, name: “Massa Marketing Site”,
+description: “Marketing site with interactive demos and API integration”,
+summary: “2 builds · 1 done · 1 active · Lovable, Replit”,
+thinking: [
+{ agent: “Settings Agent”, text: “Building provider cards with green/red status…” },
+],
+codeStream: [
+{ file: “src/pages/index.tsx:12”, code: “export default function Home() { return <Hero title=” },
+{ file: “src/api/providers.ts:8”, code: “const providers = await db.select().from(connections)” },
+],
+builds: [
+{ id: 6, name: “Homepage”, tool: “Lovable”, status: “done”, progress: 100, statusText: “6 files generated”, action: { type: “response_ready”, label: “Response Ready” }, thumb: “landing” },
+{ id: 7, name: “API Settings”, tool: “Replit”, status: “active”, progress: 40, statusText: “Analyzing api settings…”, action: { type: “review_plan”, label: “Review Plan” }, thumb: “api” },
+],
+},
+{
+id: 3, name: “Web Scraper”,
+description: “Automated scraper with adaptive rate limiting and scheduling”,
+summary: “2 builds · 0 done · 1 active · Perplexity, n8n”,
+thinking: [
+{ agent: “Crawler Agent”, text: “Adding adaptive rate limiting to avoid 429s…” },
+],
+codeStream: [
+{ file: “src/scraper/crawler.ts:23”, code: “const $ = cheerio.load(await axios.get(url).then(r =>” },
+{ file: “src/scraper/parser.ts:11”, code: “// Send alert to #trading-alerts channel” },
+],
+builds: [
+{ id: 8, name: “Crawler”, tool: “Perplexity”, status: “active”, progress: 60, statusText: “Compiling Perplexity…”, action: { type: “response_ready”, label: “Response Ready” }, thumb: “code” },
+{ id: 9, name: “Scheduler”, tool: “n8n”, status: “queued”, progress: 0, statusText: “Waiting in queue”, action: null, thumb: “code” },
+],
+},
+];
+
+const aC = t => !t ? null : t === “fix_error” ? “#ef4444” : t === “response_ready” || t === “apply_changes” ? “#22c55e” : “#f59e0b”;
+
+// ─── Ticker ───
+function Ticker({ lines, render }) {
+const [idx, setIdx] = useState(0);
+useEffect(() => {
+if (lines.length <= 1) return;
+const t = setInterval(() => setIdx(i => (i + 1) % lines.length), 3200);
+return () => clearInterval(t);
+}, [lines.length]);
+return render(lines[idx]);
+}
+
+// ─── Thumb ───
+function Thumb({ type }) {
+const s = { width: “100%”, height: “100%”, background: “#0a0a0a”, padding: “6px 8px”, overflow: “hidden” };
+if (type === “code”) return <div style={s}>
+<div style={{ display: “flex”, gap: 2, marginBottom: 4 }}>{[1,2,3].map(i=><div key={i} style={{ width: 3, height: 3, borderRadius: “50%”, background: [”#ef444440”,”#f59e0b40”,”#22c55e40”][i-1] }} />)}</div>
+{[50,65,35,55,30,45,25].map((w,i)=><div key={i} style={{ height: 2, width: `${w}%`, background: i<2?”#c084fc10”:”#22c55e08”, borderRadius: 1, marginBottom: 2, marginLeft: i>3?8:0 }} />)}
+
+  </div>;
+  if (type === "risk") return <div style={s}>
+    <div style={{ display: "flex", gap: 3, marginBottom: 4 }}>{["-2.5%","$15K","LOW","3x"].map((v,i)=><div key={i} style={{ flex: 1, background: "#111", borderRadius: 2, padding: "2px", textAlign: "center" }}><div style={{ fontSize: 5, color: i===0?"#f59e0b40":"#444", fontFamily: "var(--f)", fontWeight: 600 }}>{v}</div></div>)}</div>
+    <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 14 }}>{[5,2,3,1,1].map((h,i)=><div key={i} style={{ flex: 1, height: h*3, background: "#22c55e08", borderRadius: 1 }} />)}</div>
+  </div>;
+  if (type === "dash") return <div style={s}>
+    <div style={{ display: "flex", gap: 3, marginBottom: 3 }}><div style={{ flex: 1, background: "#111", borderRadius: 2, padding: "2px 4px" }}><div style={{ fontSize: 6, color: "#22c55e", fontFamily: "var(--f)", fontWeight: 700 }}>+$12.8K</div></div><div style={{ flex: 1, background: "#111", borderRadius: 2, padding: "2px 4px" }}><div style={{ fontSize: 6, color: "#666", fontFamily: "var(--f)", fontWeight: 700 }}>68%</div></div></div>
+    <svg width="100%" height="14" viewBox="0 0 60 14" preserveAspectRatio="none"><path d="M0,12 C10,10 16,6 24,5 C32,4 40,5 48,3 C54,2 58,1 60,1" fill="none" stroke="#22c55e" strokeWidth="0.7" opacity="0.3"/></svg>
+  </div>;
+  if (type === "alerts") return <div style={s}>
+    {["BTC $68,400","Buy 0.5 ETH","Exposure 85%"].map((t,i)=><div key={i} style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 3 }}><div style={{ width: 3, height: 3, borderRadius: 1, background: "#22c55e10" }}/><span style={{ fontSize: 5, color: "#333", fontFamily: "var(--f)" }}>{t}</span></div>)}
+  </div>;
+  if (type === "perf") return <div style={s}>
+    <div style={{ display: "flex", gap: 3, marginBottom: 3 }}><div style={{ flex: 1, background: "#111", borderRadius: 2, padding: "2px 4px" }}><div style={{ fontSize: 6, color: "#22c55e", fontFamily: "var(--f)", fontWeight: 600 }}>+34.2%</div></div><div style={{ flex: 1, background: "#111", borderRadius: 2, padding: "2px 4px" }}><div style={{ fontSize: 6, color: "#666", fontFamily: "var(--f)", fontWeight: 600 }}>1.82</div></div></div>
+    <svg width="100%" height="12" viewBox="0 0 60 12" preserveAspectRatio="none"><path d="M0,10 C10,8 20,6 30,5 C40,3 50,2 60,1" fill="none" stroke="#22c55e" strokeWidth="0.7" opacity="0.3"/></svg>
+  </div>;
+  if (type === "landing") return <div style={s}>
+    <div style={{ background: "#111", borderRadius: 2, padding: "3px 4px", marginBottom: 3 }}><div style={{ fontSize: 5, color: "#22c55e50", fontFamily: "var(--f)", fontWeight: 600 }}>MASSA AI</div></div>
+    <div style={{ display: "flex", gap: 2 }}>{[1,2,3].map(i=><div key={i} style={{ flex: 1, height: 10, background: "#111", borderRadius: 1 }} />)}</div>
+  </div>;
+  if (type === "api") return <div style={s}>
+    {["Binance","Coinbase","Kraken"].map((t,i)=><div key={i} style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}><span style={{ fontSize: 5, color: "#444", fontFamily: "var(--f)" }}>{t}</span><div style={{ width: 7, height: 3, borderRadius: 1, background: i===0?"#22c55e20":"#1a1a1a" }}/></div>)}
+  </div>;
+  return <div style={s}>{[50,65,35,55].map((w,i)=><div key={i} style={{ height: 2, width: `${w}%`, background: "#22c55e08", borderRadius: 1, marginBottom: 2 }} />)}</div>;
+}
+
+// ─── Build Card ───
+function BuildCard({ build }) {
+const ac = build.action ? aC(build.action.type) : null;
+return (
+<div style={{ width: 160, flexShrink: 0, background: “#0b0b0b”, border: “1px solid #1a1a1a”, borderRadius: 8, overflow: “hidden”, position: “relative” }}>
+{ac && <div style={{ position: “absolute”, top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${ac}50, ${ac}10)`, zIndex: 1 }} />}
+<div style={{ height: 85, borderBottom: “1px solid #141414”, position: “relative” }}>
+<Thumb type={build.thumb} />
+{build.action && (
+<div style={{ position: “absolute”, top: 4, right: 4, display: “flex”, alignItems: “center”, gap: 3, padding: “2px 5px”, borderRadius: 3, background: “rgba(6,6,6,0.85)”, border: `1px solid ${ac}18` }}>
+<div style={{ width: 3, height: 3, borderRadius: “50%”, background: ac, animation: “pulse 2s ease-in-out infinite” }} />
+<span style={{ fontSize: 6, color: `${ac}bb`, fontFamily: “var(–f)” }}>{build.action.label}</span>
+</div>
+)}
+</div>
+<div style={{ padding: “6px 8px 8px” }}>
+<div style={{ display: “flex”, justifyContent: “space-between”, alignItems: “center”, marginBottom: 2 }}>
+<span style={{ color: “#d4d4d4”, fontSize: 11, fontWeight: 600, fontFamily: “var(–f)” }}>{build.name}</span>
+<div style={{ display: “flex”, alignItems: “center”, gap: 3 }}>
+<div style={{ width: 10, height: 10, borderRadius: “50%”, background: “#1a1a1a”, display: “flex”, alignItems: “center”, justifyContent: “center” }}><div style={{ width: 4, height: 4, borderRadius: “50%”, background: “#444” }} /></div>
+<span style={{ fontSize: 7, color: “#555”, fontFamily: “var(–f)” }}>{build.tool}</span>
+</div>
+</div>
+<div style={{ height: 2, background: “#141414”, borderRadius: 1, overflow: “hidden”, marginBottom: 3 }}>
+<div style={{ height: “100%”, width: `${build.progress}%`, borderRadius: 1, background: “#22c55e”, opacity: build.status === “done” ? 0.25 : build.status === “queued” ? 0.1 : 0.8 }} />
+</div>
+<div style={{ fontSize: 8, color: “#3a3a3a”, fontFamily: “var(–f)”, fontStyle: “italic” }}>{build.statusText}</div>
+</div>
+</div>
+);
+}
+
+// ─── Project Card ───
+function ProjectCard({ project, index }) {
+const actions = project.builds.filter(b => b.action);
+const [showActions, setShowActions] = useState(false);
+
+return (
+<div style={{
+background: “#0b0b0b”, border: “1px solid #1a1a1a”, borderRadius: 10,
+overflow: “visible”, animation: `fi 0.3s ease ${index * 0.08}s both`,
+position: “relative”,
+}}>
+<div style={{ display: “flex”, alignItems: “stretch” }}>
+{/* ─── Left ─── */}
+<div style={{
+width: 270, padding: “14px 14px 12px”,
+borderRight: “1px solid #141414”,
+display: “flex”, flexDirection: “column”,
+}}>
+{/* Name */}
+<div style={{ fontSize: 17, fontWeight: 700, color: “#f0f0f0”, fontFamily: “var(–f)”, marginBottom: 2, lineHeight: 1.2 }}>
+{project.name}
+</div>
+
+```
+      {/* Description */}
+      <div style={{ fontSize: 9, color: "#444", fontFamily: "var(--f)", lineHeight: 1.3, marginBottom: 8 }}>
+        {project.description}
+      </div>
+
+      {/* Thinking ticker */}
+      <Ticker lines={project.thinking} render={(line) => (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 5, padding: "5px 8px",
+          background: "#080808", borderRadius: 4, border: "1px solid #141414",
+          overflow: "hidden", marginBottom: 4,
+        }}>
+          <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#22c55e", animation: "pulse 1.5s ease-in-out infinite", flexShrink: 0 }} />
+          <span style={{ fontSize: 7, color: "#22c55e40", fontFamily: "var(--f)", flexShrink: 0 }}>{line.agent}</span>
+          <span style={{ fontSize: 7, color: "#3a3a3a", fontFamily: "var(--f)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{line.text}</span>
+        </div>
+      )} />
+
+      {/* Code stream ticker */}
+      <Ticker lines={project.codeStream} render={(line) => (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 5, padding: "5px 8px",
+          background: "#080808", borderRadius: 4, border: "1px solid #141414",
+          overflow: "hidden", marginBottom: 8,
+        }}>
+          <span style={{ fontSize: 7, color: "#555", fontFamily: "var(--f)", flexShrink: 0 }}>›</span>
+          <span style={{ fontSize: 7, color: "#f59e0b30", fontFamily: "var(--f)", flexShrink: 0 }}>{line.file}</span>
+          <span style={{ fontSize: 7, color: "#333", fontFamily: "var(--f)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {line.code}
+          </span>
+        </div>
+      )} />
+
+      {/* Actions dropdown */}
+      <div style={{ marginBottom: 8, position: "relative" }}>
+        <div
+          onClick={() => setShowActions(!showActions)}
+          style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "5px 8px", borderRadius: 4, cursor: "pointer",
+            background: "#080808", border: "1px solid #141414",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            {actions.length > 0 ? (
+              <>
+                <div style={{ width: 4, height: 4, borderRadius: "50%", background: aC(actions[0].action.type), animation: "pulse 2s ease-in-out infinite" }} />
+                <span style={{ fontSize: 9, color: "#888", fontFamily: "var(--f)" }}>{actions.length} pending</span>
+              </>
+            ) : (
+              <>
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="3" stroke="#22c55e40" strokeWidth="0.8"/><path d="M2.5 4L3.5 5L5.5 3" stroke="#22c55e60" strokeWidth="0.7" strokeLinecap="round"/></svg>
+                <span style={{ fontSize: 9, color: "#444", fontFamily: "var(--f)" }}>All clear</span>
+              </>
+            )}
+          </div>
+          {actions.length > 0 && <span style={{ fontSize: 8, color: "#2a2a2a", transform: showActions ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>}
+        </div>
+
+        {showActions && actions.length > 0 && (
+          <div style={{
+            position: "absolute", top: "100%", left: 0, right: 0, marginTop: 3,
+            background: "#0c0c0c", border: "1px solid #1e1e1e", borderRadius: 5,
+            padding: "2px 0", zIndex: 20, animation: "fi 0.12s ease",
+            boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
+          }}>
+            {actions.map((b, i) => {
+              const c = aC(b.action.type);
+              return (
+                <div key={b.id} style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "5px 8px", cursor: "pointer",
+                  borderTop: i > 0 ? "1px solid #111" : "none",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#111"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                >
+                  <div style={{ width: 4, height: 4, borderRadius: "50%", background: c, opacity: 0.6 }} />
+                  <span style={{ flex: 1, fontSize: 9, color: "#bbb", fontFamily: "var(--f)" }}>{b.name}</span>
+                  <span style={{ fontSize: 7, color: "#555", fontFamily: "var(--f)", padding: "1px 5px", background: "#090909", borderRadius: 2, border: "1px solid #1a1a1a" }}>{b.action.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Compact buttons */}
+      <div style={{ display: "flex", gap: 3, marginBottom: 5 }}>
+        {["Chat", "Arch Map", "Preview"].map(l => (
+          <button key={l} style={{
+            padding: "4px 0", borderRadius: 3, flex: 1,
+            background: "transparent", border: "1px solid #1a1a1a",
+            color: "#555", fontSize: 9, fontFamily: "var(--f)", cursor: "pointer",
+          }}>{l}</button>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 3 }}>
+        {["+ Agent", "+ Task"].map(l => (
+          <div key={l} style={{
+            flex: 1, textAlign: "center", padding: "4px 0",
+            borderRadius: 3, border: "1px dashed #181818",
+            fontSize: 8, color: "#2a2a2a", fontFamily: "var(--f)", cursor: "pointer",
+          }}>{l}</div>
+        ))}
+      </div>
+    </div>
+
+    {/* ─── Right: Builds ─── */}
+    <div style={{ flex: 1, padding: "14px 14px 14px 16px" }}>
+      <div style={{ fontSize: 8, color: "#2a2a2a", fontFamily: "var(--f)", letterSpacing: "0.15em", marginBottom: 8 }}>BUILDS</div>
+      <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, alignItems: "flex-start" }}>
+        {project.builds.map(b => <BuildCard key={b.id} build={b} />)}
+        <div style={{ width: 70, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, minHeight: 110 }}>
+          {["Agent", "Task"].map(l => (
+            <div key={l} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, cursor: "pointer" }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", border: "1px dashed #1c1c1c", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ color: "#222", fontSize: 11, lineHeight: 1 }}>+</span>
+              </div>
+              <span style={{ fontSize: 7, color: "#222", fontFamily: "var(--f)" }}>{l}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+);
+}
+
+export default function App() {
+return (
+<div style={{
+“–f”: “‘SF Mono’, ‘Fira Code’, ‘JetBrains Mono’, monospace”,
+minHeight: “100vh”, background: “#060606”, color: “#e5e5e5”,
+fontFamily: “var(–f)”, padding: “24px 20px”,
+}}>
+<style>{`@keyframes fi { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } } * { box-sizing: border-box; } ::-webkit-scrollbar { height: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; } button:hover { color: #999 !important; }`}</style>
+
+```
+  <div style={{ fontSize: 10, color: "#333", fontFamily: "var(--f)", letterSpacing: "0.18em", marginBottom: 14 }}>PROJECTS</div>
+
+  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    {PROJECTS.map((p, i) => <ProjectCard key={p.id} project={p} index={i} />)}
+  </div>
+</div>
+```
+
+);
+}
