@@ -1455,7 +1455,7 @@ export function Overview() {
                             }}>{i + 1}</div>
                             <div style={{ fontSize: 7, color: step.active ? '#9ca3af' : '#4b5563', fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.3, textTransform: 'uppercase' }}>{step.label}</div>
                           </div>
-                          {i < flowSteps.length - 1 && <div style={{ width: 50, height: 1, background: step.active && flowSteps[i + 1].active ? 'rgba(52,211,153,0.25)' : '#252a35', marginBottom: 10, flexShrink: 0 }} />}
+                          {i < flowSteps.length - 1 && <div style={{ width: 75, height: 1, background: step.active && flowSteps[i + 1].active ? 'rgba(52,211,153,0.25)' : '#252a35', marginBottom: 10, flexShrink: 0 }} />}
                         </Fragment>
                       ))}
                     </div>
