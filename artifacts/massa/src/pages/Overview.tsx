@@ -1368,7 +1368,7 @@ export function Overview() {
       )}
 
       {/* 3-COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 0px' : 'minmax(0, 1fr) 260px') : (rightPanelCollapsed ? '180px minmax(0, 1fr) 0px' : '180px minmax(0, 1fr) 300px'), gap: isMobile ? 12 : (rightPanelCollapsed ? '12px 0px' : 12), minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 0px' : 'minmax(0, 1fr) 260px') : (rightPanelCollapsed ? '180px minmax(0, 1fr) 0px' : '180px minmax(0, 1fr) 260px'), gap: isMobile ? 12 : (rightPanelCollapsed ? '12px 0px' : 12), minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
 
         {/* LEFT SIDEBAR — hidden on mobile/tablet */}
         {isDesktop && <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2 }}>
