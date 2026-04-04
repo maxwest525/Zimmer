@@ -11,6 +11,9 @@ import {
   AlertCircle,
   XCircle,
   LayoutGrid,
+  ImagePlus,
+  Film,
+  Layers,
 } from "lucide-react";
 
 interface StatusIconProps {
@@ -133,6 +136,42 @@ export function ProjectSidebar({
         <Plus className="w-3.5 h-3.5 shrink-0" />
         {!collapsed && <span>New Project</span>}
       </button>
+
+      <div className="mx-2 mt-1 mb-1 space-y-0.5 shrink-0">
+        <button
+          onClick={() => navigate("/image-generator")}
+          className={cn(
+            "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors text-xs font-medium",
+            collapsed && "justify-center"
+          )}
+          title="Image Generator"
+        >
+          <ImagePlus className="w-3.5 h-3.5 shrink-0 text-violet-400" />
+          {!collapsed && <span>Image Generator</span>}
+        </button>
+        <button
+          onClick={() => navigate("/video-generator")}
+          className={cn(
+            "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors text-xs font-medium",
+            collapsed && "justify-center"
+          )}
+          title="Video Generator"
+        >
+          <Film className="w-3.5 h-3.5 shrink-0 text-cyan-400" />
+          {!collapsed && <span>Video Generator</span>}
+        </button>
+        <button
+          onClick={() => navigate("/figma")}
+          className={cn(
+            "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors text-xs font-medium",
+            collapsed && "justify-center"
+          )}
+          title="Figma"
+        >
+          <Layers className="w-3.5 h-3.5 shrink-0 text-pink-400" />
+          {!collapsed && <span>Figma</span>}
+        </button>
+      </div>
 
       <nav className="flex-1 overflow-y-auto py-1 px-1.5 space-y-0.5">
         {projects.map((project) => {

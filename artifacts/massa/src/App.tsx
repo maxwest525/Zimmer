@@ -7,6 +7,9 @@ import NotFound from "@/pages/not-found";
 import { Workspace } from "@/pages/Workspace";
 import { Overview } from "@/pages/Overview";
 import { InsideMassa } from "@/pages/InsideMassa";
+import { ImageGenerator } from "@/pages/ImageGenerator";
+import { VideoGenerator } from "@/pages/VideoGenerator";
+import { FigmaIntegration } from "@/pages/FigmaIntegration";
 import { PROJECTS } from "@/data/mock";
 
 const queryClient = new QueryClient();
@@ -22,6 +25,9 @@ function Router() {
     <Switch>
       <Route path="/" component={Overview} />
       <Route path="/inside" component={InsideMassa} />
+      <Route path="/image-generator" component={ImageGenerator} />
+      <Route path="/video-generator" component={VideoGenerator} />
+      <Route path="/figma" component={FigmaIntegration} />
       <Route path="/workspace/:projectId">
         {(params) => <WorkspaceRoute projectId={params.projectId} />}
       </Route>
