@@ -1543,7 +1543,7 @@ export function Overview() {
                       value={rawInput}
                       onChange={e => setRawInput(e.target.value)}
                       placeholder={typedPlaceholder}
-                      style={{ width: '100%', minHeight: 80, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaed', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: '"JetBrains Mono", Menlo, monospace', boxSizing: 'border-box', letterSpacing: '-0.01em' }}
+                      style={{ width: '100%', minHeight: 38, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaed', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: '"JetBrains Mono", Menlo, monospace', boxSizing: 'border-box', letterSpacing: '-0.01em' }}
                     />
                   </div>
                 </div>
