@@ -27,6 +27,8 @@ type Build = {
   buildContext?: string
 }
 
+type ProjectLifecycle = 'active' | 'completed' | 'archived' | 'deleted'
+
 type Project = {
   id: string
   name: string
@@ -880,6 +882,135 @@ function ScrollableBuildStrip({ children, arrowColor, borderColor }: { children:
   )
 }
 
+function CurrentProjectsView({ projects, setProjects, onBack }: { projects: Project[]; setProjects: React.Dispatch<React.SetStateAction<Project[]>>; onBack: () => void }) {
+  const [currentTab, setCurrentTab] = useState<'completed' | 'archived' | 'deleted'>('completed')
+  const { completedProducts, updateCompletedProduct } = useProjects()
+
+  const tabProjects = useMemo(() => projects.filter(p => p.lifecycle === currentTab), [projects, currentTab])
+
+  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
+        >←</button>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Current Projects</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Manage completed, archived, and deleted projects</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: '#131619', borderRadius: 6, padding: 3, width: 'fit-content' }}>
+        {(['completed', 'archived', 'deleted'] as const).map(tab => {
+          const count = projects.filter(p => p.lifecycle === tab).length
+          return (
+            <button key={tab} onClick={() => setCurrentTab(tab)}
+              style={{ border: 'none', background: currentTab === tab ? '#1e2430' : 'transparent', color: currentTab === tab ? '#f0f0f0' : c.muted, padding: '6px 14px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: currentTab === tab ? 700 : 500, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}>
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {count > 0 && <span style={{ fontSize: 9, background: currentTab === tab ? '#252a35' : '#1a1f28', padding: '1px 5px', borderRadius: 10, color: currentTab === tab ? '#f0f0f0' : c.muted }}>{count}</span>}
+            </button>
+          )
+        })}
+      </div>
+
+      {tabProjects.length === 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>{currentTab === 'completed' ? '✓' : currentTab === 'archived' ? '▪' : '✕'}</div>
+          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>No {currentTab} projects</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {tabProjects.map(project => (
+            <div key={project.id} style={{ border: `1px solid ${c.border}`, background: '#131619', borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 2 }}>{project.name}</div>
+                <div style={{ fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{project.goal} — {project.builds.length} build{project.builds.length !== 1 ? 's' : ''}</div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'active' } : p))}
+                  style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.green, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.08)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >Restore</button>
+                {currentTab !== 'deleted' && (
+                  <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'deleted' } : p))}
+                    style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: '#f87171', cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.08)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >Delete</button>
+                )}
+                {currentTab === 'completed' && (
+                  <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'archived' } : p))}
+                    style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1f28' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >Archive</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PublishedView({ onBack }: { onBack: () => void }) {
+  const { completedProducts } = useProjects()
+  const publishedProducts = useMemo(() => completedProducts.filter(p => p.publishStatus === 'live'), [completedProducts])
+
+  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
+        >←</button>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Published</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{publishedProducts.length} live product{publishedProducts.length !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+
+      {publishedProducts.length === 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◉</div>
+          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>No published products yet</div>
+          <div style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Deploy and publish a completed product to see it here</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {publishedProducts.map(product => (
+            <div key={product.id} style={{ border: `1px solid ${c.border}`, background: '#131619', borderRadius: 8, padding: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{product.name}</div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: c.green, background: 'rgba(52,211,153,0.1)', padding: '2px 8px', borderRadius: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.green, boxShadow: `0 0 4px ${c.green}` }} />
+                  LIVE
+                </span>
+              </div>
+              <div style={{ fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{product.summary}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                {product.domain && (
+                  <span style={{ color: c.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 12 }}>🔗</span> {product.domain}
+                  </span>
+                )}
+                <span style={{ color: '#555' }}>Completed {product.completedAt}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function Overview() {
   const { isMobile, isTablet, isDesktop } = useScreenSize()
   const { selectedTenantId } = useTenant()
@@ -974,7 +1105,7 @@ export function Overview() {
   const [clarifyDone, setClarifyDone] = useState(false)
   const [clarifySummary, setClarifySummary] = useState('')
   const [clarifyOtherText, setClarifyOtherText] = useState('')
-  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas' | 'currentProjects' | 'published'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [chatOriginBuildId, setChatOriginBuildId] = useState<string | null>(null)
   const [enhancingId, setEnhancingId] = useState<number | null>(null)
@@ -1596,6 +1727,10 @@ export function Overview() {
               }
             }} />
           </div>
+        ) : activeView === 'currentProjects' ? (
+          <CurrentProjectsView projects={projects} setProjects={setProjects} onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'published' ? (
+          <PublishedView onBack={() => setActiveView('dashboard')} />
         ) : <>
         {/* CENTER MAIN */}
         <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
@@ -2068,6 +2203,72 @@ export function Overview() {
                             </div>
                           )}
                         </div>
+
+                        {(() => {
+                          type ActionType = 'response-ready' | 'review-plan' | 'run-build' | 'fix-error' | 'apply-changes'
+                          const getProjectActionInfo = (build: typeof allBuilds[0]): { type: ActionType; label: string; color: string; tab: 'chat' | 'details' } => {
+                            const msgs = chatMessages[build.id]
+                            const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
+                            const agentReplied = lastMsg?.role === 'agent'
+                            if (build.status === 'failed') return { type: 'fix-error', label: 'Fix Error', color: '#f87171', tab: 'chat' }
+                            if (build.status === 'running' && agentReplied) return { type: 'response-ready', label: 'Response Ready', color: '#34d399', tab: 'chat' }
+                            if (build.status === 'running') return { type: 'review-plan', label: 'Review Plan', color: '#f59e0b', tab: 'details' }
+                            if (build.status === 'queued') return { type: 'run-build', label: 'Run Build', color: '#f59e0b', tab: 'details' }
+                            if (build.status === 'complete' && agentReplied) return { type: 'apply-changes', label: 'Apply Changes', color: '#34d399', tab: 'chat' }
+                            return { type: 'run-build', label: 'Run Build', color: '#f59e0b', tab: 'details' }
+                          }
+                          const projectActionItems = allBuilds
+                            .filter(b => {
+                              if (b.status === 'failed' || b.status === 'queued' || b.status === 'running') return true
+                              if (b.status === 'complete') {
+                                const msgs = chatMessages[b.id]
+                                const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
+                                return lastMsg?.role === 'agent'
+                              }
+                              return false
+                            })
+                            .map(b => ({ ...b, action: getProjectActionInfo(b) }))
+                          const actionPriority: Record<ActionType, number> = { 'fix-error': 0, 'response-ready': 1, 'review-plan': 2, 'apply-changes': 3, 'run-build': 4 }
+                          const sortedActions = [...projectActionItems].sort((a, b) => (actionPriority[a.action.type] ?? 5) - (actionPriority[b.action.type] ?? 5))
+
+                          if (sortedActions.length === 0) return null
+
+                          return (
+                            <div style={{ marginBottom: 8, background: '#080808', border: `1px solid ${c.border}`, borderRadius: 4, overflow: 'hidden' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', borderBottom: `1px solid ${c.border}` }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <span style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Actions</span>
+                                  <span style={{ fontSize: 8, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{sortedActions.length}</span>
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (sortedActions.length > 0) {
+                                      setBuildModalTab(sortedActions[0].action.tab)
+                                      setExpandedBuildId(sortedActions[0].id)
+                                    }
+                                  }}
+                                  onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
+                                  onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.color = '#9ca3af' }}
+                                  style={{ fontSize: 8, fontWeight: 600, color: '#9ca3af', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 3, padding: '2px 8px', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'all 0.15s ease' }}
+                                >Run All</button>
+                              </div>
+                              {sortedActions.map((item, idx) => (
+                                <div
+                                  key={item.id}
+                                  onClick={(e) => { e.stopPropagation(); setBuildModalTab(item.action.tab); setExpandedBuildId(item.id) }}
+                                  onMouseEnter={e => e.currentTarget.style.background = '#0f1215'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', cursor: 'pointer', borderTop: idx > 0 ? '1px solid #14181e' : 'none', transition: 'background 0.15s' }}
+                                >
+                                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: item.action.color, flexShrink: 0 }} />
+                                  <span style={{ fontSize: 9, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
+                                  <span style={{ fontSize: 8, color: item.action.color, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: `${item.action.color}15`, borderRadius: 3, border: `1px solid ${item.action.color}30`, flexShrink: 0, fontWeight: 600 }}>{item.action.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        })()}
 
                         <div style={{ display: 'flex', gap: 3, marginBottom: 5 }}>
                           {[
