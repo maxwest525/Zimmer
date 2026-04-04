@@ -1444,18 +1444,18 @@ export function Overview() {
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                             <div style={{
                               width: 22, height: 22, borderRadius: 3,
-                              border: `1px solid ${step.active ? 'rgba(52,211,153,0.3)' : '#252a35'}`,
-                              background: step.active ? 'rgba(52,211,153,0.06)' : '#080a0e',
-                              color: step.active ? '#34d399' : '#6b7280',
+                              border: `1px solid ${step.active ? 'rgba(232,234,237,0.2)' : '#252a35'}`,
+                              background: step.active ? 'rgba(232,234,237,0.04)' : '#080a0e',
+                              color: step.active ? '#e8eaed' : '#6b7280',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                               fontWeight: 700, fontSize: 10,
                               fontFamily: '"JetBrains Mono", Menlo, monospace',
-                              boxShadow: step.active ? '0 0 8px rgba(52,211,153,0.08)' : 'none',
+                              boxShadow: 'none',
                               transition: 'all 0.3s ease',
                             }}>{i + 1}</div>
                             <div style={{ fontSize: 7, color: step.active ? '#9ca3af' : '#4b5563', fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.3, textTransform: 'uppercase' }}>{step.label}</div>
                           </div>
-                          {i < flowSteps.length - 1 && <div style={{ width: 75, height: 1, background: step.active && flowSteps[i + 1].active ? 'rgba(52,211,153,0.25)' : '#252a35', marginBottom: 10, flexShrink: 0 }} />}
+                          {i < flowSteps.length - 1 && <div style={{ width: 75, height: 1, background: step.active && flowSteps[i + 1].active ? 'rgba(232,234,237,0.15)' : '#252a35', marginBottom: 10, flexShrink: 0 }} />}
                         </Fragment>
                       ))}
                     </div>
