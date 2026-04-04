@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { WorkspaceHeader } from "@/components/WorkspaceHeader";
 import { ProjectTabs } from "@/components/ProjectTabs";
-import { WritingCanvas } from "@/components/WritingCanvas";
 import { ExecutionCardsPanel } from "@/components/ExecutionCardsPanel";
 import { ActivitySidebar } from "@/components/ActivitySidebar";
 import { ActivityDrawer } from "@/components/ActivityDrawer";
 import { OpenProjectsTabBar } from "@/components/OpenProjectsTabBar";
+import { KnowledgePanel, type KnowledgeFile } from "@/components/KnowledgePanel";
 import { PROJECTS, PROJECT_CARDS, PROJECT_ACTIVITY, ActivityItem } from "@/data/mock";
 import { useTenant } from "@/contexts/TenantContext";
 
-type Tab = "canvas" | "builds" | "history";
+type Tab = "canvas" | "builds" | "history" | "knowledge";
 
 function timestampToSortKey(ts: string): number {
   if (ts === "now") return 0;
@@ -55,6 +55,21 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
   const [activeProjectId, setActiveProjectId] = useState(defaultIds[0]);
   const [activeTab, setActiveTab] = useState<Tab>("canvas");
   const [activityOpen, setActivityOpen] = useState(false);
+  const [knowledgeFiles, setKnowledgeFiles] = useState<Record<string, KnowledgeFile[]>>({});
+
+  const handleAddFiles = useCallback((projectId: string, newFiles: KnowledgeFile[]) => {
+    setKnowledgeFiles((prev) => ({
+      ...prev,
+      [projectId]: [...(prev[projectId] ?? []), ...newFiles],
+    }));
+  }, []);
+
+  const handleRemoveFile = useCallback((projectId: string, fileId: string) => {
+    setKnowledgeFiles((prev) => ({
+      ...prev,
+      [projectId]: (prev[projectId] ?? []).filter((f) => f.id !== fileId),
+    }));
+  }, []);
 
   useEffect(() => {
     if (!initialProjectId) return;
@@ -95,7 +110,6 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
 
   const activeProject = PROJECTS.find((p) => p.id === resolvedActiveId) ?? PROJECTS[0];
   const cards = PROJECT_CARDS[resolvedActiveId] ?? [];
-  const isActive = activeProject.status === "running";
 
   const globalActivity = buildGlobalActivity(openProjectIds);
   const filteredActivity = selectedTenantId
@@ -105,9 +119,6 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
       })
     : globalActivity;
   const runningCount = filteredActivity.filter((a) => a.status === "running").length;
-
-  function handleSubmit(_value: string) {
-  }
 
   function handleSelectProject(id: string) {
     if (!openProjectIds.includes(id)) {
@@ -150,13 +161,21 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
           activityCount={runningCount}
         />
         <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="shrink-0">
-          <WritingCanvas onSubmit={handleSubmit} isActive={isActive} />
-        </div>
 
-        <div className="flex-1 overflow-y-auto border-t border-border/50">
-          <ExecutionCardsPanel cards={cards} />
-        </div>
+        {activeTab === "knowledge" ? (
+          <div className="flex-1 overflow-y-auto border-t border-border/50">
+            <KnowledgePanel
+              projectId={resolvedActiveId}
+              files={knowledgeFiles[resolvedActiveId] ?? []}
+              onAddFiles={handleAddFiles}
+              onRemoveFile={handleRemoveFile}
+            />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto border-t border-border/50">
+            <ExecutionCardsPanel cards={cards} />
+          </div>
+        )}
       </main>
 
       <div className="hidden lg:flex">
