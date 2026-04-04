@@ -1829,7 +1829,7 @@ export function Overview() {
               const isSel = selectedProjectId === project.id
               const thinkingLines = getThinkingLines(project.builds)
               const codeStreamLines = getCodeStreamLines(project.builds)
-              const pendingBuilds = project.builds.filter(b => b.status !== 'complete')
+              const allBuilds = project.builds
               const isPendingOpen = pendingDropdown === project.id
 
               const statusDotColor = (s: Status) =>
@@ -1851,8 +1851,8 @@ export function Overview() {
                   {thinkingLines.length > 0 && (
                     <Ticker lines={thinkingLines} render={(line) => (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 4 }}>
-                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', flexShrink: 0, animation: 'pulse 2s ease-in-out infinite' }} />
-                        <span style={{ fontSize: 11, color: '#22c55e88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.agent}</span>
+                        <span style={{ fontSize: 11, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>▸</span>
+                        <span style={{ fontSize: 11, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.agent}</span>
                         <span style={{ fontSize: 11, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.text}</span>
                       </div>
                     )} />
@@ -1873,27 +1873,27 @@ export function Overview() {
                       onClick={(e) => { e.stopPropagation(); setPendingDropdown(isPendingOpen ? null : project.id) }}
                       style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderRadius: 4, cursor: 'pointer', background: '#080808', border: `1px solid ${c.border}` }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: pendingBuilds.length > 0 ? '#22c55e' : '#555' }} />
                         <span style={{ fontSize: 12, color: '#999', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                          {pendingBuilds.length} pending
+                          {allBuilds.length} builds · {allBuilds.filter(b => b.status === 'running').length} active · {allBuilds.filter(b => b.status === 'complete').length} done
                         </span>
                       </div>
-                      {pendingBuilds.length > 0 && (
-                        <span style={{ fontSize: 10, color: '#444', transform: isPendingOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>▾</span>
-                      )}
+                      <span style={{ fontSize: 10, color: '#444', transform: isPendingOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>▾</span>
                     </div>
 
-                    {isPendingOpen && pendingBuilds.length > 0 && (
+                    {isPendingOpen && allBuilds.length > 0 && (
                       <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 3, background: '#0c0c0c', border: `1px solid ${c.border}`, borderRadius: 5, padding: '2px 0', zIndex: 20, boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
-                        {pendingBuilds.map((b, i) => (
+                        {allBuilds.map((b, i) => (
                           <div key={b.id}
                             onClick={(e) => { e.stopPropagation(); setBuildModalTab('chat'); setExpandedBuildId(b.id) }}
                             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', cursor: 'pointer', borderTop: i > 0 ? '1px solid #1a1a1a' : 'none' }}
                             onMouseEnter={e => e.currentTarget.style.background = '#151920'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                            <div style={{ width: 5, height: 5, borderRadius: '50%', background: statusDotColor(b.status), animation: b.status === 'running' ? 'pulse 2s ease-in-out infinite' : 'none' }} />
-                            <span style={{ flex: 1, fontSize: 11, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.title}</span>
-                            <span style={{ fontSize: 9, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: '#111', borderRadius: 3 }}>{b.status}</span>
+                            <span style={{ fontSize: 9, color: statusDotColor(b.status), fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>▸</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 11, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.title}</div>
+                              <div style={{ fontSize: 9, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.agent} · {b.progress}%</div>
+                            </div>
+                            <span style={{ fontSize: 9, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: '#111', borderRadius: 3, flexShrink: 0 }}>{b.status}</span>
                           </div>
                         ))}
                       </div>
