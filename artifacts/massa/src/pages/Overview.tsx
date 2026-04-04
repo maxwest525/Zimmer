@@ -904,6 +904,8 @@ export function Overview() {
   const [showClarifyModal, setShowClarifyModal] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [suggestionsLoading, setSuggestionsLoading] = useState(false)
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set())
+  const [ignoredAll, setIgnoredAll] = useState(false)
   const [clarifyQuestion, setClarifyQuestion] = useState('')
   const [clarifyOptions, setClarifyOptions] = useState<string[]>([])
   const [clarifyHistory, setClarifyHistory] = useState<{question: string; answer: string}[]>([])
@@ -916,6 +918,8 @@ export function Overview() {
   const [, navigate] = useLocation()
 
   useEffect(() => {
+    setIgnoredAll(false)
+    setDismissedSuggestions(new Set())
     if (rawInput.trim().length < 12) {
       setAiSuggestions([])
       return
@@ -1304,6 +1308,7 @@ export function Overview() {
         @keyframes terminal-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes subtle-glow { 0%,100%{box-shadow: 0 0 4px rgba(52,211,153,0.15)} 50%{box-shadow: 0 0 8px rgba(52,211,153,0.25)} }
         @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes suggestion-slide-in { 0%{opacity:0;transform:translateY(6px) scale(0.97)} 100%{opacity:1;transform:translateY(0) scale(1)} }
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { height: 4px; width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -1423,7 +1428,8 @@ export function Overview() {
               { label: 'Deploy', active: selectedProject.builds.every(b => b.status === 'complete') },
             ]
             return (
-              <div className="terminal-input-box" style={{ border: `1px solid #252a35`, background: '#080a0e', borderRadius: 10, marginBottom: 12, position: 'relative', boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.02)', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>
+              <div className="terminal-input-box" style={{ flex: 1, minWidth: 0, border: `1px solid #252a35`, background: '#080a0e', borderRadius: 10, position: 'relative', boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.02)', overflow: 'hidden' }}>
                 {/* Terminal title bar with inline pipeline tracker */}
                 <div style={{ display: 'flex', alignItems: 'center', padding: '6px 14px', borderBottom: '1px solid #1e2330', background: '#0c0f14' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -1539,30 +1545,59 @@ export function Overview() {
                     )}
                   </div>
                 </div>
-                {(suggestionsLoading || aiSuggestions.length > 0) && (
-                  <div style={{ borderTop: `1px solid #1e2330`, padding: '8px 14px 10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                      <div className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>AI SUGGESTIONS</div>
-                      {suggestionsLoading && <div style={{ width: 4, height: 4, borderRadius: 999, background: '#34d399', animation: 'subtle-glow 1s ease-in-out infinite' }} />}
+              </div>
+                {(() => {
+                  const visibleSuggestions = ignoredAll ? [] : aiSuggestions.filter(s => !dismissedSuggestions.has(s))
+                  const showSection = !ignoredAll && (suggestionsLoading || visibleSuggestions.length > 0)
+                  if (!showSection) return null
+                  return (
+                    <div style={{ width: 260, flexShrink: 0, background: '#0c0f14', border: '1px solid #252a35', borderRadius: 12, padding: '10px 12px', boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.05)', animation: 'suggestion-slide-in 0.25s ease both', alignSelf: 'flex-start' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>AI SUGGESTIONS</div>
+                          {suggestionsLoading && <div style={{ width: 4, height: 4, borderRadius: 999, background: '#34d399', animation: 'subtle-glow 1s ease-in-out infinite' }} />}
+                        </div>
+                        {visibleSuggestions.length > 0 && (
+                          <button
+                            onClick={() => { setIgnoredAll(true); setAiSuggestions([]) }}
+                            onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)' }}
+                            onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.background = 'transparent' }}
+                            style={{ background: 'transparent', border: 'none', color: '#6b7280', fontSize: 9, cursor: 'pointer', padding: '2px 6px', borderRadius: 4, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s ease', letterSpacing: 0.3 }}
+                          >
+                            Ignore all suggestions
+                          </button>
+                        )}
+                      </div>
+                      {suggestionsLoading && visibleSuggestions.length === 0 ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
+                          <span style={{ fontSize: 10, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>analyzing prompt...</span>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                          {visibleSuggestions.map((s, i) => (
+                            <div key={`${i}-${s}`} onClick={() => setRawInput(s)}
+                              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#6b7280', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 20, padding: '5px 8px 5px 12px', cursor: 'pointer', lineHeight: 1.4, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
+                              onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#34d399'; e.currentTarget.style.color = '#d1d5db'; e.currentTarget.style.boxShadow = '0 0 12px rgba(52,211,153,0.08)' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = '#080a0e'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.boxShadow = 'none' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>
+                                <span style={{ color: '#34d399', fontWeight: 700, opacity: 0.5, flexShrink: 0 }}>{'›'}</span>
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{s}</span>
+                              </span>
+                              <button
+                                onClick={e => { e.stopPropagation(); setDismissedSuggestions(prev => new Set(prev).add(s)) }}
+                                onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.1)' }}
+                                onMouseLeave={e => { e.currentTarget.style.color = '#4b5563'; e.currentTarget.style.background = 'transparent' }}
+                                style={{ background: 'transparent', border: 'none', color: '#4b5563', cursor: 'pointer', padding: '1px 3px', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s ease', lineHeight: 1 }}
+                              >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    {suggestionsLoading && aiSuggestions.length === 0 ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0' }}>
-                        <span style={{ fontSize: 10, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>analyzing prompt...</span>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        {aiSuggestions.map((s, i) => (
-                          <div key={i} onClick={() => setRawInput(s)}
-                            style={{ fontSize: 11, color: '#6b7280', background: '#0c0f14', border: `1px solid #1e2330`, borderRadius: 6, padding: '6px 10px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}
-                            onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#252a35'; e.currentTarget.style.color = '#9ca3af' }}
-                            onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#6b7280' }}>
-                            <span style={{ color: '#34d399', fontWeight: 700, marginRight: 6, opacity: 0.6 }}>{'>'}</span>{s}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )
+                })()}
               </div>
             )
           })()}
