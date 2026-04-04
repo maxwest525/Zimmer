@@ -7,9 +7,30 @@ export function QuickCapture() {
   const [category, setCategory] = useState('general')
   const [sending, setSending] = useState(false)
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [uploadStatus, setUploadStatus] = useState('')
   const ref = useRef<HTMLTextAreaElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { ref.current?.focus() }, [])
+
+  async function uploadVideo(ideaId: number, file: File) {
+    setUploadStatus('Uploading video...')
+    try {
+      const fd = new FormData()
+      fd.append('video', file)
+      const r = await fetch(`${API_BASE}/api/ideas/${ideaId}/video`, { method: 'POST', body: fd })
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({ error: 'Upload failed' }))
+        throw new Error(err.error || 'Upload failed')
+      }
+      setUploadStatus('Transcribing audio...')
+      setTimeout(() => setUploadStatus(''), 5000)
+    } catch (err) {
+      setUploadStatus(`Error: ${(err as Error).message}`)
+      setTimeout(() => setUploadStatus(''), 4000)
+    }
+  }
 
   async function send() {
     if (!content.trim() || sending) return
@@ -21,8 +42,14 @@ export function QuickCapture() {
         body: JSON.stringify({ content: content.trim(), category, source: 'mobile' }),
       })
       if (!r.ok) throw new Error()
+      const idea = await r.json()
+      const pendingVideo = videoFile
       setContent('')
+      setVideoFile(null)
       setToast({ msg: 'Idea saved!', ok: true })
+      if (pendingVideo) {
+        void uploadVideo(idea.id, pendingVideo)
+      }
     } catch {
       setToast({ msg: 'Failed to save', ok: false })
     } finally {
@@ -64,6 +91,44 @@ export function QuickCapture() {
         <div style={{ textAlign: 'right', fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
           {content.length} chars
         </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".mp4,.mov,.m4v,.webm,video/mp4,video/quicktime,video/x-m4v,video/webm"
+          onChange={e => {
+            const f = e.target.files?.[0]
+            if (f) setVideoFile(f)
+            e.target.value = ''
+          }}
+          style={{ display: 'none' }}
+        />
+        {videoFile && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '6px 10px', background: '#0d1117', border: '1px solid #1c2028',
+            borderRadius: 6, marginTop: 8, fontSize: 11, color: '#9ca3af',
+          }}>
+            <span>{'\uD83C\uDFA5'}</span>
+            <span>{videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(1)}MB)</span>
+            <button
+              onClick={() => setVideoFile(null)}
+              style={{
+                color: '#ef4444', border: 'none', background: 'none',
+                cursor: 'pointer', fontSize: 12, marginLeft: 'auto', fontFamily: 'inherit',
+              }}
+            >
+              x
+            </button>
+          </div>
+        )}
+        {uploadStatus && (
+          <div style={{
+            fontSize: 11, marginTop: 6,
+            color: uploadStatus.startsWith('Error') ? '#ef4444' : '#34d399',
+          }}>
+            {uploadStatus}
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <select
             value={category}
@@ -81,6 +146,17 @@ export function QuickCapture() {
             <option value="design">Design</option>
             <option value="content">Content</option>
           </select>
+          <button
+            onClick={() => fileRef.current?.click()}
+            style={{
+              background: 'transparent', border: '1px solid #1c2028',
+              borderRadius: 8, color: '#9ca3af', fontFamily: 'inherit', fontSize: 13,
+              padding: '10px 14px', cursor: 'pointer',
+            }}
+            title="Attach video (mp4, mov, m4v, webm)"
+          >
+            {'\uD83C\uDFA5'}
+          </button>
           <button
             onClick={send}
             disabled={!content.trim() || sending}

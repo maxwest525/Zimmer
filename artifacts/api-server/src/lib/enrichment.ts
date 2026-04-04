@@ -14,15 +14,15 @@ interface EnrichmentResult {
   technologies: string[];
 }
 
-async function aiEnrich(text: string, instagramUrl: string): Promise<EnrichmentResult> {
+async function aiEnrich(text: string, context: string): Promise<EnrichmentResult> {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     max_completion_tokens: 500,
     messages: [
       {
         role: "system",
-        content: `You analyze Instagram post content and extract structured information. Given text extracted from an Instagram post, produce a JSON response with:
-- "summary": A concise 2-3 sentence summary of what the post is about
+        content: `You analyze content and extract structured information. Given text (which may come from an Instagram post, video transcript, or user idea), produce a JSON response with:
+- "summary": A concise 2-3 sentence summary of what the content is about
 - "urls": An array of any websites or URLs mentioned in the text (extract full URLs if present, or note domain names)
 - "technologies": An array of any technologies, tools, software, frameworks, platforms, or technical concepts discussed
 
@@ -33,7 +33,7 @@ Return ONLY valid JSON, nothing else.`,
       },
       {
         role: "user",
-        content: `Instagram URL: ${instagramUrl}\n\nExtracted text:\n${text}`,
+        content: `${context}\n\nExtracted text:\n${text}`,
       },
     ],
   });
@@ -71,7 +71,7 @@ export async function enrichIdea(ideaId: number, content: string): Promise<void>
     }
 
     const combinedText = content + "\n\n---\nInstagram metadata:\n" + metadata.text;
-    const result = await aiEnrich(combinedText, instagramUrl);
+    const result = await aiEnrich(combinedText, `Instagram URL: ${instagramUrl}`);
 
     await db
       .update(ideasTable)
@@ -87,6 +87,37 @@ export async function enrichIdea(ideaId: number, content: string): Promise<void>
     console.log(`[enrichment] Successfully enriched idea ${ideaId}`);
   } catch (err) {
     console.error(`[enrichment] Failed to enrich idea ${ideaId}:`, err);
+    await db
+      .update(ideasTable)
+      .set({
+        enrichmentError: `Enrichment failed: ${(err as Error).message}`,
+        updatedAt: new Date(),
+      })
+      .where(eq(ideasTable.id, ideaId));
+  }
+}
+
+export async function enrichIdeaFromTranscript(ideaId: number, content: string, transcript: string): Promise<void> {
+  console.log(`[enrichment] Processing transcript for idea ${ideaId}`);
+
+  try {
+    const combinedText = content + "\n\n---\nVideo transcript:\n" + transcript;
+    const result = await aiEnrich(combinedText, "Video transcript from uploaded video");
+
+    await db
+      .update(ideasTable)
+      .set({
+        enrichmentSummary: result.summary || null,
+        enrichmentUrls: result.urls.length > 0 ? JSON.stringify(result.urls) : null,
+        enrichmentTechnologies: result.technologies.length > 0 ? JSON.stringify(result.technologies) : null,
+        enrichmentError: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(ideasTable.id, ideaId));
+
+    console.log(`[enrichment] Successfully enriched idea ${ideaId} from transcript`);
+  } catch (err) {
+    console.error(`[enrichment] Failed to enrich idea ${ideaId} from transcript:`, err);
     await db
       .update(ideasTable)
       .set({

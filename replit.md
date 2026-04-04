@@ -57,9 +57,10 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 
 - Entry: `src/index.ts` — reads `PORT`, starts Express
 - App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health`; `src/routes/ai.ts` exposes `POST /ai/suggest` and `POST /ai/clarify`; `src/routes/ideas.ts` exposes CRUD for ideas (`GET /ideas`, `POST /ideas`, `PATCH /ideas/:id`, `DELETE /ideas/:id`, `GET /ideas/quick`, `POST /ideas/inbound`)
-- Lib: `src/lib/resend.ts` — Resend email client via Replit connectors integration
-- AI integration: Uses OpenAI via Replit AI Integrations proxy (env vars `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`), model `gpt-4o-mini`
+- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health`; `src/routes/ai.ts` exposes `POST /ai/suggest` and `POST /ai/clarify`; `src/routes/ideas.ts` exposes CRUD for ideas (`GET /ideas`, `POST /ideas`, `PATCH /ideas/:id`, `DELETE /ideas/:id`, `GET /ideas/quick`, `POST /ideas/inbound`); `src/routes/video.ts` exposes `POST /ideas/:id/video` for video upload + transcription
+- Lib: `src/lib/resend.ts` — Resend email client via Replit connectors integration; `src/lib/videoStorage.ts` — GCS-backed video storage via Replit sidecar auth; `src/lib/transcription.ts` — OpenAI Whisper transcription; `src/lib/enrichment.ts` — AI enrichment pipeline (Instagram + video transcript)
+- AI integration: Uses OpenAI via Replit AI Integrations proxy (env vars `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`), models `gpt-4o-mini` (enrichment/suggestions) and `whisper-1` (video transcription)
+- Object storage: Uses Replit Object Storage (GCS-backed) for video file uploads via `@google-cloud/storage` + sidecar auth; files stored in `PRIVATE_OBJECT_DIR/videos/`
 - Email: Resend integration for email backup of ideas (forwarded to Maxw@trumoveinc.com)
 - Depends on: `@workspace/db`, `@workspace/api-zod`, `openai`, `resend`
 - `pnpm --filter @workspace/api-server run dev` — run the dev server
@@ -73,7 +74,7 @@ Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client insta
 - `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
 - `src/schema/index.ts` — barrel re-export of all models
 - `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas
-- `src/schema/ideas.ts` — ideas table (id, content, category, source, starred, archived, createdAt, updatedAt)
+- `src/schema/ideas.ts` — ideas table (id, content, category, source, starred, archived, videoPath, transcript, enrichment*, createdAt, updatedAt)
 - `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
 - Exports: `.` (pool, db, schema), `./schema` (schema only)
 

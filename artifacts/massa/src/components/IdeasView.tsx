@@ -7,6 +7,8 @@ type Idea = {
   source: string
   starred: boolean
   archived: boolean
+  videoPath: string | null
+  transcript: string | null
   enrichmentSummary: string | null
   enrichmentUrls: string | null
   enrichmentTechnologies: string | null
@@ -42,8 +44,14 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
   const [submitting, setSubmitting] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [uploadingVideoId, setUploadingVideoId] = useState<number | null>(null)
+  const [uploadProgress, setUploadProgress] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const editRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cardFileInputRef = useRef<HTMLInputElement>(null)
+  const [cardUploadTargetId, setCardUploadTargetId] = useState<number | null>(null)
 
   const apiBase = import.meta.env.DEV ? '/api' : '/api'
 
@@ -78,6 +86,11 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
         const idea = await res.json()
         setIdeas(prev => [idea, ...prev])
         setInputValue('')
+        const pendingVideo = videoFile
+        setVideoFile(null)
+        if (pendingVideo) {
+          void uploadVideoForIdea(idea.id, pendingVideo)
+        }
         if (/instagram\.com\//i.test(idea.content)) {
           setTimeout(() => fetchIdeas(), 8000)
         }
@@ -153,6 +166,52 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
     }
   }
 
+  const uploadVideoForIdea = async (ideaId: number, file: File) => {
+    setUploadingVideoId(ideaId)
+    setUploadProgress('Uploading...')
+    try {
+      const formData = new FormData()
+      formData.append('video', file)
+      const res = await fetch(`${apiBase}/ideas/${ideaId}/video`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Upload failed' }))
+        throw new Error(err.error || 'Upload failed')
+      }
+      setUploadProgress('Transcribing...')
+      setIdeas(prev => prev.map(i => i.id === ideaId ? { ...i, videoPath: 'uploading' } : i))
+      setTimeout(() => fetchIdeas(), 5000)
+      setTimeout(() => fetchIdeas(), 12000)
+      setTimeout(() => fetchIdeas(), 20000)
+    } catch (err) {
+      console.error('Failed to upload video:', err)
+      setUploadProgress(`Error: ${(err as Error).message}`)
+      setTimeout(() => setUploadProgress(''), 3000)
+    } finally {
+      setTimeout(() => {
+        setUploadingVideoId(null)
+        setUploadProgress('')
+      }, 3000)
+    }
+  }
+
+  const handleNewIdeaVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) setVideoFile(file)
+    e.target.value = ''
+  }
+
+  const handleCardVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && cardUploadTargetId) {
+      await uploadVideoForIdea(cardUploadTargetId, file)
+    }
+    e.target.value = ''
+    setCardUploadTargetId(null)
+  }
+
   const filteredIdeas = filter === 'starred' ? ideas.filter(i => i.starred) : ideas
 
   const formatDate = (dateStr: string) => {
@@ -204,7 +263,61 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
             boxSizing: 'border-box',
           }}
         />
+        {videoFile && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginTop: 8,
+            padding: '6px 10px',
+            background: '#0d1117',
+            border: `1px solid ${c.border}`,
+            borderRadius: 6,
+          }}>
+            <span style={{ color: c.muted, fontSize: 11, fontFamily: c.font }}>
+              {'\uD83C\uDFA5'} {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(1)}MB)
+            </span>
+            <button
+              onClick={() => setVideoFile(null)}
+              style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 12, cursor: 'pointer', marginLeft: 'auto', fontFamily: c.font }}
+            >
+              x
+            </button>
+          </div>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".mp4,.mov,.m4v,.webm,video/mp4,video/quicktime,video/x-m4v,video/webm"
+          onChange={handleNewIdeaVideoSelect}
+          style={{ display: 'none' }}
+        />
+        <input
+          ref={cardFileInputRef}
+          type="file"
+          accept=".mp4,.mov,.m4v,.webm,video/mp4,video/quicktime,video/x-m4v,video/webm"
+          onChange={handleCardVideoSelect}
+          style={{ display: 'none' }}
+        />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              background: 'transparent',
+              border: `1px solid ${c.borderLight}`,
+              color: c.muted,
+              padding: '8px 14px',
+              borderRadius: 8,
+              fontSize: 12,
+              fontFamily: c.font,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              letterSpacing: '0.05em',
+            }}
+            title="Attach a video file (mp4, mov, m4v, webm)"
+          >
+            {'\uD83C\uDFA5'} VIDEO
+          </button>
           <button
             onClick={addIdea}
             disabled={!inputValue.trim() || submitting}
@@ -423,6 +536,44 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                       })()}
                     </div>
                   )}
+                  {idea.videoPath && (
+                    <div style={{
+                      marginTop: 8,
+                      padding: '6px 10px',
+                      background: '#0d1117',
+                      border: `1px solid ${c.border}`,
+                      borderRadius: 6,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}>
+                      <span style={{ fontSize: 11 }}>{'\uD83C\uDFA5'}</span>
+                      <span style={{ color: c.muted, fontSize: 10, fontFamily: c.font }}>
+                        Video attached
+                      </span>
+                      {uploadingVideoId === idea.id && (
+                        <span style={{ color: c.green, fontSize: 10, fontFamily: c.font, marginLeft: 'auto' }}>
+                          {uploadProgress}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {idea.transcript && (
+                    <div style={{
+                      marginTop: 8,
+                      padding: '10px 12px',
+                      background: '#0d1117',
+                      border: `1px solid ${c.border}`,
+                      borderRadius: 6,
+                    }}>
+                      <div style={{ color: '#22d3ee', fontSize: 9, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, opacity: 0.8 }}>
+                        Video Transcript
+                      </div>
+                      <div style={{ color: c.text, fontSize: 11, fontFamily: c.font, lineHeight: 1.6, opacity: 0.85, whiteSpace: 'pre-wrap' }}>
+                        {idea.transcript}
+                      </div>
+                    </div>
+                  )}
                   {idea.enrichmentError && !idea.enrichmentSummary && (
                     <div style={{
                       marginTop: 8,
@@ -432,7 +583,9 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                       opacity: 0.6,
                       fontStyle: 'italic',
                     }}>
-                      Enrichment unavailable
+                      {idea.enrichmentError.startsWith('Transcription failed')
+                        ? 'Transcription failed — video is still attached'
+                        : 'Enrichment unavailable'}
                     </div>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
@@ -443,6 +596,22 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                       {formatDate(idea.createdAt)}
                     </span>
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+                      {!idea.videoPath && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setCardUploadTargetId(idea.id)
+                            cardFileInputRef.current?.click()
+                          }}
+                          disabled={uploadingVideoId === idea.id}
+                          style={{ background: 'none', border: 'none', color: c.muted, fontSize: 10, fontFamily: c.font, cursor: 'pointer', opacity: 0.5, padding: '2px 6px', transition: 'opacity 0.15s' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.5' }}
+                          title="Attach video"
+                        >
+                          {uploadingVideoId === idea.id ? uploadProgress : '\uD83C\uDFA5 video'}
+                        </button>
+                      )}
                       {onTurnIntoPrompt && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onTurnIntoPrompt(idea.content, idea.id) }}

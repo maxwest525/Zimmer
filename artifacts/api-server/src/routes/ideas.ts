@@ -176,6 +176,15 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .tabs{display:flex;gap:4px;margin-bottom:12px}
 .tab{flex:1;background:#0c0f14;border:1px solid #1c2028;border-radius:6px;color:#6b7280;font-family:inherit;font-size:12px;padding:8px;cursor:pointer;text-align:center;transition:all .2s}
 .tab.active{background:#1c2028;color:#34d399;border-color:#34d399}
+.video-row{display:flex;gap:8px;margin-top:8px;align-items:center}
+.video-btn{background:transparent;width:auto;border:1px solid #1c2028;color:#6b7280;padding:10px 16px;font-size:13px;border-radius:8px;transition:border-color .2s}
+.video-btn:active{opacity:.7}
+.video-info{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#0d1117;border:1px solid #1c2028;border-radius:6px;margin-top:8px;font-size:11px;color:#6b7280}
+.video-info .remove{color:#ef4444;border:none;background:none;cursor:pointer;font-size:12px;margin-left:auto;font-family:inherit;width:auto;padding:2px 6px}
+.upload-status{font-size:11px;color:#34d399;margin-top:4px}
+.transcript-block{margin-top:8px;padding:8px 10px;background:#0d1117;border:1px solid #1c2028;border-radius:6px}
+.transcript-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;color:#22d3ee;opacity:.8}
+.transcript-text{font-size:11px;line-height:1.5;color:#e8eaed;opacity:.85;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -183,7 +192,15 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <h1>&#9889; MASSA — Quick Idea</h1>
 <textarea id="txt" placeholder="What's on your mind?" autofocus></textarea>
 <div class="count"><span id="len">0</span> chars</div>
-<div class="row">
+<input type="file" id="videoInput" accept=".mp4,.mov,.m4v,.webm,video/mp4,video/quicktime,video/x-m4v,video/webm" style="display:none">
+<div id="videoInfo" style="display:none" class="video-info">
+  <span>&#127909;</span>
+  <span id="videoName"></span>
+  <button class="remove" id="videoRemove">x</button>
+</div>
+<div id="uploadStatus" class="upload-status" style="display:none"></div>
+<div class="row" style="gap:8px">
+<button id="vidBtn" class="video-btn" type="button">&#127909; Video</button>
 <button id="btn" disabled>Send</button>
 </div>
 <hr class="divider">
@@ -201,10 +218,31 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <script>
 const txt=document.getElementById('txt'),btn=document.getElementById('btn'),len=document.getElementById('len'),toast=document.getElementById('toast');
 const container=document.getElementById('ideas-container'),countBadge=document.getElementById('idea-count');
-let allIdeas=[],currentFilter='all';
+const videoInput=document.getElementById('videoInput'),vidBtn=document.getElementById('vidBtn');
+const videoInfo=document.getElementById('videoInfo'),videoName=document.getElementById('videoName'),videoRemove=document.getElementById('videoRemove');
+const uploadStatus=document.getElementById('uploadStatus');
+let allIdeas=[],currentFilter='all',selectedVideo=null;
 
 txt.addEventListener('input',()=>{len.textContent=txt.value.length;btn.disabled=!txt.value.trim()});
 function showToast(msg,ok){toast.textContent=msg;toast.style.background=ok?'#34d399':'#ef4444';toast.style.color=ok?'#0a0d10':'#fff';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2000)}
+vidBtn.addEventListener('click',()=>videoInput.click());
+videoInput.addEventListener('change',()=>{
+  const f=videoInput.files[0];if(!f)return;
+  selectedVideo=f;videoName.textContent=f.name+' ('+(f.size/1024/1024).toFixed(1)+'MB)';
+  videoInfo.style.display='flex';
+});
+videoRemove.addEventListener('click',()=>{selectedVideo=null;videoInfo.style.display='none';videoInput.value='';});
+async function uploadVideoForIdea(ideaId,file){
+  uploadStatus.textContent='Uploading video...';uploadStatus.style.display='block';
+  try{
+    const fd=new FormData();fd.append('video',file);
+    const r=await fetch('/api/ideas/'+ideaId+'/video',{method:'POST',body:fd});
+    if(!r.ok){const e=await r.json().catch(()=>({error:'Upload failed'}));throw new Error(e.error)}
+    uploadStatus.textContent='Transcribing audio...';
+    setTimeout(loadIdeas,5000);setTimeout(loadIdeas,12000);setTimeout(loadIdeas,20000);
+    setTimeout(()=>{uploadStatus.style.display='none'},3000);
+  }catch(e){uploadStatus.textContent='Error: '+e.message;uploadStatus.style.color='#ef4444';setTimeout(()=>{uploadStatus.style.display='none';uploadStatus.style.color='#34d399'},3000)}
+}
 
 function timeAgo(d){const s=Math.floor((Date.now()-new Date(d).getTime())/1000);if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'}
 
@@ -219,7 +257,8 @@ function renderEnrichment(i){
     if(techRaw){try{const techs=JSON.parse(techRaw);if(techs.length){h+='<div style="margin-top:6px"><div class="enrichment-label" style="color:#fbbf24">Technologies</div><div class="enrichment-tech">'+techs.map(t=>'<span>'+escHtml(t)+'</span>').join('')+'</div></div>';}}catch{}}
     h+='</div>';
   } else if(i.enrichment_error||i.enrichmentError){
-    h+='<div class="enrichment-error">Enrichment unavailable</div>';
+    const errMsg=i.enrichment_error||i.enrichmentError;
+    h+='<div class="enrichment-error">'+(errMsg.startsWith('Transcription failed')?'Transcription failed — video is still attached':'Enrichment unavailable')+'</div>';
   }
   return h;
 }
@@ -227,7 +266,15 @@ function renderIdeas(){
   const ideas=currentFilter==='starred'?allIdeas.filter(i=>i.starred):allIdeas;
   countBadge.textContent=ideas.length;
   if(!ideas.length){container.innerHTML='<div class="empty">'+(currentFilter==='starred'?'No starred ideas yet':'No ideas yet — add one above!')+'</div>';return}
-  container.innerHTML='<div class="ideas-list">'+ideas.map(i=>'<div class="idea-card"><div class="idea-content">'+(i.starred?'<span class="idea-star">&#9733; </span>':'')+escHtml(i.content)+'</div>'+renderEnrichment(i)+'<div class="idea-meta"><span>'+escHtml(i.source)+'</span><span>'+timeAgo(i.created_at||i.createdAt)+'</span></div></div>').join('')+'</div>';
+  container.innerHTML='<div class="ideas-list">'+ideas.map(i=>{
+    let card='<div class="idea-card"><div class="idea-content">'+(i.starred?'<span class="idea-star">&#9733; </span>':'')+escHtml(i.content)+'</div>';
+    if(i.video_path||i.videoPath)card+='<div class="video-info" style="display:flex"><span>&#127909;</span><span>Video attached</span></div>';
+    const tr=i.transcript;
+    if(tr)card+='<div class="transcript-block"><div class="transcript-label">Video Transcript</div><div class="transcript-text">'+escHtml(tr)+'</div></div>';
+    card+=renderEnrichment(i);
+    card+='<div class="idea-meta"><span>'+escHtml(i.source)+'</span><span>'+timeAgo(i.created_at||i.createdAt)+'</span></div></div>';
+    return card;
+  }).join('')+'</div>';
 }
 
 function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
@@ -258,9 +305,12 @@ btn.addEventListener('click',async()=>{
     const r=await fetch('/api/ideas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:txt.value.trim(),source:'mobile'})});
     if(!r.ok)throw new Error();
     const idea=await r.json();
-    txt.value='';len.textContent='0';showToast('Idea saved + emailed!',true);
+    const pendingVideo=selectedVideo;
+    txt.value='';len.textContent='0';selectedVideo=null;videoInfo.style.display='none';videoInput.value='';
+    showToast('Idea saved + emailed!',true);
     allIdeas.unshift(idea);
     renderIdeas();
+    if(pendingVideo)uploadVideoForIdea(idea.id,pendingVideo);
     if(/instagram\\.com\\//i.test(idea.content||''))setTimeout(loadIdeas,8000);
   }catch{showToast('Failed to save',false)}
   finally{btn.disabled=false;btn.textContent='Send'}

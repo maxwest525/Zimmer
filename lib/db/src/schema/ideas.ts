@@ -12,6 +12,8 @@ export const ideasTable = pgTable("ideas", {
   enrichmentSummary: text("enrichment_summary"),
   enrichmentUrls: text("enrichment_urls"),
   enrichmentTechnologies: text("enrichment_technologies"),
+  videoPath: text("video_path"),
+  transcript: text("transcript"),
   enrichmentError: text("enrichment_error"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
