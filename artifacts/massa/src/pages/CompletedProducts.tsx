@@ -37,7 +37,7 @@ function DomainStep({
         className={cn(
           "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5",
           product.domainConnected
-            ? "bg-emerald-500/15 text-emerald-500"
+            ? "bg-muted/80 text-foreground"
             : "bg-muted text-muted-foreground"
         )}
       >
@@ -47,7 +47,7 @@ function DomainStep({
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-medium">Domain</span>
           {product.domainConnected && (
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />
           )}
         </div>
         {editing ? (
@@ -89,7 +89,7 @@ function DomainStep({
             )}
             <button
               onClick={() => setEditing(true)}
-              className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               {product.domain ? "Change" : "Connect"}
             </button>
@@ -123,12 +123,12 @@ function DeployStep({
     "in-progress": {
       icon: <Loader2 className="w-4 h-4 animate-spin" />,
       label: "Deploying...",
-      color: "bg-blue-500/15 text-blue-400",
+      color: "bg-muted/80 text-muted-foreground",
     },
     deployed: {
       icon: <CheckCircle2 className="w-4 h-4" />,
       label: "Deployed",
-      color: "bg-emerald-500/15 text-emerald-500",
+      color: "bg-muted/80 text-foreground",
     },
     failed: {
       icon: <XCircle className="w-4 h-4" />,
@@ -160,13 +160,13 @@ function DeployStep({
         {product.deployStatus === "not-started" || product.deployStatus === "failed" ? (
           <button
             onClick={handleDeploy}
-            className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-500 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium bg-foreground text-background rounded-md hover:opacity-90 transition-opacity"
           >
             {product.deployStatus === "failed" ? "Retry Deploy" : "Deploy Now"}
           </button>
         ) : product.deployStatus === "in-progress" ? (
           <div className="h-1.5 w-32 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-blue-500 rounded-full animate-pulse w-2/3" />
+            <div className="h-full bg-foreground rounded-full animate-pulse w-2/3" />
           </div>
         ) : (
           <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -205,7 +205,7 @@ function PublishStep({
         className={cn(
           "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5",
           product.publishStatus === "live"
-            ? "bg-emerald-500/15 text-emerald-500"
+            ? "bg-muted/80 text-foreground"
             : "bg-muted text-muted-foreground"
         )}
       >
@@ -215,13 +215,13 @@ function PublishStep({
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-medium">Publish</span>
           {product.publishStatus === "live" && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/15 text-emerald-500 rounded-full">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-foreground rounded-full">
+              <span className="w-1.5 h-1.5 bg-foreground rounded-full" />
               Live
             </span>
           )}
           {product.publishStatus === "publishing" && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-blue-500/15 text-blue-400 rounded-full">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground rounded-full">
               <Loader2 className="w-2.5 h-2.5 animate-spin" />
               Publishing
             </span>
@@ -237,7 +237,7 @@ function PublishStep({
               "px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-50",
               product.publishStatus === "live"
                 ? "bg-muted text-foreground hover:bg-muted/80"
-                : "bg-emerald-600 text-white hover:bg-emerald-500"
+                : "bg-foreground text-background hover:opacity-90"
             )}
           >
             {product.publishStatus === "live"
@@ -283,7 +283,7 @@ function ProductCard({ product }: { product: CompletedProduct }) {
       <div className="flex items-center gap-2">
         <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
           <div
-            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+            className="h-full bg-foreground rounded-full transition-all duration-500"
             style={{ width: `${(stepsCompleted / 3) * 100}%` }}
           />
         </div>
