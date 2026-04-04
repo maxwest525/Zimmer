@@ -921,6 +921,7 @@ export function Overview() {
   const [clarifyOtherText, setClarifyOtherText] = useState('')
   const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
+  const [chatOriginBuildId, setChatOriginBuildId] = useState<string | null>(null)
   const [, navigate] = useLocation()
   const [typedPlaceholder, setTypedPlaceholder] = useState('')
   const [showSuggestionsTooltip, setShowSuggestionsTooltip] = useState(false)
@@ -1440,7 +1441,7 @@ export function Overview() {
               return (
               <div key={item.label}
                 onClick={() => {
-                  if (item.view) setActiveView(item.view)
+                  if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
                   if (item.path) navigate(item.path)
                   setMobileNavOpen(false)
                 }}
@@ -1476,7 +1477,7 @@ export function Overview() {
               const clickable = item.view !== null || item.path !== ''
               return (
                 <div key={item.label} onClick={() => {
-                  if (item.view) { setActiveView(item.view) }
+                  if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
                   else if (item.path) { navigate(item.path) }
                 }} style={{ padding: '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330' }}>
                   {active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}
@@ -1495,6 +1496,8 @@ export function Overview() {
               onSelectBuild={setSelectedChatBuildId}
               messages={chatMessages}
               onMessagesChange={setChatMessages}
+              onBackToBuild={chatOriginBuildId ? () => { setActiveView('dashboard'); setExpandedBuildId(chatOriginBuildId); setChatOriginBuildId(null) } : undefined}
+              onGoHome={chatOriginBuildId ? () => { setActiveView('dashboard'); setChatOriginBuildId(null) } : undefined}
             />
           </div>
         ) : activeView === 'ideas' ? (
@@ -1790,7 +1793,7 @@ export function Overview() {
                                 <span style={{ fontSize: 10, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
                               </div>
                               <button
-                                onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setActiveView('chats') }}
+                                onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setChatOriginBuildId(null); setActiveView('chats') }}
                                 title="Open chat"
                                 style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
                                 onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
@@ -1806,7 +1809,7 @@ export function Overview() {
                                 <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setActiveView('chats') }}
+                                    onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setChatOriginBuildId(null); setActiveView('chats') }}
                                     title="Open chat"
                                     style={{ width: 20, height: 20, borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, flexShrink: 0, padding: 0, transition: 'color 0.15s, border-color 0.15s' }}
                                     onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
@@ -2739,7 +2742,7 @@ export function Overview() {
                         <div style={{ fontSize: 12, color: c.muted }}>{expandedBuild.project.name} · {expandedBuild.build.agent} ({expandedBuild.build.agentRole})</div>
                       </div>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button onClick={() => { setSelectedChatBuildId(expandedBuild.build.id); setExpandedBuildId(null); setActiveView('chats') }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.green}44`, background: '#151920', color: c.green, padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}>Open in Chats</button>
+                        <button onClick={() => { setChatOriginBuildId(expandedBuild.build.id); setSelectedChatBuildId(expandedBuild.build.id); setExpandedBuildId(null); setActiveView('chats') }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.green}44`, background: '#151920', color: c.green, padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}>Open in Chats</button>
                         <button onClick={() => { setExpandedBuildId(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #252a35', background: '#151920', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
                       </div>
                     </div>

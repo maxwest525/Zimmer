@@ -26,6 +26,8 @@ type ChatViewProps = {
   onSelectBuild: (buildId: string) => void
   messages: Record<string, ChatMessage[]>
   onMessagesChange: (messages: Record<string, ChatMessage[]>) => void
+  onBackToBuild?: () => void
+  onGoHome?: () => void
 }
 
 const c = {
@@ -124,7 +126,7 @@ export function initChatMessages(projects: Project[]): Record<string, ChatMessag
   return initial
 }
 
-export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, onMessagesChange }: ChatViewProps) {
+export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, onMessagesChange, onBackToBuild, onGoHome }: ChatViewProps) {
   const [inputValue, setInputValue] = useState('')
   const [showAttachMenu, setShowAttachMenu] = useState(false)
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>(() => {
@@ -216,7 +218,34 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
   }
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 180px)', gap: 0, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden', background: c.panel }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 180px)', gap: 0 }}>
+      {(onBackToBuild || onGoHome) && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: c.alt, borderBottom: `1px solid ${c.border}`, borderRadius: '12px 12px 0 0' }}>
+          {onGoHome && (
+            <button
+              onClick={onGoHome}
+              onMouseEnter={e => e.currentTarget.style.background = '#1e1e1e'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              style={{ background: 'transparent', border: `1px solid ${c.border}`, borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: c.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}
+              title="Go to Dashboard"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </button>
+          )}
+          {onBackToBuild && (
+            <button
+              onClick={onBackToBuild}
+              onMouseEnter={e => e.currentTarget.style.background = '#1e1e1e'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              style={{ background: 'transparent', border: `1px solid ${c.border}`, borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: c.muted, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Back to Build
+            </button>
+          )}
+        </div>
+      )}
+      <div style={{ display: 'flex', flex: 1, gap: 0, border: `1px solid ${c.border}`, borderRadius: (onBackToBuild || onGoHome) ? '0 0 12px 12px' : '12px', overflow: 'hidden', background: c.panel }}>
       <div style={{ width: 280, borderRight: `1px solid ${c.border}`, display: 'flex', flexDirection: 'column', background: c.alt, flexShrink: 0 }}>
         <div style={{ padding: '14px 16px', borderBottom: `1px solid ${c.border}` }}>
           <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.muted, fontWeight: 700 }}>CONVERSATIONS</div>
@@ -413,6 +442,7 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
             <div style={{ fontSize: 12, color: '#888' }}>Choose a build from the left panel to view its chat thread</div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )
