@@ -20,8 +20,19 @@ function useIsMobileIM() {
   return m
 }
 
+function useIsNarrowIM() {
+  const [n, setN] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 420 : false)
+  useEffect(() => {
+    const h = () => setN(window.innerWidth < 420)
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
+  return n
+}
+
 export function InsideMassa() {
   const isMobile = useIsMobileIM()
+  const isNarrow = useIsNarrowIM()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [, navigate] = useLocation()
   const [hoveredStep, setHoveredStep] = useState<number | null>(null)
@@ -78,11 +89,27 @@ export function InsideMassa() {
     name: m.name,
     label: m.label,
     role: m.role,
+    category: m.category,
     for: m.capabilities,
     why: m.reasons.default,
     color: m.color,
     logoNames: m.logoNames,
   }))
+
+  const categoryMeta: Record<string, { title: string; color: string }> = {
+    thinking: { title: 'Thinking', color: '#34d399' },
+    building: { title: 'Building', color: '#818cf8' },
+    interface: { title: 'Interface', color: '#f472b6' },
+    automation: { title: 'Automation', color: '#a3b535' },
+    research: { title: 'Research', color: '#f59e0b' },
+    multimodal: { title: 'Multimodal', color: '#60a5fa' },
+  }
+
+  const groupedSystems = Object.entries(categoryMeta).map(([key, meta]) => ({
+    category: key,
+    ...meta,
+    systems: systems.filter(s => s.category === key),
+  })).filter(g => g.systems.length > 0)
 
   const examples = [
     {
@@ -247,48 +274,66 @@ export function InsideMassa() {
                 backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(57,214,50,0.03)' : 'rgba(57,214,50,0.05)'} 1px, transparent 1px)`,
                 backgroundSize: '24px 24px',
               }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 18, position: 'relative', zIndex: 1, overflowX: 'auto', paddingBottom: 4 }}>
-                {systems.map((sys, i) => (
-                  <div key={sys.name} style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center' }}>
-                    <div style={{
-                      minWidth: 100,
-                      border: `1px solid ${sys.color}cc`,
-                      borderRadius: 14,
-                      padding: '14px 10px',
+              <div style={{ position: 'relative', zIndex: 1, marginBottom: 18 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
+                  <div style={{
+                    padding: '10px 28px',
+                    background: c.green,
+                    borderRadius: 12,
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontSize: 15,
+                    letterSpacing: 1.5,
+                    textAlign: 'center',
+                  }}>MASSA</div>
+                  <div style={{ width: 2, height: 20, background: c.border }} />
+                </div>
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: isNarrow ? '1fr' : isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                  gap: isNarrow ? 10 : isMobile ? 12 : 16,
+                }}>
+                  {groupedSystems.map((group) => (
+                    <div key={group.category} style={{
+                      border: `1px solid ${c.border}`,
+                      borderRadius: 12,
+                      padding: '12px 10px 10px',
                       background: c.panel,
                       position: 'relative',
-                      textAlign: 'center',
                     }}>
-                      {/* Color accent bar */}
-                      <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 48, height: 3, background: sys.color, borderRadius: '0 0 4px 4px' }} />
-                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6, marginTop: 4 }}>
-                        {sys.logoNames ? (
-                          <DualCompanyLogo names={sys.logoNames} size={28} accentColor={sys.color} />
-                        ) : (
-                          <CompanyLogo name={sys.name} size={32} accentColor={sys.color} />
-                        )}
+                      <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 36, height: 3, background: group.color, borderRadius: '0 0 4px 4px' }} />
+                      <div style={{ fontSize: 10, fontWeight: 700, color: group.color, letterSpacing: 1, textAlign: 'center', marginBottom: 8, marginTop: 2 }}>
+                        {group.title.toUpperCase()}
                       </div>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: sys.color, letterSpacing: 1, marginBottom: 3 }}>{sys.label}</div>
-                      <div style={{ fontWeight: 700, fontSize: 12 }}>{sys.name}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {group.systems.map((sys) => (
+                          <div key={sys.name} style={{
+                            border: `1px solid ${c.border}`,
+                            borderRadius: 10,
+                            padding: '8px 8px',
+                            background: c.alt,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                          }}>
+                            <div style={{ flexShrink: 0 }}>
+                              {sys.logoNames ? (
+                                <DualCompanyLogo names={sys.logoNames} size={22} accentColor={sys.color} />
+                              ) : (
+                                <CompanyLogo name={sys.name} size={24} accentColor={sys.color} />
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: 11, color: c.text }}>{sys.name}</div>
+                              <div style={{ fontSize: 9, color: c.muted }}>{sys.role}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    {/* Animated SVG arrow between cards */}
-                    {i < systems.length - 1 && (
-                      <div style={{ padding: '0 2px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-                        <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
-                          <line x1="1" y1="6" x2="15" y2="6" stroke={c.muted} strokeWidth="1.2" />
-                          <polyline
-                            points="13,3 17,6 13,9"
-                            fill="none"
-                            stroke={c.green}
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
               <div style={{ fontSize: 12, color: c.muted, position: 'relative', zIndex: 1 }}>
                 MASSA routes each request through different systems depending on what the work needs.
