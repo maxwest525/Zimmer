@@ -903,6 +903,8 @@ export function Overview() {
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
   const [archTab, setArchTab] = useState<'tree' | 'graph' | 'timeline'>('tree')
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
+  const panelWasCollapsedBeforeSuggestions = useRef(false)
+  const suggestionsAutoCollapsed = useRef(false)
   const [rawInput, setRawInput] = useState('')
   const [vagueMode, setVagueMode] = useState(false)
   const [showClarifyModal, setShowClarifyModal] = useState(false)
@@ -958,6 +960,23 @@ export function Overview() {
     }, 800)
     return () => { clearTimeout(timer); controller.abort(); setSuggestionsLoading(false) }
   }, [rawInput])
+
+  useEffect(() => {
+    const visibleSuggestions = ignoredAll ? [] : aiSuggestions.filter(s => !dismissedSuggestions.has(s))
+    const hasSuggestions = !ignoredAll && (suggestionsLoading || visibleSuggestions.length > 0)
+    if (hasSuggestions && !suggestionsAutoCollapsed.current) {
+      setRightPanelCollapsed(prev => {
+        panelWasCollapsedBeforeSuggestions.current = prev
+        return true
+      })
+      suggestionsAutoCollapsed.current = true
+    } else if (!hasSuggestions && suggestionsAutoCollapsed.current) {
+      suggestionsAutoCollapsed.current = false
+      if (!panelWasCollapsedBeforeSuggestions.current) {
+        setRightPanelCollapsed(false)
+      }
+    }
+  }, [aiSuggestions, suggestionsLoading, dismissedSuggestions, ignoredAll])
 
   const fetchClarifyQuestion = useCallback((prompt: string, history: {question: string; answer: string}[]) => {
     setClarifyLoading(true)
@@ -1543,7 +1562,7 @@ export function Overview() {
                       value={rawInput}
                       onChange={e => setRawInput(e.target.value)}
                       placeholder={typedPlaceholder}
-                      style={{ width: '100%', minHeight: 38, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaed', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: '"JetBrains Mono", Menlo, monospace', boxSizing: 'border-box', letterSpacing: '-0.01em' }}
+                      style={{ width: '100%', minHeight: 80, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaed', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: '"JetBrains Mono", Menlo, monospace', boxSizing: 'border-box', letterSpacing: '-0.01em' }}
                     />
                   </div>
                 </div>
