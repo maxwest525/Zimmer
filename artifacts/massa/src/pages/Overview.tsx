@@ -1436,6 +1436,7 @@ export function Overview() {
               { label: 'APIs', view: null, path: '' },
               { label: 'Web Scraper', view: null, path: '' },
               { label: 'Inside MASSA', view: null, path: '/inside' },
+              { label: 'Completed Products', view: null, path: '/completed' },
             ].map(item => {
               const active = item.view === activeView || (item.label === 'Dashboard' && activeView === 'dashboard')
               return (
@@ -1472,6 +1473,7 @@ export function Overview() {
               { label: 'APIs', view: null, path: '' },
               { label: 'Web Scraper', view: null, path: '' },
               { label: 'Inside MASSA', view: null, path: '/inside' },
+              { label: 'Completed Products', view: null, path: '/completed' },
             ].map(item => {
               const active = item.view ? activeView === item.view : false
               const clickable = item.view !== null || item.path !== ''
