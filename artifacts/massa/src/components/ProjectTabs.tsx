@@ -15,18 +15,19 @@ const TABS: { id: Tab; label: string }[] = [
 
 export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
   return (
-    <div className="flex items-center gap-1 px-6 pt-3 pb-0 border-b border-border shrink-0">
+    <div className="flex items-center gap-0 px-6 pt-0 pb-0 border-b border-[#1c2028] shrink-0 bg-[#0a0d10]">
       {TABS.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           className={cn(
-            "px-3 py-2 text-sm font-medium rounded-t transition-colors -mb-px border-b-2",
+            "px-4 py-2.5 text-xs font-mono font-medium tracking-wide transition-colors -mb-px border-b-2 rounded-none uppercase",
             activeTab === tab.id
-              ? "text-emerald-400 border-emerald-500"
-              : "text-muted-foreground border-transparent hover:text-foreground hover:border-border"
+              ? "text-emerald-400 border-emerald-400 bg-emerald-400/[0.04]"
+              : "text-[#4b5563] border-transparent hover:text-[#9ca3af] hover:bg-white/[0.02]"
           )}
         >
+          {activeTab === tab.id && <span className="text-emerald-400 mr-1.5 opacity-70">{">"}</span>}
           {tab.label}
         </button>
       ))}

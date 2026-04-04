@@ -1278,8 +1278,8 @@ export function Overview() {
                   if (item.path) navigate(item.path)
                   setMobileNavOpen(false)
                 }}
-                style={{ padding: '8px 10px', borderRadius: 4, cursor: 'pointer', color: active ? '#34d399' : '#9ca3af', fontSize: 13, fontWeight: active ? 600 : 400, borderLeft: active ? '2px solid #34d399' : '2px solid transparent', background: active ? 'rgba(52,211,153,0.06)' : 'transparent', marginBottom: 1 }}>
-                {item.label}
+                style={{ padding: '7px 10px', borderRadius: 0, cursor: 'pointer', color: active ? '#34d399' : '#4b5563', fontSize: 12, fontWeight: active ? 600 : 500, borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #1c2028' : '1px solid transparent', background: active ? 'rgba(52,211,153,0.04)' : 'transparent', marginBottom: 0, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #14181e' }}>
+                {active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}
               </div>
               )
             })}
@@ -1311,8 +1311,8 @@ export function Overview() {
                 <div key={item.label} onClick={() => {
                   if (item.view) { setActiveView(item.view) }
                   else if (item.path) { navigate(item.path) }
-                }} style={{ padding: '8px 10px', borderRadius: 4, marginBottom: 1, background: active ? 'rgba(52,211,153,0.06)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', fontSize: 13, fontWeight: active ? 600 : 400, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.15s ease', fontFamily: active ? '"JetBrains Mono", Menlo, monospace' : 'inherit' }}>
-                  {item.label}
+                }} style={{ padding: '7px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#4b5563', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #1c2028' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #14181e' }}>
+                  {active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}
                 </div>
               )
             })}
@@ -1502,18 +1502,17 @@ export function Overview() {
             <div className="panel-header" style={{ color: '#4b5563' }}>PROJECTS</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {/* View mode toggles */}
-              <div style={{ display: 'flex', border: `1px solid ${c.border}`, borderRadius: 6, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', border: `1px solid ${c.border}`, borderRadius: 0, overflow: 'hidden' }}>
                 <button
                   onClick={() => setViewMode('row')}
                   title="Row view"
                   aria-label="Row view"
                   aria-pressed={viewMode === 'row'}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'row' ? c.greenSoft : 'transparent', color: viewMode === 'row' ? c.green : c.muted, borderRight: `1px solid ${c.border}`, transition: 'background 0.15s, color 0.15s' }}>
-                  {/* Row icon: three horizontal lines */}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'row' ? 'rgba(52,211,153,0.04)' : 'transparent', color: viewMode === 'row' ? c.green : '#374151', borderRight: `1px solid ${c.border}`, transition: 'background 0.12s, color 0.12s', borderBottom: viewMode === 'row' ? '1px solid #34d399' : '1px solid transparent' }}>
                   <svg width="13" height="11" viewBox="0 0 13 11" fill="none">
-                    <rect x="0" y="0" width="13" height="3" rx="1" fill="currentColor" />
-                    <rect x="0" y="4" width="13" height="3" rx="1" fill="currentColor" />
-                    <rect x="0" y="8" width="13" height="3" rx="1" fill="currentColor" />
+                    <rect x="0" y="0" width="13" height="3" rx="0" fill="currentColor" />
+                    <rect x="0" y="4" width="13" height="3" rx="0" fill="currentColor" />
+                    <rect x="0" y="8" width="13" height="3" rx="0" fill="currentColor" />
                   </svg>
                 </button>
                 <button
@@ -1521,13 +1520,12 @@ export function Overview() {
                   title="Card view"
                   aria-label="Card view"
                   aria-pressed={viewMode === 'card'}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'card' ? c.greenSoft : 'transparent', color: viewMode === 'card' ? c.green : c.muted, transition: 'background 0.15s, color 0.15s' }}>
-                  {/* Grid icon: 2x2 squares */}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'card' ? 'rgba(52,211,153,0.04)' : 'transparent', color: viewMode === 'card' ? c.green : '#374151', transition: 'background 0.12s, color 0.12s', borderBottom: viewMode === 'card' ? '1px solid #34d399' : '1px solid transparent' }}>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <rect x="0" y="0" width="5" height="5" rx="1" fill="currentColor" />
-                    <rect x="7" y="0" width="5" height="5" rx="1" fill="currentColor" />
-                    <rect x="0" y="7" width="5" height="5" rx="1" fill="currentColor" />
-                    <rect x="7" y="7" width="5" height="5" rx="1" fill="currentColor" />
+                    <rect x="0" y="0" width="5" height="5" rx="0" fill="currentColor" />
+                    <rect x="7" y="0" width="5" height="5" rx="0" fill="currentColor" />
+                    <rect x="0" y="7" width="5" height="5" rx="0" fill="currentColor" />
+                    <rect x="7" y="7" width="5" height="5" rx="0" fill="currentColor" />
                   </svg>
                 </button>
               </div>
