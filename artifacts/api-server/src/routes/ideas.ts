@@ -138,9 +138,7 @@ textarea{width:100%;background:#0c0f14;border:1px solid #1c2028;border-radius:8p
 textarea:focus{border-color:#34d399}
 textarea::placeholder{color:#6b7280}
 .row{display:flex;gap:8px;margin-top:10px}
-select{flex:1;background:#0c0f14;border:1px solid #1c2028;border-radius:8px;color:#e8eaed;font-family:inherit;font-size:14px;padding:10px;outline:none;appearance:none;-webkit-appearance:none}
-select:focus{border-color:#34d399}
-button{flex:1;background:#34d399;color:#0a0d10;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;transition:opacity .2s}
+button{background:#34d399;width:100%;color:#0a0d10;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;transition:opacity .2s}
 button:active{opacity:.7}
 button:disabled{opacity:.4;cursor:not-allowed}
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#34d399;color:#0a0d10;font-family:inherit;font-size:13px;font-weight:600;padding:10px 20px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:10}
@@ -157,7 +155,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .idea-card:hover{border-color:#252a34}
 .idea-content{font-size:13px;line-height:1.5;color:#e8eaed;white-space:pre-wrap;word-break:break-word}
 .idea-meta{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;color:#6b7280}
-.idea-cat{background:#1c2028;color:#9ca3af;padding:1px 6px;border-radius:4px;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
 .idea-star{color:#f59e0b}
 .empty{text-align:center;color:#6b7280;font-size:13px;padding:24px 0}
 .loading{text-align:center;color:#6b7280;font-size:13px;padding:24px 0}
@@ -172,14 +169,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <textarea id="txt" placeholder="What's on your mind?" autofocus></textarea>
 <div class="count"><span id="len">0</span> chars</div>
 <div class="row">
-<select id="cat">
-<option value="general">General</option>
-<option value="product">Product</option>
-<option value="marketing">Marketing</option>
-<option value="engineering">Engineering</option>
-<option value="design">Design</option>
-<option value="content">Content</option>
-</select>
 <button id="btn" disabled>Send</button>
 </div>
 <hr class="divider">
@@ -195,7 +184,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 </div>
 <div class="toast" id="toast"></div>
 <script>
-const txt=document.getElementById('txt'),btn=document.getElementById('btn'),cat=document.getElementById('cat'),len=document.getElementById('len'),toast=document.getElementById('toast');
+const txt=document.getElementById('txt'),btn=document.getElementById('btn'),len=document.getElementById('len'),toast=document.getElementById('toast');
 const container=document.getElementById('ideas-container'),countBadge=document.getElementById('idea-count');
 let allIdeas=[],currentFilter='all';
 
@@ -208,7 +197,7 @@ function renderIdeas(){
   const ideas=currentFilter==='starred'?allIdeas.filter(i=>i.starred):allIdeas;
   countBadge.textContent=ideas.length;
   if(!ideas.length){container.innerHTML='<div class="empty">'+(currentFilter==='starred'?'No starred ideas yet':'No ideas yet — add one above!')+'</div>';return}
-  container.innerHTML='<div class="ideas-list">'+ideas.map(i=>'<div class="idea-card"><div class="idea-content">'+(i.starred?'<span class="idea-star">&#9733; </span>':'')+escHtml(i.content)+'</div><div class="idea-meta"><span class="idea-cat">'+escHtml(i.category)+'</span><span>'+escHtml(i.source)+'</span><span>'+timeAgo(i.created_at||i.createdAt)+'</span></div></div>').join('')+'</div>';
+  container.innerHTML='<div class="ideas-list">'+ideas.map(i=>'<div class="idea-card"><div class="idea-content">'+(i.starred?'<span class="idea-star">&#9733; </span>':'')+escHtml(i.content)+'</div><div class="idea-meta"><span>'+escHtml(i.source)+'</span><span>'+timeAgo(i.created_at||i.createdAt)+'</span></div></div>').join('')+'</div>';
 }
 
 function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
@@ -235,7 +224,7 @@ btn.addEventListener('click',async()=>{
   if(!txt.value.trim())return;
   btn.disabled=true;btn.textContent='...';
   try{
-    const r=await fetch('/api/ideas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:txt.value.trim(),category:cat.value,source:'mobile'})});
+    const r=await fetch('/api/ideas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:txt.value.trim(),source:'mobile'})});
     if(!r.ok)throw new Error();
     const idea=await r.json();
     txt.value='';len.textContent='0';showToast('Idea saved + emailed!',true);
