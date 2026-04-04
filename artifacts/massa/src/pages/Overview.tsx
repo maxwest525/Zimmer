@@ -1688,18 +1688,18 @@ export function Overview() {
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', transition: 'background 0.15s', borderRight: column ? 'none' : `1px dashed ${c.border}`, borderBottom: column ? `1px dashed ${c.border}` : 'none' }}
                       onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #333`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ fontSize: 18, color: '#555', lineHeight: 1 }}>+</div>
+                      <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ fontSize: 18, color: '#777', lineHeight: 1 }}>+</div>
                       </div>
-                      <div style={{ fontSize: 10, color: c.muted, fontWeight: 500 }}>Add Agent</div>
+                      <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>Add Agent</div>
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', transition: 'background 0.15s' }}
                       onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #333`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ fontSize: 18, color: '#555', lineHeight: 1 }}>+</div>
+                      <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ fontSize: 18, color: '#777', lineHeight: 1 }}>+</div>
                       </div>
-                      <div style={{ fontSize: 10, color: c.muted, fontWeight: 500 }}>New Task</div>
+                      <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>New Task</div>
                     </div>
                   </div>
                 </div>
@@ -1757,18 +1757,18 @@ export function Overview() {
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', transition: 'background 0.15s', padding: '7px 10px', borderBottom: `1px dashed ${c.border}` }}
                               onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
                               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                              <div style={{ width: 24, height: 24, borderRadius: 999, border: `1.5px dashed #333`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <div style={{ fontSize: 13, color: '#555', lineHeight: 1 }}>+</div>
+                              <div style={{ width: 24, height: 24, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ fontSize: 13, color: '#777', lineHeight: 1 }}>+</div>
                               </div>
-                              <div style={{ fontSize: 10, color: c.muted, fontWeight: 500 }}>Add Agent</div>
+                              <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>Add Agent</div>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', transition: 'background 0.15s', padding: '7px 10px' }}
                               onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
                               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                              <div style={{ width: 24, height: 24, borderRadius: 999, border: `1.5px dashed #333`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <div style={{ fontSize: 13, color: '#555', lineHeight: 1 }}>+</div>
+                              <div style={{ width: 24, height: 24, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ fontSize: 13, color: '#777', lineHeight: 1 }}>+</div>
                               </div>
-                              <div style={{ fontSize: 10, color: c.muted, fontWeight: 500 }}>New Task</div>
+                              <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>New Task</div>
                             </div>
                           </div>
                         </div>
