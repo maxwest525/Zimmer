@@ -1,7 +1,7 @@
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Project, ProjectStatus } from "@/data/mock";
-import { AlertCircle, Loader2, Circle, XCircle, Settings2, Activity, LayoutGrid } from "lucide-react";
+import { AlertCircle, Loader2, Circle, XCircle, CheckCircle2, Settings2, Activity, LayoutGrid } from "lucide-react";
 import { TenantSelector } from "@/components/TenantSelector";
 
 interface WorkspaceHeaderProps {
@@ -31,6 +31,11 @@ function StatusPill({ status }: { status: ProjectStatus }) {
       label: "Failed",
       className: "bg-red-500/10 text-red-400 border-red-500/20",
       icon: <XCircle className="w-3 h-3" />,
+    },
+    completed: {
+      label: "Completed",
+      className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      icon: <CheckCircle2 className="w-3 h-3" />,
     },
   };
   const { label, className, icon } = config[status];

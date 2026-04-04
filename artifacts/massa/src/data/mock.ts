@@ -1,4 +1,4 @@
-export type ProjectStatus = "running" | "idle" | "needs-review" | "failed";
+export type ProjectStatus = "running" | "idle" | "needs-review" | "failed" | "completed";
 export type TaskStatus = "running" | "queued" | "completed" | "failed" | "needs-review";
 export type ActivityStatus = "running" | "completed" | "failed" | "waiting";
 
@@ -8,6 +8,21 @@ export interface Project {
   status: ProjectStatus;
   taskCount: number;
   lastActive: string;
+}
+
+export type DeployStatus = "not-started" | "in-progress" | "deployed" | "failed";
+export type PublishStatus = "unpublished" | "publishing" | "live";
+
+export interface CompletedProduct {
+  id: string;
+  projectId: string;
+  name: string;
+  summary: string;
+  completedAt: string;
+  domain: string;
+  domainConnected: boolean;
+  deployStatus: DeployStatus;
+  publishStatus: PublishStatus;
 }
 
 export interface ExecutionCard {
@@ -173,3 +188,28 @@ export const PROJECT_ACTIVITY: Record<string, ActivityItem[]> = {
     { id: "a14", label: "Project initialized", sublabel: "User Portal", status: "completed", timestamp: "1d ago" },
   ],
 };
+
+export const INITIAL_COMPLETED_PRODUCTS: CompletedProduct[] = [
+  {
+    id: "cp1",
+    projectId: "cp-proj-1",
+    name: "Invoice Generator",
+    summary: "Automated invoice creation with PDF export, client management, and Stripe integration.",
+    completedAt: "Mar 28, 2026",
+    domain: "invoices.acme.com",
+    domainConnected: true,
+    deployStatus: "deployed",
+    publishStatus: "live",
+  },
+  {
+    id: "cp2",
+    projectId: "cp-proj-2",
+    name: "Customer Feedback Portal",
+    summary: "Real-time feedback collection with sentiment analysis, NPS scoring, and team dashboards.",
+    completedAt: "Mar 25, 2026",
+    domain: "",
+    domainConnected: false,
+    deployStatus: "deployed",
+    publishStatus: "unpublished",
+  },
+];

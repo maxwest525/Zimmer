@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "wouter";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { WorkspaceHeader } from "@/components/WorkspaceHeader";
 import { ProjectTabs } from "@/components/ProjectTabs";
@@ -9,6 +10,7 @@ import { OpenProjectsTabBar } from "@/components/OpenProjectsTabBar";
 import { KnowledgePanel, type KnowledgeFile } from "@/components/KnowledgePanel";
 import { PROJECTS, PROJECT_CARDS, PROJECT_ACTIVITY, ActivityItem } from "@/data/mock";
 import { useTenant } from "@/contexts/TenantContext";
+import { useProjects } from "@/contexts/ProjectContext";
 
 type Tab = "canvas" | "builds" | "history" | "knowledge";
 
@@ -48,6 +50,8 @@ interface WorkspaceProps {
 
 export function Workspace({ initialProjectId }: WorkspaceProps) {
   const { selectedTenantId } = useTenant();
+  const { activeProjects, pushToCompleted } = useProjects();
+  const [, navigate] = useLocation();
 
   const effectiveProjectId = selectedTenantId || initialProjectId;
   const defaultIds = effectiveProjectId ? [effectiveProjectId] : ["p1", "p2"];
@@ -87,7 +91,7 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
     prevTenantRef.current = selectedTenantId;
 
     if (selectedTenantId) {
-      const validProject = PROJECTS.find((p) => p.id === selectedTenantId);
+      const validProject = activeProjects.find((p) => p.id === selectedTenantId);
       if (!validProject) return;
       setOpenProjectIds([selectedTenantId]);
       setActiveProjectId(selectedTenantId);
@@ -99,22 +103,33 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
   }, [selectedTenantId, initialProjectId]);
 
   const sidebarProjects = selectedTenantId
-    ? PROJECTS.filter((p) => p.id === selectedTenantId)
-    : PROJECTS;
+    ? activeProjects.filter((p) => p.id === selectedTenantId)
+    : activeProjects;
 
-  const openProjects = openProjectIds.map((id) => PROJECTS.find((p) => p.id === id)!).filter(Boolean);
+  const openProjects = openProjectIds.map((id) => activeProjects.find((p) => p.id === id)!).filter(Boolean);
 
   const resolvedActiveId = openProjectIds.includes(activeProjectId)
     ? activeProjectId
-    : openProjectIds[0] ?? PROJECTS[0].id;
+    : openProjectIds[0] ?? activeProjects[0]?.id;
 
-  const activeProject = PROJECTS.find((p) => p.id === resolvedActiveId) ?? PROJECTS[0];
+  const activeProject = activeProjects.find((p) => p.id === resolvedActiveId) ?? activeProjects[0];
+
+  useEffect(() => {
+    if (!activeProject) {
+      navigate("/completed");
+    }
+  }, [activeProject, navigate]);
+
+  if (!activeProject) {
+    return null;
+  }
+
   const cards = PROJECT_CARDS[resolvedActiveId] ?? [];
 
   const globalActivity = buildGlobalActivity(openProjectIds);
   const filteredActivity = selectedTenantId
     ? globalActivity.filter((a) => {
-        const project = PROJECTS.find((p) => p.id === selectedTenantId);
+        const project = activeProjects.find((p) => p.id === selectedTenantId);
         return project && a.projectName === project.name;
       })
     : globalActivity;
@@ -137,12 +152,27 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
     }
   }
 
+  function handleMarkComplete(projectId: string) {
+    const project = activeProjects.find((p) => p.id === projectId);
+    if (!project) return;
+    const projectCards = PROJECT_CARDS[projectId] ?? [];
+    const summary = projectCards.length > 0
+      ? projectCards.map((c) => c.title).join(", ")
+      : `${project.name} — completed project`;
+    pushToCompleted(projectId, summary);
+    handleCloseTab(projectId);
+    if (activeProjects.length <= 1) {
+      navigate("/completed");
+    }
+  }
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
       <ProjectSidebar
         projects={sidebarProjects}
         activeProjectId={resolvedActiveId}
         onSelectProject={handleSelectProject}
+        onMarkComplete={handleMarkComplete}
       />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
