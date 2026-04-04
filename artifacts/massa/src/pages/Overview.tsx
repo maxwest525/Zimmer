@@ -1979,74 +1979,42 @@ export function Overview() {
               <div>
                 {sectionHeader('ACTION REQUIRED', 'actionRequired', visibleSorted.length > 0 ? <span style={{ fontSize: 9, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{visibleSorted.length}</span> : undefined)}
                 {!collapsedSections.actionRequired && (
-                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 6 * 52, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#1e293b #080a0e' }}>
+                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {visibleSorted.length === 0 ? (
                       <div style={{ background: '#080a0e', border: '1px solid #1e2330', borderRadius: 4, padding: '14px 12px', textAlign: 'center' }}>
                         <span style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>✓ All clear</span>
                         <div className="panel-header" style={{ color: '#9ca3af', fontSize: 8, marginTop: 4 }}>NO BUILDS NEED ATTENTION</div>
                       </div>
                     ) : (
-                      visibleSorted.map(item => (
+                      visibleSorted.slice(0, 6).map(item => (
                         <div
                           key={item.id}
                           data-action-item
-                          onClick={() => { setBuildModalTab(item.action.tab); setExpandedBuildId(item.id) }}
-                          style={{ background: '#080a0e', border: '1px solid #1e2330', borderRadius: 4, padding: '8px 10px', cursor: 'pointer', transition: 'all 0.3s ease', overflow: 'hidden', maxHeight: 80, opacity: 1 }}
-                          onMouseEnter={e => (e.currentTarget.style.borderColor = item.action.color)}
-                          onMouseLeave={e => (e.currentTarget.style.borderColor = '#1e2330')}
+                          style={{ background: '#080a0e', border: '1px solid #1e2330', borderRadius: 4, padding: '10px 12px', transition: 'all 0.3s ease', overflow: 'hidden', maxHeight: 80, opacity: 1 }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                            <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: '14px' }}>{item.projectName}</div>
-                              <div style={{ fontSize: 10, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: '14px', marginTop: 2, display: 'block' }}>{item.title}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.3 }}>{item.projectName}</div>
+                              <div style={{ fontSize: 10, color: '#9ca3af', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.3, marginTop: 3 }}>{item.title}</div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                              <span style={{
+                            <button
+                              onClick={() => { setBuildModalTab(item.action.tab); setExpandedBuildId(item.id) }}
+                              onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.color = '#9ca3af' }}
+                              style={{
                                 fontSize: 9,
-                                fontWeight: 700,
-                                color: item.action.color,
-                                background: `${item.action.color}15`,
-                                border: `1px solid ${item.action.color}40`,
+                                fontWeight: 600,
+                                color: '#9ca3af',
+                                background: '#0c0f14',
+                                border: '1px solid #1e2330',
                                 borderRadius: 4,
-                                padding: '3px 8px',
+                                padding: '4px 10px',
                                 fontFamily: '"JetBrains Mono", Menlo, monospace',
                                 whiteSpace: 'nowrap',
-                                marginTop: 1
-                              }}>{item.action.label}</span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  const el = e.currentTarget.closest('[data-action-item]') as HTMLElement
-                                  if (el) {
-                                    el.style.maxHeight = '0px'
-                                    el.style.opacity = '0'
-                                    el.style.padding = '0 10px'
-                                    el.style.marginBottom = '-4px'
-                                    el.style.borderColor = 'transparent'
-                                    setTimeout(() => {
-                                      setDismissedActionKeys(prev => new Set(prev).add(`${item.id}:${item.action.type}`))
-                                    }, 300)
-                                  } else {
-                                    setDismissedActionKeys(prev => new Set(prev).add(`${item.id}:${item.action.type}`))
-                                  }
-                                }}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  color: '#4b5563',
-                                  cursor: 'pointer',
-                                  fontSize: 12,
-                                  fontFamily: '"JetBrains Mono", Menlo, monospace',
-                                  padding: '0 2px',
-                                  lineHeight: 1,
-                                  transition: 'color 0.15s',
-                                  marginTop: 1
-                                }}
-                                onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
-                                onMouseLeave={e => (e.currentTarget.style.color = '#4b5563')}
-                                title="Dismiss"
-                              >✕</button>
-                            </div>
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease',
+                                flexShrink: 0,
+                              }}>{item.action.label}</button>
                           </div>
                         </div>
                       ))
