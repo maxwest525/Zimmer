@@ -891,7 +891,9 @@ export function Overview() {
   const [chatProjectBuildId, setChatProjectBuildId] = useState<string | null>(null)
   const [expandedBuildId, setExpandedBuildId] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
-  const [buildModalTab, setBuildModalTab] = useState<'chat' | 'details'>('chat')
+  const [buildModalTab, setBuildModalTab] = useState<'chat' | 'details' | 'code' | 'thinking' | 'revert' | 'preview'>('chat')
+  const [revertConfirmed, setRevertConfirmed] = useState<string | null>(null)
+  const [revertPending, setRevertPending] = useState<string | null>(null)
   const [chatMessages, setChatMessages] = useState<Record<string, { id: string; role: 'user' | 'agent'; content: string; time: string }[]>>(() => {
     const t = (h: number, m: number, s: number) => `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
     return {
@@ -952,7 +954,6 @@ export function Overview() {
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
   const [pendingDropdown, setPendingDropdown] = useState<string | null>(null)
-  const [expandedBuildCard, setExpandedBuildCard] = useState<string | null>(null)
   const [leftNavCollapsed, setLeftNavCollapsed] = useState(false)
   const [projectMenuOpen, setProjectMenuOpen] = useState<string | null>(null)
   const [archTab, setArchTab] = useState<'tree' | 'graph' | 'timeline'>('tree')
@@ -1878,7 +1879,7 @@ export function Overview() {
                     return (
                       <div key={build.id} draggable onDragStart={() => handleDragStart(build.id, project.id)} onDragOver={e => handleDragOver(e, build.id)} onDrop={e => handleDrop(e, build.id, project.id)} onDragEnd={handleDragEnd}
                         onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(build.id) }}
-                        style={{ ...(column ? { width: '100%' } : { minWidth: expandedBuildCard === build.id ? 260 : 176, maxWidth: expandedBuildCard === build.id ? 260 : 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : isComplete ? `${sc}30` : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s, min-width 0.2s, max-width 0.2s' }}>
+                        style={{ ...(column ? { width: '100%' } : { minWidth: 176, maxWidth: 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : isComplete ? `${sc}30` : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s' }}>
 
                         {column ? (
                           <>
@@ -1909,77 +1910,32 @@ export function Overview() {
                               >💬</button>
                             </div>
                           </>
-                        ) : (() => {
-                          const isExpanded = expandedBuildCard === build.id
-                          const ctx = (build.buildContext || 'backend') as string
-                          const snippets = CODE_SNIPPETS[ctx] || CODE_SNIPPETS.backend
-                          const buildSnippets = snippets.slice(0, 3)
-                          return <>
-                            <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
-                            <div style={{ padding: '8px 10px 10px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 4 }}>
-                                <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setExpandedBuildCard(isExpanded ? null : build.id) }}
-                                    title={isExpanded ? 'Collapse' : 'Expand'}
-                                    style={{ width: 20, height: 20, borderRadius: 4, border: `1px solid ${c.border}`, background: isExpanded ? `${sc}15` : 'transparent', color: isExpanded ? sc : c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, flexShrink: 0, padding: 0, transition: 'color 0.15s, border-color 0.15s, background 0.15s' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = sc; e.currentTarget.style.borderColor = sc }}
-                                    onMouseLeave={e => { if (!isExpanded) { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border } }}
-                                  ><span style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', display: 'inline-block' }}>▸</span></button>
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setChatOriginBuildId(null); setActiveView('chats') }}
-                                    title="Open chat"
-                                    style={{ width: 20, height: 20, borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, flexShrink: 0, padding: 0, transition: 'color 0.15s, border-color 0.15s' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
-                                  >💬</button>
-                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
-                                </div>
-                              </div>
-                              <div style={{ height: 3, background: isDark ? '#131619' : '#dfe8de', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
-                                <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                              </div>
-                              <div style={{ fontSize: 10, color: isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>{statusText}</div>
-
-                              {isExpanded && (
-                                <div style={{ marginTop: 8, borderTop: `1px solid ${c.border}`, paddingTop: 8 }}>
-                                  <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Thinking</div>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}`, marginBottom: 6, overflow: 'hidden' }}>
-                                    <span style={{ fontSize: 9, color: '#555', flexShrink: 0 }}>▸</span>
-                                    <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{build.agent}</span>
-                                    <span style={{ fontSize: 9, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{statusText}</span>
-                                  </div>
-
-                                  <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Code</div>
-                                  {buildSnippets.map((s, si) => (
-                                    <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}`, marginBottom: 3, overflow: 'hidden' }}>
-                                      <span style={{ fontSize: 8, color: '#555', flexShrink: 0 }}>›</span>
-                                      <span style={{ fontSize: 8, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{s.file}</span>
-                                      <span style={{ fontSize: 8, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.code}</span>
-                                    </div>
-                                  ))}
-
-                                  <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, marginTop: 6, textTransform: 'uppercase' }}>Build</div>
-                                  <div style={{ padding: '4px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}` }}>
-                                    <div style={{ fontSize: 9, color: '#999', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 3 }}>{build.summary}</div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                                      <div style={{ flex: 1, height: 3, background: isDark ? '#131619' : '#dfe8de', borderRadius: 999, overflow: 'hidden' }}>
-                                        <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                                      </div>
-                                      <span style={{ fontSize: 9, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
-                                    </div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                                      {build.stack.map(s => (
-                                        <span key={s} style={{ fontSize: 8, color: '#888', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 4px', background: '#111', borderRadius: 3, border: `1px solid ${c.border}` }}>{s}</span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
+                        ) : (
+                          <div style={{ padding: '10px 10px 8px' }}>
+                            <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25, marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{build.title}</div>
+                            <div style={{ fontSize: 10, color: c.muted, lineHeight: 1.3, marginBottom: 5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{build.summary}</div>
+                            <div style={{ fontSize: 10, color: isFailed ? '#f87171' : isComplete ? '#34d399' : '#f59e0b', fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14, marginBottom: 8 }}>
+                              {isRunning ? (build.progress < 30 ? 'Thinking…' : build.progress < 60 ? 'Planning…' : 'Building…') : isComplete ? 'Completed' : isFailed ? 'Failed — action required' : statusText}
                             </div>
-                          </>
-                        })()}
+                            <div style={{ display: 'flex', gap: 3 }}>
+                              {[
+                                { label: 'Chat', tab: 'chat' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> },
+                                { label: 'Code', tab: 'code' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> },
+                                { label: 'Think', tab: 'thinking' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> },
+                                { label: 'Revert', tab: 'revert' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> },
+                                { label: 'Preview', tab: 'preview' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> },
+                              ].map(btn => (
+                                <button key={btn.label}
+                                  onClick={(e) => { e.stopPropagation(); setBuildModalTab(btn.tab); setExpandedBuildId(build.id) }}
+                                  title={btn.label}
+                                  style={{ flex: 1, height: 26, borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, transition: 'color 0.15s, border-color 0.15s, background 0.15s' }}
+                                  onMouseEnter={e => { e.currentTarget.style.color = sc; e.currentTarget.style.borderColor = sc; e.currentTarget.style.background = `${sc}10` }}
+                                  onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border; e.currentTarget.style.background = 'transparent' }}
+                                >{btn.icon}</button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
@@ -2902,7 +2858,7 @@ export function Overview() {
 
       {/* BUILD DETAIL MODAL */}
       {expandedBuild && (
-        <div onClick={() => { setExpandedBuildId(null); setChatInput('') }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 60 }}>
+        <div onClick={() => { setExpandedBuildId(null); setChatInput(''); setRevertPending(null); setRevertConfirmed(null) }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 60 }}>
           <div onClick={e => e.stopPropagation()} style={{ width: 'min(860px, 100%)', height: 'min(78vh, 640px)', background: c.panel, border: '1px solid #2a3040', borderRadius: 18, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
             {(() => {
               const sc = skillColor(expandedBuild.build.stack)
@@ -2921,14 +2877,14 @@ export function Overview() {
                         <div style={{ fontSize: 12, color: c.muted }}>{expandedBuild.project.name} · {expandedBuild.build.agent} ({expandedBuild.build.agentRole})</div>
                       </div>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button onClick={() => { setChatOriginBuildId(expandedBuild.build.id); setSelectedChatBuildId(expandedBuild.build.id); setExpandedBuildId(null); setActiveView('chats') }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.green}44`, background: '#151920', color: c.green, padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}>Open in Chats</button>
-                        <button onClick={() => { setExpandedBuildId(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #252a35', background: '#151920', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
+                        <button onClick={() => { setChatOriginBuildId(expandedBuild.build.id); setSelectedChatBuildId(expandedBuild.build.id); setExpandedBuildId(null); setActiveView('chats'); setRevertPending(null); setRevertConfirmed(null) }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.green}44`, background: '#151920', color: c.green, padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}>Open in Chats</button>
+                        <button onClick={() => { setExpandedBuildId(null); setChatInput(''); setRevertPending(null); setRevertConfirmed(null) }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #252a35', background: '#151920', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: 2, background: '#131619', borderRadius: 8, padding: 3, width: 'fit-content', marginBottom: 0 }}>
-                      {(['chat', 'details'] as const).map(tab => (
-                        <button key={tab} onClick={() => setBuildModalTab(tab)} style={{ border: 'none', background: buildModalTab === tab ? '#1e2430' : 'transparent', color: buildModalTab === tab ? '#e8eaed' : c.muted, padding: '6px 16px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', textTransform: 'capitalize' }}>{tab}</button>
+                      {(['chat', 'details', 'code', 'thinking', 'revert', 'preview'] as const).map(tab => (
+                        <button key={tab} onClick={() => setBuildModalTab(tab)} style={{ border: 'none', background: buildModalTab === tab ? '#1e2430' : 'transparent', color: buildModalTab === tab ? '#e8eaed' : c.muted, padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', textTransform: 'capitalize' }}>{tab}</button>
                       ))}
                     </div>
                   </div>
@@ -2943,9 +2899,7 @@ export function Overview() {
                             )}
                             <div style={{ maxWidth: '75%', background: msg.role === 'user' ? '#0f1f18' : c.alt, border: `1px solid ${msg.role === 'user' ? `${c.green}30` : c.border}`, borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px', padding: '10px 14px' }}>
                               {msg.content.split('\n').map((line, li) => {
-                                if (line.startsWith('```')) {
-                                  return null
-                                }
+                                if (line.startsWith('```')) return null
                                 const prevLines = msg.content.split('\n')
                                 const isInCodeBlock = prevLines.slice(0, li).filter(l => l.startsWith('```')).length % 2 === 1
                                 if (isInCodeBlock) {
@@ -3003,7 +2957,7 @@ export function Overview() {
                         </div>
                       </div>
                     </div>
-                  ) : (
+                  ) : buildModalTab === 'details' ? (
                     <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px' }}>
                       <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12, color: c.muted }}>
@@ -3081,7 +3035,171 @@ export function Overview() {
                         )})}
                       </div>
                     </div>
-                  )}
+                  ) : buildModalTab === 'code' ? (() => {
+                    const ctx = (expandedBuild.build.buildContext || 'backend') as string
+                    const snippets = CODE_SNIPPETS[ctx] || CODE_SNIPPETS.backend
+                    return (
+                      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px' }}>
+                        <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
+                          <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 12 }}>CODE CHANGES</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {snippets.map((s, si) => (
+                              <div key={si} style={{ background: '#0a0c10', border: `1px solid ${c.border}`, borderRadius: 8, overflow: 'hidden' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: `1px solid ${c.border}`, background: '#0e1116' }}>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                                  <span style={{ fontSize: 12, color: '#f59e0b', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>{s.file}</span>
+                                </div>
+                                <div style={{ padding: '10px 12px', fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 12, color: '#b0b0b0', lineHeight: 1.7 }}>
+                                  {renderCodeLine(s.code, true)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
+                          <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>BUILD CONTEXT</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {expandedBuild.build.stack.map(s => (
+                              <span key={s} style={{ fontSize: 11, color: '#ccc', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '3px 8px', background: '#111', borderRadius: 6, border: `1px solid ${c.border}` }}>{s}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })() : buildModalTab === 'thinking' ? (
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px' }}>
+                      <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
+                        <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 12 }}>AGENT REASONING</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 999, background: `${sc}20`, border: `1px solid ${sc}44`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={sc} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: 14 }}>{expandedBuild.build.agent}</div>
+                            <div style={{ fontSize: 11, color: c.muted }}>{expandedBuild.build.agentRole}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {[
+                            { phase: 'Analysis', text: `Reading project context and analyzing requirements for "${expandedBuild.build.title}"`, time: `${Math.round(expandedBuild.build.progress * 0.3)}s`, status: 'complete' as const },
+                            { phase: 'Planning', text: `Identified ${(expandedBuild.build.id.charCodeAt(0) % 4) + 2} sub-tasks. Determining optimal execution order and dependencies.`, time: `${Math.round(expandedBuild.build.progress * 0.2)}s`, status: 'complete' as const },
+                            { phase: 'Implementation', text: `Writing code across ${(expandedBuild.build.id.charCodeAt(0) % 5) + 2} files. ${expandedBuild.build.summary}`, time: `${Math.round(expandedBuild.build.progress * 0.7)}s`, status: expandedBuild.build.progress >= 60 ? 'complete' as const : 'running' as const },
+                            { phase: 'Verification', text: 'Running type checks, linting, and validating output against requirements.', time: `${Math.round(expandedBuild.build.progress * 0.4)}s`, status: expandedBuild.build.progress >= 85 ? 'complete' as const : expandedBuild.build.progress >= 60 ? 'running' as const : 'pending' as const },
+                          ].map((step, si) => (
+                            <div key={si} style={{ display: 'flex', gap: 12, padding: '10px 12px', background: '#0a0c10', borderRadius: 8, border: `1px solid ${step.status === 'running' ? `${sc}44` : c.border}` }}>
+                              <div style={{ width: 20, height: 20, borderRadius: 999, background: step.status === 'complete' ? `${sc}20` : step.status === 'running' ? '#f59e0b20' : '#33333320', border: `1px solid ${step.status === 'complete' ? sc : step.status === 'running' ? '#f59e0b' : '#444'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                                {step.status === 'complete' && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={sc} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                {step.status === 'running' && <div style={{ width: 6, height: 6, borderRadius: 999, background: '#f59e0b', animation: 'subtle-glow 1s ease-in-out infinite' }} />}
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: step.status === 'pending' ? '#555' : c.text }}>{step.phase}</span>
+                                  <span style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{step.time}</span>
+                                </div>
+                                <div style={{ fontSize: 11, color: step.status === 'pending' ? '#555' : c.muted, lineHeight: 1.5 }}>{step.text}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
+                        <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>STATUS</div>
+                        <div style={{ fontSize: 13, color: expandedBuild.build.status === 'running' ? '#f59e0b' : expandedBuild.build.status === 'complete' ? sc : '#f87171', fontWeight: 600 }}>
+                          {getInlineStatus(expandedBuild.build)}
+                        </div>
+                      </div>
+                    </div>
+                  ) : buildModalTab === 'revert' ? (
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px' }}>
+                      <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20, textAlign: 'center' }}>
+                        <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 16, textAlign: 'left' }}>REVERT BUILD</div>
+                        <div style={{ width: 56, height: 56, borderRadius: 999, background: '#f59e0b15', border: '1px solid #f59e0b44', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                        </div>
+                        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>{expandedBuild.build.title}</div>
+                        <div style={{ fontSize: 12, color: c.muted, marginBottom: 4 }}>Build version: {expandedBuild.build.id}</div>
+                        <div style={{ fontSize: 12, color: c.muted, marginBottom: 20 }}>Progress at snapshot: {expandedBuild.build.progress}%</div>
+
+                        <div style={{ background: '#0a0c10', border: `1px solid ${c.border}`, borderRadius: 10, padding: 14, marginBottom: 16, textAlign: 'left' }}>
+                          <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>CHANGES IN THIS VERSION</div>
+                          <div style={{ fontSize: 12, color: '#b0b0b0', lineHeight: 1.6 }}>{expandedBuild.build.summary}</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                            {expandedBuild.build.stack.map(s => (
+                              <span key={s} style={{ fontSize: 10, color: '#888', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '2px 6px', background: '#111', borderRadius: 4, border: `1px solid ${c.border}` }}>{s}</span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {revertConfirmed === expandedBuild.build.id ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: sc }}>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              <span style={{ fontWeight: 700, fontSize: 14 }}>Reverted successfully</span>
+                            </div>
+                            <div style={{ fontSize: 11, color: c.muted }}>Build has been rolled back to this version</div>
+                          </div>
+                        ) : revertPending === expandedBuild.build.id ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+                            <div style={{ fontSize: 13, color: '#f87171', fontWeight: 600 }}>Are you sure you want to revert?</div>
+                            <div style={{ fontSize: 11, color: c.muted }}>All changes made after this build version will be lost.</div>
+                            <div style={{ display: 'flex', gap: 10 }}>
+                              <button
+                                onClick={() => { setRevertConfirmed(expandedBuild.build.id); setRevertPending(null) }}
+                                onMouseEnter={e => { e.currentTarget.style.background = '#f87171'; e.currentTarget.style.color = '#000' }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#f87171' }}
+                                style={{ border: '2px solid #f87171', background: 'transparent', color: '#f87171', padding: '8px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: 'all 0.2s ease' }}
+                              >Yes, Revert</button>
+                              <button
+                                onClick={() => setRevertPending(null)}
+                                onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                style={{ border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, padding: '8px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, transition: 'background 0.15s' }}
+                              >Cancel</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+                            <div style={{ fontSize: 11, color: '#f59e0b', marginBottom: 4 }}>This will roll back all changes made after this build version.</div>
+                            <button
+                              onClick={() => setRevertPending(expandedBuild.build.id)}
+                              onMouseEnter={e => { e.currentTarget.style.background = '#f59e0b'; e.currentTarget.style.color = '#000' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#f59e0b' }}
+                              style={{ border: '2px solid #f59e0b', background: 'transparent', color: '#f59e0b', padding: '10px 28px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 700, transition: 'all 0.2s ease' }}
+                            >Revert to this version</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : buildModalTab === 'preview' ? (() => {
+                    const bt = getBuildType(expandedBuild.build.stack, expandedBuild.build.title)
+                    return (
+                      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, width: '100%', marginBottom: 14 }}>
+                          <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 12 }}>BUILD PREVIEW</div>
+                          <div style={{ borderRadius: 8, overflow: 'hidden', border: `1px solid ${c.border}` }}>
+                            <PreviewThumbnail buildId={expandedBuild.build.id} buildType={bt} sc={sc} />
+                          </div>
+                        </div>
+                        <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, width: '100%' }}>
+                          <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>BUILD INFO</div>
+                          <div style={{ display: 'flex', gap: 16 }}>
+                            <div>
+                              <div style={{ fontSize: 11, color: c.muted, marginBottom: 2 }}>Status</div>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: expandedBuild.build.status === 'complete' ? sc : expandedBuild.build.status === 'failed' ? '#f87171' : '#f59e0b', textTransform: 'capitalize' }}>{expandedBuild.build.status}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 11, color: c.muted, marginBottom: 2 }}>Progress</div>
+                              <div style={{ fontSize: 13, fontWeight: 600 }}>{expandedBuild.build.progress}%</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 11, color: c.muted, marginBottom: 2 }}>Agent</div>
+                              <div style={{ fontSize: 13, fontWeight: 600 }}>{expandedBuild.build.agent}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })() : null}
                 </>
               )
             })()}
