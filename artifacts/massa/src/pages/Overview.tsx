@@ -1508,7 +1508,7 @@ export function Overview() {
       )}
 
       {/* 3-COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 0px' : 'minmax(0, 1fr) 260px') : (`${leftNavCollapsed ? '42px' : '180px'} minmax(0, 1fr) ${rightPanelCollapsed ? '0px' : '260px'}`), gap: isMobile ? 12 : (rightPanelCollapsed ? '12px 0px' : 12), minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease, gap 0.3s ease' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 42px' : 'minmax(0, 1fr) 260px') : (`${leftNavCollapsed ? '42px' : '180px'} minmax(0, 1fr) ${rightPanelCollapsed ? '42px' : '260px'}`), gap: isMobile ? 12 : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease' }}>
 
         {/* LEFT SIDEBAR — hidden on mobile/tablet */}
         {isDesktop && <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: leftNavCollapsed ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2, overflow: 'hidden', transition: 'padding 0.3s ease' }}>
@@ -2139,111 +2139,31 @@ export function Overview() {
         </div>
 
         {/* RIGHT PANEL — Live Feed */}
-        {!isMobile && rightPanelCollapsed && (
-          <button
-            onClick={() => setRightPanelCollapsed(false)}
-            style={{
-              position: 'fixed',
-              right: 0,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 40,
-              background: 'linear-gradient(135deg, #0a0f14 0%, #080a0e 100%)',
-              border: `1px solid rgba(52,211,153,0.25)`,
-              borderRight: 'none',
-              borderRadius: '6px 0 0 6px',
-              padding: '18px 10px',
-              cursor: 'pointer',
-              color: '#6ee7b7',
-              fontSize: 11,
-              fontWeight: 700,
-              fontFamily: '"JetBrains Mono", Menlo, monospace',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              transition: 'color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s',
-              letterSpacing: 1.2,
-              writingMode: 'vertical-rl',
-              textOrientation: 'mixed',
-              boxShadow: '0 0 12px rgba(52,211,153,0.1), inset 0 0 8px rgba(52,211,153,0.04)',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.color = '#34d399';
-              e.currentTarget.style.borderColor = 'rgba(52,211,153,0.5)';
-              e.currentTarget.style.background = 'linear-gradient(135deg, #0d1a17 0%, #0a0f14 100%)';
-              e.currentTarget.style.boxShadow = '0 0 20px rgba(52,211,153,0.2), inset 0 0 12px rgba(52,211,153,0.08)';
-              e.currentTarget.style.transform = 'translateY(-50%) scale(1.05)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.color = '#6ee7b7';
-              e.currentTarget.style.borderColor = 'rgba(52,211,153,0.25)';
-              e.currentTarget.style.background = 'linear-gradient(135deg, #0a0f14 0%, #080a0e 100%)';
-              e.currentTarget.style.boxShadow = '0 0 12px rgba(52,211,153,0.1), inset 0 0 8px rgba(52,211,153,0.04)';
-              e.currentTarget.style.transform = 'translateY(-50%)';
-            }}
-            title="Show right panel"
-          >
-            <span style={{ fontSize: 18, writingMode: 'horizontal-tb', lineHeight: 1 }}>‹</span>
-            <span style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>FEED</span>
-          </button>
-        )}
         {isMobile ? null :
         <div style={{
-          border: rightPanelCollapsed ? 'none' : `1px solid #1e2330`,
-          background: rightPanelCollapsed ? 'transparent' : '#0a0d10',
-          padding: rightPanelCollapsed ? 0 : 14,
+          border: `1px solid #1e2330`,
+          background: '#0a0d10',
+          padding: rightPanelCollapsed ? '12px 4px' : 14,
           display: 'flex',
           flexDirection: 'column',
-          gap: 18,
+          gap: rightPanelCollapsed ? 0 : 18,
           overflow: 'hidden',
           borderRadius: 2,
           position: 'relative',
-          opacity: rightPanelCollapsed ? 0 : 1,
-          transition: 'opacity 0.3s ease, padding 0.3s ease',
-          pointerEvents: rightPanelCollapsed ? 'none' : 'auto',
+          transition: 'padding 0.3s ease, gap 0.3s ease',
         }}>
-          <button
-            onClick={() => setRightPanelCollapsed(true)}
-            style={{
-              background: '#080a0e',
-              border: '1px solid #1e2330',
-              borderRadius: 4,
-              padding: '5px 10px',
-              cursor: 'pointer',
-              color: '#9ca3af',
-              fontSize: 10,
-              fontWeight: 700,
-              fontFamily: '"JetBrains Mono", Menlo, monospace',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-              lineHeight: 1,
-              transition: 'background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s',
-              alignSelf: 'flex-end',
-              marginBottom: -4,
-              letterSpacing: 1,
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#0d1a17';
-              e.currentTarget.style.color = '#34d399';
-              e.currentTarget.style.borderColor = 'rgba(52,211,153,0.3)';
-              e.currentTarget.style.boxShadow = '0 0 10px rgba(52,211,153,0.12)';
-              e.currentTarget.style.transform = 'scale(1.04)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#080a0e';
-              e.currentTarget.style.color = '#9ca3af';
-              e.currentTarget.style.borderColor = '#1e2330';
-              e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-            title="Collapse right panel"
-          >
-            HIDE <span style={{ fontSize: 12 }}>›</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: rightPanelCollapsed ? 'center' : 'space-between', marginBottom: rightPanelCollapsed ? 0 : -4 }}>
+            {!rightPanelCollapsed && <span className="panel-header" style={{ color: '#9ca3af' }}>LIVE FEED</span>}
+            <button
+              onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
+              title={rightPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
+              style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
+            ><span style={{ display: 'inline-block', transform: rightPanelCollapsed ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>»</span></button>
+          </div>
 
+          {!rightPanelCollapsed && <>
           {/* Ready Builds KPI */}
           <div style={{ border: `1px solid #1e2330`, background: '#080a0e', borderRadius: 6, padding: 12 }}>
             {sectionHeader('READY BUILDS', 'readyBuilds')}
@@ -2465,6 +2385,7 @@ export function Overview() {
               </div>
             )}
           </div>
+        </>}
         </div>}
         </>}
       </div>
