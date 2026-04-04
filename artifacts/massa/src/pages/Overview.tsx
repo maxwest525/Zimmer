@@ -1975,52 +1975,104 @@ export function Overview() {
               .sort((a, b) => (actionPriority[a.action.type] ?? 5) - (actionPriority[b.action.type] ?? 5))
             const visibleSorted = sorted.filter(item => !dismissedActionKeys.has(`${item.id}:${item.action.type}`))
 
+            const dismissItem = (itemId: string, actionType: string, el: HTMLElement | null) => {
+              if (el) {
+                el.style.maxHeight = '0px'
+                el.style.opacity = '0'
+                el.style.padding = '0 12px'
+                el.style.marginTop = '0px'
+                el.style.borderColor = 'transparent'
+                setTimeout(() => {
+                  setDismissedActionKeys(prev => new Set(prev).add(`${itemId}:${actionType}`))
+                }, 280)
+              } else {
+                setDismissedActionKeys(prev => new Set(prev).add(`${itemId}:${actionType}`))
+              }
+            }
+
             return (
-              <div>
-                {sectionHeader('ACTION REQUIRED', 'actionRequired', visibleSorted.length > 0 ? <span style={{ fontSize: 9, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{visibleSorted.length}</span> : undefined)}
-                {!collapsedSections.actionRequired && (
-                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 6 * 58, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#1e293b #080a0e' }}>
-                    {visibleSorted.length === 0 ? (
-                      <div style={{ background: '#080a0e', border: '1px solid #1e2330', borderRadius: 4, padding: '14px 12px', textAlign: 'center' }}>
-                        <span style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>✓ All clear</span>
-                        <div className="panel-header" style={{ color: '#9ca3af', fontSize: 8, marginTop: 4 }}>NO BUILDS NEED ATTENTION</div>
-                      </div>
-                    ) : (
-                      visibleSorted.map(item => (
-                        <div
-                          key={item.id}
-                          data-action-item
-                          style={{ background: '#080a0e', border: '1px solid #1e2330', borderRadius: 4, padding: '10px 12px', transition: 'all 0.3s ease', overflow: 'hidden', maxHeight: 80, opacity: 1 }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.3 }}>{item.projectName}</div>
-                              <div style={{ fontSize: 10, color: '#9ca3af', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.3, marginTop: 3 }}>{item.title}</div>
-                            </div>
-                            <button
-                              onClick={() => { setBuildModalTab(item.action.tab); setExpandedBuildId(item.id) }}
-                              onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
-                              onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.color = '#9ca3af' }}
-                              style={{
-                                fontSize: 9,
-                                fontWeight: 600,
-                                color: '#9ca3af',
-                                background: '#0c0f14',
-                                border: '1px solid #1e2330',
-                                borderRadius: 4,
-                                padding: '4px 10px',
-                                fontFamily: '"JetBrains Mono", Menlo, monospace',
-                                whiteSpace: 'nowrap',
-                                cursor: 'pointer',
-                                transition: 'all 0.15s ease',
-                                flexShrink: 0,
-                              }}>{item.action.label}</button>
-                          </div>
-                        </div>
-                      ))
-                    )}
+              <div style={{ border: '1px solid #1e2330', borderRadius: 4, background: '#080a0e', overflow: 'hidden' }}>
+                <div style={{ padding: '8px 12px', borderBottom: '1px solid #1e2330', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span className="panel-header" style={{ fontSize: 9, letterSpacing: 1.2 }}>ACTION REQUIRED</span>
+                    {visibleSorted.length > 0 && <span style={{ fontSize: 9, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{visibleSorted.length}</span>}
                   </div>
-                )}
+                </div>
+                <div style={{ maxHeight: 6 * 50, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#1e293b #080a0e' }}>
+                  {visibleSorted.length === 0 ? (
+                    <div style={{ padding: '16px 12px', textAlign: 'center' }}>
+                      <span style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>✓ All clear</span>
+                      <div className="panel-header" style={{ color: '#6b7280', fontSize: 8, marginTop: 4 }}>NO ACTIONS PENDING</div>
+                    </div>
+                  ) : (
+                    visibleSorted.map((item, idx) => (
+                      <div
+                        key={item.id}
+                        data-action-item
+                        data-action-key={`${item.id}:${item.action.type}`}
+                        style={{
+                          padding: '8px 12px',
+                          borderTop: idx > 0 ? '1px solid #14181e' : 'none',
+                          transition: 'all 0.25s ease',
+                          overflow: 'hidden',
+                          maxHeight: 60,
+                          opacity: 1,
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4 }}>{item.projectName}</div>
+                            <div style={{ fontSize: 9, color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2 }}>{item.title}</div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const el = document.querySelector(`[data-action-item][data-action-key="${item.id}:${item.action.type}"]`) as HTMLElement
+                              setBuildModalTab(item.action.tab)
+                              setExpandedBuildId(item.id)
+                              dismissItem(item.id, item.action.type, el)
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.color = '#9ca3af' }}
+                            style={{
+                              fontSize: 9,
+                              fontWeight: 600,
+                              color: '#9ca3af',
+                              background: '#0c0f14',
+                              border: '1px solid #1e2330',
+                              borderRadius: 4,
+                              padding: '4px 10px',
+                              fontFamily: '"JetBrains Mono", Menlo, monospace',
+                              whiteSpace: 'nowrap',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              flexShrink: 0,
+                            }}>{item.action.label}</button>
+                          <button
+                            onClick={(e) => {
+                              const el = e.currentTarget.closest('[data-action-item]') as HTMLElement
+                              dismissItem(item.id, item.action.type, el)
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.color = '#e8eaed')}
+                            onMouseLeave={e => (e.currentTarget.style.color = '#4b5563')}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#4b5563',
+                              cursor: 'pointer',
+                              fontSize: 11,
+                              fontFamily: '"JetBrains Mono", Menlo, monospace',
+                              padding: '0 2px',
+                              lineHeight: 1,
+                              transition: 'color 0.15s',
+                              flexShrink: 0,
+                            }}
+                            title="Dismiss"
+                          >✕</button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             )
           })()}
