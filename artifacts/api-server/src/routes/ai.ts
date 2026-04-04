@@ -106,4 +106,39 @@ Ask about things like: target platform, primary user, core feature priority, dat
   }
 });
 
+router.post("/ai/enhance-prompt", async (req, res) => {
+  const { content } = req.body;
+  if (!content || typeof content !== "string" || content.trim().length < 3) {
+    return res.json({ prompt: content || "" });
+  }
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      max_completion_tokens: 250,
+      messages: [
+        {
+          role: "system",
+          content: `You take a rough idea and turn it into a slightly more detailed, actionable prompt for an AI coding assistant. Keep it concise — add a sentence or two of useful specificity without overcomplicating things.
+
+Rules:
+- Preserve the original intent completely
+- Add just enough detail to make it actionable (target platform, key features, data handling)
+- Write it as a direct instruction to an AI builder, starting with "Build" or a clear verb
+- Stay under 200 characters total
+- Do NOT add tech stack, architecture, or framework choices
+- Do NOT add bullet points or numbered lists
+- Return ONLY the enhanced prompt text, nothing else`,
+        },
+        { role: "user", content: content.trim() },
+      ],
+    });
+
+    const enhanced = completion.choices[0]?.message?.content?.trim() || content;
+    res.json({ prompt: enhanced });
+  } catch {
+    res.json({ prompt: content });
+  }
+});
+
 export default router;

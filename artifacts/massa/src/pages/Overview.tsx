@@ -922,6 +922,7 @@ export function Overview() {
   const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [chatOriginBuildId, setChatOriginBuildId] = useState<string | null>(null)
+  const [enhancingId, setEnhancingId] = useState<number | null>(null)
   const [, navigate] = useLocation()
   const [typedPlaceholder, setTypedPlaceholder] = useState('')
   const [showSuggestionsTooltip, setShowSuggestionsTooltip] = useState(false)
@@ -1504,7 +1505,19 @@ export function Overview() {
           </div>
         ) : activeView === 'ideas' ? (
           <div style={{ gridColumn: isDesktop ? '2 / -1' : '1 / -1', border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
-            <IdeasView onTurnIntoPrompt={(content) => { setRawInput(content); setActiveView('dashboard') }} />
+            <IdeasView enhancingId={enhancingId} onTurnIntoPrompt={async (content, ideaId) => {
+              setEnhancingId(ideaId)
+              try {
+                const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) })
+                const data = await res.json()
+                setRawInput(data.prompt || content)
+              } catch {
+                setRawInput(content)
+              } finally {
+                setEnhancingId(null)
+                setActiveView('dashboard')
+              }
+            }} />
           </div>
         ) : <>
         {/* CENTER MAIN */}

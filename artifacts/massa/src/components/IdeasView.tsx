@@ -34,7 +34,7 @@ const c = {
   font: '"JetBrains Mono", Menlo, monospace',
 }
 
-export function IdeasView({ onTurnIntoPrompt }: { onTurnIntoPrompt?: (content: string) => void }) {
+export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?: (content: string, ideaId: number) => void; enhancingId?: number | null }) {
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [loading, setLoading] = useState(true)
   const [inputValue, setInputValue] = useState('')
@@ -445,13 +445,14 @@ export function IdeasView({ onTurnIntoPrompt }: { onTurnIntoPrompt?: (content: s
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
                       {onTurnIntoPrompt && (
                         <button
-                          onClick={(e) => { e.stopPropagation(); onTurnIntoPrompt(idea.content) }}
-                          style={{ background: 'none', border: 'none', color: c.green, fontSize: 10, fontFamily: c.font, cursor: 'pointer', opacity: 0.7, padding: '2px 6px', transition: 'opacity 0.15s' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
+                          onClick={(e) => { e.stopPropagation(); onTurnIntoPrompt(idea.content, idea.id) }}
+                          disabled={enhancingId === idea.id}
+                          style={{ background: 'none', border: 'none', color: c.green, fontSize: 10, fontFamily: c.font, cursor: enhancingId === idea.id ? 'wait' : 'pointer', opacity: enhancingId === idea.id ? 1 : 0.7, padding: '2px 6px', transition: 'opacity 0.15s' }}
+                          onMouseEnter={e => { if (enhancingId !== idea.id) (e.currentTarget as HTMLElement).style.opacity = '1' }}
+                          onMouseLeave={e => { if (enhancingId !== idea.id) (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                           title="Turn into Prompt"
                         >
-                          {'>'} prompt
+                          {enhancingId === idea.id ? '...' : '>'} prompt
                         </button>
                       )}
                       <button
