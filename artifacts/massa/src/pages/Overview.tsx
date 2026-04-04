@@ -702,6 +702,53 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
   )
 }
 
+function Ticker<T extends { key: string }>({ lines, render }: { lines: T[]; render: (item: T) => React.ReactNode }) {
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    if (lines.length <= 1) return
+    const t = setInterval(() => setIdx(i => (i + 1) % lines.length), 3200)
+    return () => clearInterval(t)
+  }, [lines.length])
+  if (lines.length === 0) return null
+  return <>{render(lines[idx % lines.length])}</>
+}
+
+function getThinkingLines(builds: Build[]): { key: string; agent: string; text: string }[] {
+  return builds
+    .filter(b => b.status === 'running')
+    .map(b => ({
+      key: b.id,
+      agent: b.agent,
+      text: getInlineStatus(b),
+    }))
+}
+
+const CODE_SNIPPETS: Record<string, { file: string; code: string }[]> = {
+  backend: [
+    { file: 'src/api/client.ts:88', code: 'const res = await fetch(`${B...' },
+    { file: 'src/core/service.ts:43', code: 'const result = await this.repository.findById(...' },
+    { file: 'src/db/schema.ts:5', code: 'export const records = pgTable("records", { id:...' },
+  ],
+  ui: [
+    { file: 'src/components/Chart.tsx:12', code: 'return <ResponsiveContainer width="100%"...' },
+    { file: 'src/pages/Dashboard.tsx:8', code: 'const [data, setData] = useState<Item[]>([])' },
+    { file: 'src/lib/theme.ts:3', code: 'export const colors = { primary: "#34d399"...' },
+  ],
+  automation: [
+    { file: 'src/workflows/notify.ts:15', code: 'await slack.send({ channel, text: alert })' },
+    { file: 'src/jobs/scheduler.ts:22', code: 'cron.schedule("0 */6 * * *", async () => {' },
+  ],
+}
+
+function getCodeStreamLines(builds: Build[]): { key: string; file: string; code: string }[] {
+  return builds.map(b => {
+    const ctx = (b.buildContext || 'backend') as string
+    const snippets = CODE_SNIPPETS[ctx] || CODE_SNIPPETS.backend
+    const snippet = snippets[Math.abs(b.id.charCodeAt(0)) % snippets.length]
+    return { key: b.id, file: snippet.file, code: snippet.code }
+  })
+}
+
 function getInlineStatus(build: { id: string; status: Status; progress: number; title: string; stack: string[] }): string {
   if (build.status === 'running') {
     if (build.progress < 30) return `Analyzing ${build.title.toLowerCase()}...`
@@ -901,6 +948,7 @@ export function Overview() {
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
+  const [pendingDropdown, setPendingDropdown] = useState<string | null>(null)
   const [archTab, setArchTab] = useState<'tree' | 'graph' | 'timeline'>('tree')
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const panelWasCollapsedBeforeSuggestions = useRef(false)
@@ -1385,6 +1433,7 @@ export function Overview() {
   return (
     <div style={{ minHeight: '100vh', background: c.bg, color: c.text, fontFamily: 'Inter, Arial, sans-serif', padding: 16 }}>
       <style>{`
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes phase-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
         @keyframes terminal-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes subtle-glow { 0%,100%{box-shadow: 0 0 4px rgba(52,211,153,0.15)} 50%{box-shadow: 0 0 8px rgba(52,211,153,0.25)} }
@@ -1778,218 +1827,105 @@ export function Overview() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
             {filteredProjects.map((project, pi) => {
               const isSel = selectedProjectId === project.id
-              const buildCards = (column: boolean, wrap = false) => (
-                <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 16, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { paddingBottom: 6 }) }}>
-                  {project.builds.map((build) => {
-                    const sc = skillColor(build.stack)
-                    const ps = primarySkill(build.stack)
-                    const isRunning = build.status === 'running'
-                    const isFailed = build.status === 'failed'
-                    const isComplete = build.status === 'complete'
-                    const isDragging = draggedBuild?.buildId === build.id
-                    const isDragOver = dragOverId === build.id && draggedBuild?.buildId !== build.id
-                    const bt = getBuildType(build.stack, build.title)
-                    const statusText = getInlineStatus(build)
+              const thinkingLines = getThinkingLines(project.builds)
+              const codeStreamLines = getCodeStreamLines(project.builds)
+              const pendingBuilds = project.builds.filter(b => b.status !== 'complete')
+              const isPendingOpen = pendingDropdown === project.id
 
-                    return (
-                      <div key={build.id} draggable onDragStart={() => handleDragStart(build.id, project.id)} onDragOver={e => handleDragOver(e, build.id)} onDrop={e => handleDrop(e, build.id, project.id)} onDragEnd={handleDragEnd}
-                        onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(build.id) }}
-                        style={{ ...(column ? { width: '100%' } : { minWidth: 176, maxWidth: 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : isComplete ? `${sc}30` : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s' }}>
-
-
-                        {column ? (
-                          <>
-                            <div style={{ width: 50, flexShrink: 0, padding: 8, position: 'relative' }}>
-                              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: sc, borderRadius: '12px 0 0 12px' }} />
-                              <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} size="mini" />
-                            </div>
-                            <div style={{ flex: 1, padding: '8px 10px 8px 4px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                                  <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
-                                </div>
-                                <div style={{ fontSize: 10, color: isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
-                                <div style={{ width: 80, height: 3, background: isDark ? '#131619' : '#dfe8de', borderRadius: 999, overflow: 'hidden' }}>
-                                  <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                                </div>
-                                <span style={{ fontSize: 10, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
-                              </div>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setChatOriginBuildId(null); setActiveView('chats') }}
-                                title="Open chat"
-                                style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
-                                onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
-                                onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
-                              >💬</button>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
-                            <div style={{ padding: '8px 10px 10px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 4 }}>
-                                <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setChatOriginBuildId(null); setActiveView('chats') }}
-                                    title="Open chat"
-                                    style={{ width: 20, height: 20, borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, flexShrink: 0, padding: 0, transition: 'color 0.15s, border-color 0.15s' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
-                                  >💬</button>
-                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
-                                </div>
-                              </div>
-                              <div style={{ height: 3, background: isDark ? '#131619' : '#dfe8de', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
-                                <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                              </div>
-                              <div style={{ fontSize: 10, color: isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>{statusText}</div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )
-                  })}
-
-                  {/* Add agent / New task */}
-                  <div style={{ ...(column ? { width: '100%', height: 80, flexDirection: 'row' } : { minWidth: 140, height: 148, flexDirection: 'column', flexShrink: 0 }), border: `1px dashed ${c.border}`, borderRadius: 12, display: 'flex', overflow: 'hidden', background: 'transparent' }}>
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', transition: 'background 0.15s', borderRight: column ? 'none' : `1px dashed ${c.border}`, borderBottom: column ? `1px dashed ${c.border}` : 'none' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ fontSize: 18, color: '#777', lineHeight: 1 }}>+</div>
-                      </div>
-                      <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>Add Agent</div>
-                    </div>
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', transition: 'background 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ fontSize: 18, color: '#777', lineHeight: 1 }}>+</div>
-                      </div>
-                      <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>New Task</div>
-                    </div>
-                  </div>
-                </div>
-              )
+              const statusDotColor = (s: Status) =>
+                s === 'running' ? '#22c55e' : s === 'failed' ? '#ef4444' : s === 'complete' ? '#34d399' : '#555'
 
               return (
-                <div key={project.id}>
-                  {viewMode === 'row' ? (
-                    /* ── ROW VIEW (default) ── */
-                    <div
-                      style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '220px minmax(0, 1fr)', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: isMobile ? 10 : 14, background: c.alt, overflow: 'hidden' }}>
+                <div key={project.id}
+                  onClick={() => setSelectedProjectId(project.id)}
+                  style={{ border: `1px solid ${c.border}`, borderRadius: 10, padding: '14px 14px 12px', background: c.alt, cursor: 'pointer', position: 'relative', overflow: 'visible' }}>
 
-                      <div onClick={() => setSelectedProjectId(project.id)} style={{ background: isSel ? c.blackGreen : 'transparent', borderRadius: 8, padding: '12px 12px 12px 0', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: isSel ? `${c.green}88` : 'transparent', borderRadius: '8px 0 0 8px' }} />
-                        <div style={{ paddingLeft: 16 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                            <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: 0.1, color: '#e8eaed' }}>{project.name}</div>
-                          </div>
+                  <div style={{ fontWeight: 700, fontSize: 17, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>
+                    {project.name}
+                  </div>
 
-                          <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
-                            {project.builds.slice(0, 5).map(b => {
-                              const sc = skillColor(b.stack)
-                              const bt = getBuildType(b.stack, b.title)
-                              return <PreviewThumbnail key={b.id} buildId={b.id} buildType={bt} sc={sc} size="mini" />
-                            })}
-                            {project.builds.length > 5 && <div style={{ width: 40, height: 28, borderRadius: 4, background: `${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: c.muted, fontWeight: 600 }}>+{project.builds.length - 5}</div>}
-                          </div>
+                  <div style={{ fontSize: 12, color: '#666', lineHeight: 1.4, marginBottom: 10 }}>
+                    {project.goal}
+                  </div>
 
-                          <div style={{ fontSize: 10, color: c.muted, marginBottom: 10 }}>
-                            {project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done · {project.builds.filter(b => b.status === 'running').length} active
-                          </div>
-
-                          <div style={{ display: 'flex', gap: 4 }}>
-                            <button onClick={(e) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }}
-                              onMouseEnter={() => setHoveredArchBtn(project.id + '-chat')}
-                              onMouseLeave={() => setHoveredArchBtn(null)}
-                              style={{ flex: 1, border: `1px solid #1e2330`, background: hoveredArchBtn === project.id + '-chat' ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '6px 8px', borderRadius: 4, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
-                              Chat
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                              onMouseEnter={() => setHoveredArchBtn(project.id)}
-                              onMouseLeave={() => setHoveredArchBtn(null)}
-                              style={{ flex: 1, border: `1px solid #1e2330`, background: hoveredArchBtn === project.id ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '6px 8px', borderRadius: 4, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
-                              Arch Map
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }}
-                              onMouseEnter={() => setHoveredArchBtn(project.id + '-preview')}
-                              onMouseLeave={() => setHoveredArchBtn(null)}
-                              style={{ flex: 1, border: `1px solid #1e2330`, background: hoveredArchBtn === project.id + '-preview' ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '6px 8px', borderRadius: 4, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
-                              Preview
-                            </button>
-                          </div>
-
-                          <div style={{ display: 'flex', flexDirection: 'column', border: `1px dashed ${c.border}`, borderRadius: 8, overflow: 'hidden', marginTop: 8, background: 'transparent' }}>
-                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', transition: 'background 0.15s', padding: '7px 10px', borderBottom: `1px dashed ${c.border}` }}
-                              onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
-                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                              <div style={{ width: 24, height: 24, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <div style={{ fontSize: 13, color: '#777', lineHeight: 1 }}>+</div>
-                              </div>
-                              <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>Add Agent</div>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', transition: 'background 0.15s', padding: '7px 10px' }}
-                              onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
-                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                              <div style={{ width: 24, height: 24, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <div style={{ fontSize: 13, color: '#777', lineHeight: 1 }}>+</div>
-                              </div>
-                              <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>New Task</div>
-                            </div>
-                          </div>
-                        </div>
+                  {thinkingLines.length > 0 && (
+                    <Ticker lines={thinkingLines} render={(line) => (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 4 }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', flexShrink: 0, animation: 'pulse 2s ease-in-out infinite' }} />
+                        <span style={{ fontSize: 11, color: '#22c55e88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.agent}</span>
+                        <span style={{ fontSize: 11, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.text}</span>
                       </div>
-
-                      {/* Builds strip (horizontal scroll) */}
-                      <div style={{ minWidth: 0 }}>
-                        <div className="panel-header" style={{ color: '#9ca3af', marginBottom: 7, fontSize: 9 }}>BUILDS</div>
-                        <ScrollableBuildStrip arrowColor={c.muted} borderColor={c.border}>
-                          {buildCards(false)}
-                        </ScrollableBuildStrip>
-                      </div>
-                    </div>
-                  ) : (
-                    /* ── CARD VIEW ── */
-                    <div onClick={() => setSelectedProjectId(project.id)}
-                      style={{ border: `1px solid ${isSel ? c.green : c.border}`, borderRadius: 12, padding: 16, cursor: 'pointer', background: isSel ? c.blackGreen : c.alt, position: 'relative', overflow: 'hidden' }}>
-                      {/* Left accent */}
-                      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: isSel ? c.green : 'transparent', borderRadius: '12px 0 0 12px' }} />
-
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: 0.1, color: '#e8eaed' }}>{project.name}</div>
-                          {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
-                          <span style={{ fontSize: 10, color: c.muted }}>{project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          <button onClick={(e) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }}
-                            onMouseEnter={() => setHoveredArchBtn(project.id + '-card-chat')}
-                            onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ border: `1px solid #1e2330`, background: hoveredArchBtn === project.id + '-card-chat' ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
-                            Chat
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
-                            onMouseEnter={() => setHoveredArchBtn(project.id + '-card')}
-                            onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ border: `1px solid #1e2330`, background: hoveredArchBtn === project.id + '-card' ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
-                            Arch Map
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }}
-                            onMouseEnter={() => setHoveredArchBtn(project.id + '-card-preview')}
-                            onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ border: `1px solid #1e2330`, background: hoveredArchBtn === project.id + '-card-preview' ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
-                            Preview
-                          </button>
-                        </div>
-                      </div>
-                      {buildCards(false, true)}
-                    </div>
+                    )} />
                   )}
+
+                  {codeStreamLines.length > 0 && (
+                    <Ticker lines={codeStreamLines} render={(line) => (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>›</span>
+                        <span style={{ fontSize: 11, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.file}</span>
+                        <span style={{ fontSize: 11, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.code}</span>
+                      </div>
+                    )} />
+                  )}
+
+                  <div style={{ marginBottom: 8, position: 'relative' }}>
+                    <div
+                      onClick={(e) => { e.stopPropagation(); setPendingDropdown(isPendingOpen ? null : project.id) }}
+                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderRadius: 4, cursor: 'pointer', background: '#080808', border: `1px solid ${c.border}` }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: pendingBuilds.length > 0 ? '#22c55e' : '#555' }} />
+                        <span style={{ fontSize: 12, color: '#999', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                          {pendingBuilds.length} pending
+                        </span>
+                      </div>
+                      {pendingBuilds.length > 0 && (
+                        <span style={{ fontSize: 10, color: '#444', transform: isPendingOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>▾</span>
+                      )}
+                    </div>
+
+                    {isPendingOpen && pendingBuilds.length > 0 && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 3, background: '#0c0c0c', border: `1px solid ${c.border}`, borderRadius: 5, padding: '2px 0', zIndex: 20, boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
+                        {pendingBuilds.map((b, i) => (
+                          <div key={b.id}
+                            onClick={(e) => { e.stopPropagation(); setBuildModalTab('chat'); setExpandedBuildId(b.id) }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', cursor: 'pointer', borderTop: i > 0 ? '1px solid #1a1a1a' : 'none' }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#151920'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            <div style={{ width: 5, height: 5, borderRadius: '50%', background: statusDotColor(b.status), animation: b.status === 'running' ? 'pulse 2s ease-in-out infinite' : 'none' }} />
+                            <span style={{ flex: 1, fontSize: 11, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.title}</span>
+                            <span style={{ fontSize: 9, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: '#111', borderRadius: 3 }}>{b.status}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 4, marginBottom: 5 }}>
+                    {[
+                      { label: 'Chat', onClick: (e: React.MouseEvent) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }, hk: project.id + '-chat' },
+                      { label: 'Arch Map', onClick: (e: React.MouseEvent) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }, hk: project.id + '-arch' },
+                      { label: 'Preview', onClick: (e: React.MouseEvent) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }, hk: project.id + '-preview' },
+                    ].map(btn => (
+                      <button key={btn.label}
+                        onClick={btn.onClick}
+                        onMouseEnter={() => setHoveredArchBtn(btn.hk)}
+                        onMouseLeave={() => setHoveredArchBtn(null)}
+                        style={{ flex: 1, padding: '5px 0', borderRadius: 4, background: hoveredArchBtn === btn.hk ? '#0f1215' : 'transparent', border: `1px solid ${c.border}`, color: hoveredArchBtn === btn.hk ? '#ccc' : '#666', fontSize: 11, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s' }}>
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {['+ Agent', '+ Task'].map(label => (
+                      <div key={label}
+                        style={{ flex: 1, textAlign: 'center', padding: '5px 0', borderRadius: 4, border: `1px dashed ${c.border}`, fontSize: 10, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        {label}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )
             })}
