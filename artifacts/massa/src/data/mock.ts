@@ -27,6 +27,7 @@ export interface ActivityItem {
   sublabel?: string;
   status: ActivityStatus;
   timestamp: string;
+  cardId?: string;
 }
 
 export const PROJECTS: Project[] = [
@@ -151,13 +152,13 @@ export const PROJECT_ACTIVITY: Record<string, ActivityItem[]> = {
   p1: [
     { id: "a1", label: "Building backend logic", sublabel: "Trading Bot Backend", status: "running", timestamp: "now" },
     { id: "a2", label: "Generating dashboard layout", sublabel: "Dashboard UI", status: "running", timestamp: "now" },
-    { id: "a3", label: "Alert automation queued", sublabel: "Alert Automation", status: "waiting", timestamp: "just now" },
+    { id: "a3", label: "Alert automation queued", sublabel: "Alert Automation", status: "waiting", timestamp: "just now", cardId: "ec3" },
     { id: "a4", label: "Data connection complete", sublabel: "Data Connection Setup", status: "completed", timestamp: "22m ago" },
     { id: "a5", label: "Routing automation workflow", sublabel: "n8n trigger config", status: "completed", timestamp: "25m ago" },
     { id: "a6", label: "Build packet initialized", sublabel: "Trading Platform", status: "completed", timestamp: "26m ago" },
   ],
   p2: [
-    { id: "a7", label: "Chart component needs review", sublabel: "Chart Component Library", status: "waiting", timestamp: "5m ago" },
+    { id: "a7", label: "Chart component ready", sublabel: "Chart Component Library", status: "waiting", timestamp: "5m ago", cardId: "ec6" },
     { id: "a8", label: "Metrics aggregation complete", sublabel: "Metrics Aggregation", status: "completed", timestamp: "1h ago" },
     { id: "a9", label: "API schema generated", sublabel: "Analytics Dashboard", status: "completed", timestamp: "1h ago" },
     { id: "a10", label: "Build packet completed", sublabel: "Analytics Dashboard", status: "completed", timestamp: "2h ago" },

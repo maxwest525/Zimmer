@@ -7,9 +7,10 @@ interface WorkspaceHeaderProps {
   project: Project;
   onOpenActivity?: () => void;
   activityCount?: number;
+  onStatusClick?: () => void;
 }
 
-function StatusPill({ status }: { status: ProjectStatus }) {
+function StatusPill({ status, onClick }: { status: ProjectStatus; onClick?: () => void }) {
   const config: Record<ProjectStatus, { label: string; className: string; icon: React.ReactNode }> = {
     running: {
       label: "Running",
@@ -17,7 +18,7 @@ function StatusPill({ status }: { status: ProjectStatus }) {
       icon: <Loader2 className="w-3 h-3 animate-spin" />,
     },
     "needs-review": {
-      label: "Needs Review",
+      label: "Response Ready",
       className: "bg-amber-500/10 text-amber-400 border-amber-500/20",
       icon: <AlertCircle className="w-3 h-3" />,
     },
@@ -33,20 +34,24 @@ function StatusPill({ status }: { status: ProjectStatus }) {
     },
   };
   const { label, className, icon } = config[status];
+  const isClickable = status === "needs-review" && onClick;
+  const Tag = isClickable ? "button" : "span";
   return (
-    <span
+    <Tag
+      onClick={isClickable ? onClick : undefined}
       className={cn(
         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border",
-        className
+        className,
+        isClickable && "cursor-pointer hover:bg-amber-500/20 transition-colors"
       )}
     >
       {icon}
       {label}
-    </span>
+    </Tag>
   );
 }
 
-export function WorkspaceHeader({ project, onOpenActivity, activityCount = 0 }: WorkspaceHeaderProps) {
+export function WorkspaceHeader({ project, onOpenActivity, activityCount = 0, onStatusClick }: WorkspaceHeaderProps) {
   const [, navigate] = useLocation();
 
   return (
@@ -62,7 +67,7 @@ export function WorkspaceHeader({ project, onOpenActivity, activityCount = 0 }: 
         </button>
         <span className="text-muted-foreground/50 text-sm">/</span>
         <h1 className="text-base font-semibold text-foreground">{project.name}</h1>
-        <StatusPill status={project.status} />
+        <StatusPill status={project.status} onClick={onStatusClick} />
       </div>
       <div className="flex items-center gap-1">
         {onOpenActivity && (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { WorkspaceHeader } from "@/components/WorkspaceHeader";
 import { ProjectTabs } from "@/components/ProjectTabs";
@@ -23,13 +23,15 @@ function timestampToSortKey(ts: string): number {
   return 999999;
 }
 
-function buildGlobalActivity(openProjectIds: string[]): (ActivityItem & { projectName?: string })[] {
-  const items: (ActivityItem & { projectName?: string })[] = [];
+type EnrichedActivityItem = ActivityItem & { projectName?: string; projectId?: string };
+
+function buildGlobalActivity(openProjectIds: string[]): EnrichedActivityItem[] {
+  const items: EnrichedActivityItem[] = [];
   for (const projectId of openProjectIds) {
     const project = PROJECTS.find((p) => p.id === projectId);
     const projectActivity = PROJECT_ACTIVITY[projectId] ?? [];
     for (const item of projectActivity) {
-      items.push({ ...item, projectName: project?.name });
+      items.push({ ...item, projectName: project?.name, projectId });
     }
   }
   const statusOrder: Record<string, number> = { running: 0, waiting: 1, failed: 2, completed: 3 };
@@ -51,6 +53,18 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
   const [activeProjectId, setActiveProjectId] = useState(defaultIds[0]);
   const [activeTab, setActiveTab] = useState<Tab>("canvas");
   const [activityOpen, setActivityOpen] = useState(false);
+  const [highlightedCardId, setHighlightedCardId] = useState<string | null>(null);
+
+  const scrollToCard = useCallback((cardId: string) => {
+    setHighlightedCardId(cardId);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`card-${cardId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+    setTimeout(() => setHighlightedCardId(null), 3000);
+  }, []);
 
   useEffect(() => {
     if (!initialProjectId) return;
@@ -60,6 +74,15 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
     });
     setActiveProjectId(initialProjectId);
   }, [initialProjectId]);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith("#card-")) {
+      const cardId = hash.replace("#card-", "");
+      setTimeout(() => scrollToCard(cardId), 300);
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [initialProjectId, scrollToCard]);
 
   const openProjects = openProjectIds.map((id) => PROJECTS.find((p) => p.id === id)!).filter(Boolean);
 
@@ -119,6 +142,10 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
           project={activeProject}
           onOpenActivity={() => setActivityOpen(true)}
           activityCount={runningCount}
+          onStatusClick={activeProject.status === "needs-review" ? () => {
+            const reviewCard = cards.find((c) => c.status === "needs-review");
+            if (reviewCard) scrollToCard(reviewCard.id);
+          } : undefined}
         />
         <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} />
         <div className="shrink-0">
@@ -127,7 +154,11 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
 
         {/* Independently scrolling execution cards region */}
         <div className="flex-1 overflow-y-auto border-t border-border/50">
-          <ExecutionCardsPanel cards={cards} />
+          <ExecutionCardsPanel
+            cards={cards}
+            highlightedCardId={highlightedCardId}
+            onCardBadgeClick={scrollToCard}
+          />
         </div>
       </main>
 
