@@ -1548,13 +1548,15 @@ export function Overview() {
               style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '8px 16px', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
               <span style={{ marginRight: 6, opacity: 0.5 }}>▶</span>EXECUTE
             </button>
-            <div
-              onMouseEnter={() => setHoveredArchBtn('claude-rec')}
-              onMouseLeave={() => setHoveredArchBtn(null)}
-              style={{ border: '1px solid #1e2330', padding: '8px 12px', borderRadius: 6, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' ? '#0f1215' : '#0a0d10', fontSize: 11, cursor: 'default', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-              <span style={{ color: '#9ca3af', marginRight: 4 }}>llm:</span>
-              <span style={{ color: '#6b7280' }}>sonnet-4.6</span>
-            </div>
+            <ModelTooltip text={getModelReason('Claude')}>
+              <div
+                onMouseEnter={() => setHoveredArchBtn('claude-rec')}
+                onMouseLeave={() => setHoveredArchBtn(null)}
+                style={{ border: '1px solid #1e2330', padding: '8px 12px', borderRadius: 6, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' ? '#0f1215' : '#0a0d10', fontSize: 11, cursor: 'default', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                <span style={{ color: '#9ca3af', marginRight: 4 }}>llm:</span>
+                <span style={{ color: '#6b7280' }}>sonnet-4.6</span>
+              </div>
+            </ModelTooltip>
             {/* Vague mode toggle */}
             <div style={{ position: 'relative' }}
               onMouseEnter={() => setHoveredArchBtn('vague-tip')}
