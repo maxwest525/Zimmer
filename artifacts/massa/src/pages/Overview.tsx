@@ -1340,38 +1340,50 @@ export function Overview() {
         {/* CENTER MAIN */}
         <div style={{ border: `1px solid #14181e`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
 
-          {/* Input area — Terminal Command Console */}
+          {/* Pipeline tracker — terminal flow steps */}
           {(() => {
             const flowSteps = [
-              { label: 'PRM', active: true },
-              { label: 'ENH', active: true },
-              { label: 'BLD', active: selectedProject.builds.some(b => b.status !== 'idle') },
-              { label: 'DPL', active: selectedProject.builds.every(b => b.status === 'complete') },
+              { label: 'Prompt', active: true },
+              { label: 'Enhance', active: true },
+              { label: 'Build', active: selectedProject.builds.some(b => b.status !== 'idle') },
+              { label: 'Deploy', active: selectedProject.builds.every(b => b.status === 'complete') },
             ]
             return (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 30px 20px', position: 'relative' }}>
+                {/* connecting line */}
+                <div style={{ position: 'absolute', left: 19, right: 19, top: 16, height: 1, background: '#14181e', zIndex: 0 }} />
+                <div style={{ position: 'absolute', left: 19, right: 19, top: 16, height: 1, background: 'linear-gradient(90deg, rgba(52,211,153,0.3) 0%, rgba(52,211,153,0.3) 50%, transparent 50%)', zIndex: 0 }} />
+                {flowSteps.map((step, i) => (
+                  <div key={step.label} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 4,
+                      border: `1px solid ${step.active ? 'rgba(52,211,153,0.3)' : '#14181e'}`,
+                      background: step.active ? 'rgba(52,211,153,0.06)' : '#080a0e',
+                      color: step.active ? '#34d399' : '#374151',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, fontSize: 13,
+                      fontFamily: '"JetBrains Mono", Menlo, monospace',
+                      boxShadow: step.active ? '0 0 10px rgba(52,211,153,0.1)' : 'none',
+                      transition: 'all 0.3s ease',
+                    }}>{i + 1}</div>
+                    <div style={{ fontSize: 10, color: step.active ? '#9ca3af' : '#374151', fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5 }}>{step.label}</div>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+
+          {/* Input area — Terminal Command Console */}
+          {(() => {
+            return (
               <div className="terminal-input-box" style={{ border: `1px solid #1c2028`, background: '#080a0e', borderRadius: 10, marginBottom: 12, position: 'relative', boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.02)', overflow: 'hidden' }}>
-                {/* Terminal title bar with inline pipeline tracker */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px', borderBottom: '1px solid #14181e', background: '#0c0f14' }}>
+                {/* Terminal title bar */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderBottom: '1px solid #14181e', background: '#0c0f14' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 13, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, lineHeight: 1 }}>{'>'}</span>
                     <span className="panel-header" style={{ color: '#4b5563', fontSize: 9 }}>COMMAND</span>
                     <div style={{ width: 1, height: 12, background: '#1c2028' }} />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      {flowSteps.map((step, i) => (
-                        <div key={step.label} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <span style={{
-                            fontSize: 9, fontWeight: 700, fontFamily: '"JetBrains Mono", Menlo, monospace',
-                            color: step.active ? '#34d399' : '#374151',
-                            letterSpacing: 0.3,
-                            textShadow: step.active ? '0 0 6px rgba(52,211,153,0.3)' : 'none',
-                            transition: 'all 0.3s ease',
-                          }}>{step.label}</span>
-                          {i < flowSteps.length - 1 && (
-                            <span style={{ fontSize: 8, color: step.active && flowSteps[i + 1].active ? 'rgba(52,211,153,0.3)' : '#1c2028', fontFamily: '"JetBrains Mono", Menlo, monospace', margin: '0 1px' }}>→</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    <span style={{ fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://prompt</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {rawInput.trim().length > 0 && <span style={{ fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{rawInput.length} chars</span>}
