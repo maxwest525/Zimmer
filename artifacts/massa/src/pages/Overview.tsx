@@ -1308,9 +1308,7 @@ export function Overview() {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #1c2028; border-radius: 99px; }
         ::-webkit-scrollbar-thumb:hover { background: #2a3040; }
-        textarea:focus, input:focus { box-shadow: 0 0 0 1px rgba(52,211,153,0.25), 0 0 12px rgba(52,211,153,0.08) !important; }
-        .terminal-input-box { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-        .terminal-input-box:focus-within { border-color: rgba(52,211,153,0.35) !important; box-shadow: 0 0 0 1px rgba(52,211,153,0.15), 0 0 20px rgba(52,211,153,0.06), inset 0 1px 3px rgba(0,0,0,0.4) !important; }
+        textarea:focus, input:focus { outline: none !important; box-shadow: none !important; }
         .terminal-input-box textarea { caret-color: #34d399; }
         .terminal-input-box textarea::placeholder { font-family: "JetBrains Mono", Menlo, monospace; font-size: 13px; letter-spacing: -0.01em; }
         .panel-header { font-size: 10px; letter-spacing: 1.4px; font-weight: 700; text-transform: uppercase; font-family: "JetBrains Mono", Menlo, monospace; }
