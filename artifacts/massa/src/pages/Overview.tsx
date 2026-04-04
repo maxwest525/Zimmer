@@ -7,6 +7,8 @@ import { ChatView } from '@/components/ChatView'
 import { IdeasView } from '@/components/IdeasView'
 import { ModelTooltip } from '@/components/ModelTooltip'
 import { MODEL_COLORS, getModelReason } from '@/data/modelRegistry'
+import { TenantSelector } from '@/components/TenantSelector'
+import { useTenant } from '@/contexts/TenantContext'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -831,6 +833,7 @@ function ScrollableBuildStrip({ children, arrowColor, borderColor }: { children:
 
 export function Overview() {
   const { isMobile, isTablet, isDesktop } = useScreenSize()
+  const { selectedTenantId } = useTenant()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [livePreviewProject, setLivePreviewProject] = useState<string | null>(null)
@@ -893,7 +896,7 @@ export function Overview() {
   const [chatInput, setChatInput] = useState('')
   const [showAttachMenu, setShowAttachMenu] = useState<string | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
-  const [selectedProjectId, setSelectedProjectId] = useState('trading-bot')
+  const [selectedProjectId, setSelectedProjectId] = useState('p1')
   const [draggedBuild, setDraggedBuild] = useState<{ buildId: string; projectId: string } | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
@@ -986,7 +989,7 @@ export function Overview() {
 
   const [projects, setProjects] = useState<Project[]>([
     {
-      id: 'trading-bot',
+      id: 'p1',
       name: 'Trading Bot',
       goal: 'Automated trading bot with dashboard, risk controls, and alerts',
       status: 'running',
@@ -999,7 +1002,7 @@ export function Overview() {
       ],
     },
     {
-      id: 'massa-site',
+      id: 'p2',
       name: 'Massa Marketing Site',
       goal: 'Homepage, funnel, API settings, and workflow pages',
       status: 'running',
@@ -1009,7 +1012,7 @@ export function Overview() {
       ],
     },
     {
-      id: 'scraper',
+      id: 'p3',
       name: 'Web Scraper',
       goal: 'Source intake, parsing, and scheduled export flow',
       status: 'queued',
@@ -1018,7 +1021,36 @@ export function Overview() {
         { id: 'scheduler', title: 'Scheduler', summary: 'Daily export and email delivery', status: 'queued', progress: 0, stack: ['Mistral', 'n8n', 'Windsurf'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['crawler'], buildContext: 'automation' },
       ],
     },
+    {
+      id: 'p4',
+      name: 'Data Pipeline',
+      goal: 'ETL pipeline for ingesting, transforming, and storing analytics data',
+      status: 'failed',
+      builds: [
+        { id: 'ingestion', title: 'Ingestion Layer', summary: 'Stream connectors and batch import handlers', status: 'failed', progress: 38, stack: ['Claude', 'Claude Code', 'Kafka'], agent: 'Data Agent', agentRole: 'Data Engineer', buildContext: 'backend' },
+        { id: 'transform', title: 'Transform Engine', summary: 'Data cleaning, normalization, and enrichment', status: 'queued', progress: 0, stack: ['GPT-4o', 'Claude Code'], agent: 'Transform Agent', agentRole: 'Data Engineer', dependsOn: ['ingestion'], buildContext: 'backend' },
+      ],
+    },
+    {
+      id: 'p5',
+      name: 'User Portal',
+      goal: 'Self-service portal for account management and billing',
+      status: 'idle',
+      builds: [
+        { id: 'auth-flow', title: 'Auth Flow', summary: 'Login, signup, and session management', status: 'queued', progress: 0, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'Auth Agent', agentRole: 'Security Engineer', buildContext: 'backend' },
+        { id: 'billing-ui', title: 'Billing Dashboard', summary: 'Subscription management and invoice history', status: 'queued', progress: 0, stack: ['Claude', 'Replit', 'Stripe'], agent: 'UI Agent', agentRole: 'Frontend Designer', dependsOn: ['auth-flow'], buildContext: 'ui' },
+      ],
+    },
   ])
+
+  useEffect(() => {
+    if (selectedTenantId) {
+      const tenantProject = projects.find(p => p.id === selectedTenantId)
+      if (tenantProject && selectedProjectId !== selectedTenantId) {
+        setSelectedProjectId(selectedTenantId)
+      }
+    }
+  }, [selectedTenantId, projects, selectedProjectId])
 
   // Live progress simulation
   useEffect(() => {
@@ -1106,6 +1138,11 @@ export function Overview() {
     if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages, expandedBuildId])
 
+  const filteredProjects = useMemo(() => {
+    if (!selectedTenantId) return projects
+    return projects.filter(p => p.id === selectedTenantId)
+  }, [projects, selectedTenantId])
+
   const selectedProject = projects.find(p => p.id === selectedProjectId) || projects[0]
   const expandedBuild = useMemo(() => {
     for (const p of projects) {
@@ -1129,13 +1166,14 @@ export function Overview() {
   }
 
   const readyBuildsCount = useMemo(
-    () => selectedProject.builds.filter(b => b.status === 'queued').length,
-    [selectedProject.builds]
+    () => filteredProjects.flatMap(p => p.builds).filter(b => b.status === 'queued').length,
+    [filteredProjects]
   )
 
   const handleStartAll = () => {
+    const targetIds = new Set(filteredProjects.map(p => p.id))
     setProjects(cur => cur.map(p => {
-      if (p.id !== selectedProjectId) return p
+      if (!targetIds.has(p.id)) return p
       const builds = p.builds.map(b =>
         b.status === 'queued' ? { ...b, status: 'running' as Status, progress: Math.max(b.progress, 5) } : b
       )
@@ -1205,7 +1243,7 @@ export function Overview() {
   }, [feedEntries, feedHovered])
 
   // Code stream
-  type CodeLine = { id: number; kind: 'code' | 'qa'; content: string; file?: string; lineNo?: number; qa?: 'pass' | 'warn' }
+  type CodeLine = { id: number; kind: 'code' | 'qa'; content: string; file?: string; lineNo?: number; qa?: 'pass' | 'warn'; projectId?: string }
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
   const [dismissedActionKeys, setDismissedActionKeys] = useState<Set<string>>(new Set())
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
@@ -1225,32 +1263,39 @@ export function Overview() {
   const codeCounter = useRef(0)
 
   const CODE_POOL = [
-    { file: 'src/engine/strategy.ts', line: 42, code: 'async function evaluateSignal(ctx: Context): Promise<Signal> {' },
-    { file: 'src/engine/strategy.ts', line: 43, code: '  const price = await ctx.market.getLatestPrice(ctx.symbol)' },
-    { file: 'src/risk/limits.ts', line: 17, code: 'if (exposure > MAX_EXPOSURE) throw new RiskError("limit exceeded")' },
-    { file: 'src/api/client.ts', line: 88, code: 'const res = await fetch(`${BASE_URL}/v1/orders`, { method: "POST", body })' },
-    { file: 'src/db/schema.ts', line: 5, code: 'export const orders = pgTable("orders", { id: serial("id").primaryKey(),' },
-    { file: 'src/ui/Dashboard.tsx', line: 14, code: 'const { data, isLoading } = useQuery(["positions"], fetchPositions)' },
-    { file: 'src/ui/Dashboard.tsx', line: 31, code: '  return <Chart series={data?.series ?? []} height={320} />' },
-    { file: 'src/workers/scheduler.ts', line: 6, code: 'cron.schedule("0 9 * * 1-5", () => runDailyExport())' },
-    { file: 'src/engine/backtest.ts', line: 77, code: 'const equity = positions.reduce((s, p) => s + p.unrealised, initialCapital)' },
-    { file: 'src/scraper/crawler.ts', line: 23, code: 'const $ = cheerio.load(await axios.get(url).then(r => r.data))' },
-    { file: 'src/notifications/slack.ts', line: 11, code: '// Send alert to #trading-alerts channel' },
-    { file: 'src/notifications/slack.ts', line: 12, code: 'await slackClient.chat.postMessage({ channel, text: message })' },
-    { file: 'src/engine/order.ts', line: 55, code: 'export type Order = { id: string; side: "buy" | "sell"; qty: number }' },
+    { file: 'src/engine/strategy.ts', line: 42, code: 'async function evaluateSignal(ctx: Context): Promise<Signal> {', projectId: 'p1' },
+    { file: 'src/engine/strategy.ts', line: 43, code: '  const price = await ctx.market.getLatestPrice(ctx.symbol)', projectId: 'p1' },
+    { file: 'src/risk/limits.ts', line: 17, code: 'if (exposure > MAX_EXPOSURE) throw new RiskError("limit exceeded")', projectId: 'p1' },
+    { file: 'src/api/client.ts', line: 88, code: 'const res = await fetch(`${BASE_URL}/v1/orders`, { method: "POST", body })', projectId: 'p1' },
+    { file: 'src/db/schema.ts', line: 5, code: 'export const orders = pgTable("orders", { id: serial("id").primaryKey(),', projectId: 'p1' },
+    { file: 'src/ui/Dashboard.tsx', line: 14, code: 'const { data, isLoading } = useQuery(["positions"], fetchPositions)', projectId: 'p1' },
+    { file: 'src/ui/Dashboard.tsx', line: 31, code: '  return <Chart series={data?.series ?? []} height={320} />', projectId: 'p1' },
+    { file: 'src/pages/Homepage.tsx', line: 6, code: 'cron.schedule("0 9 * * 1-5", () => runDailyExport())', projectId: 'p2' },
+    { file: 'src/pages/ApiSettings.tsx', line: 12, code: 'const providers = await fetchProviders()', projectId: 'p2' },
+    { file: 'src/engine/backtest.ts', line: 77, code: 'const equity = positions.reduce((s, p) => s + p.unrealised, initialCapital)', projectId: 'p1' },
+    { file: 'src/scraper/crawler.ts', line: 23, code: 'const $ = cheerio.load(await axios.get(url).then(r => r.data))', projectId: 'p3' },
+    { file: 'src/scraper/parser.ts', line: 11, code: '// Send alert to #trading-alerts channel', projectId: 'p3' },
+    { file: 'src/scraper/exporter.ts', line: 12, code: 'await slackClient.chat.postMessage({ channel, text: message })', projectId: 'p3' },
+    { file: 'src/engine/order.ts', line: 55, code: 'export type Order = { id: string; side: "buy" | "sell"; qty: number }', projectId: 'p1' },
+    { file: 'src/pipeline/ingestion.ts', line: 8, code: 'const stream = kafka.consumer({ groupId: "etl-group" })', projectId: 'p4' },
+    { file: 'src/pipeline/transform.ts', line: 22, code: 'const cleaned = records.filter(r => r.valid).map(normalize)', projectId: 'p4' },
+    { file: 'src/portal/auth.ts', line: 15, code: 'const session = await createSession(user.id, { ttl: 86400 })', projectId: 'p5' },
+    { file: 'src/portal/billing.tsx', line: 31, code: 'const { subscription } = useStripeCustomer(userId)', projectId: 'p5' },
   ]
   const QA_POOL = [
-    { qa: 'pass' as const, content: '✓ Unit test passed: strategy.evaluateSignal' },
-    { qa: 'pass' as const, content: '✓ Type check: src/engine/order.ts — no errors' },
-    { qa: 'pass' as const, content: '✓ Code review: logic approved by QA agent' },
-    { qa: 'pass' as const, content: '✓ Lint: 0 warnings, 0 errors' },
-    { qa: 'warn' as const, content: '⚠ Type mismatch on line 42 — Signal | undefined' },
-    { qa: 'warn' as const, content: '⚠ Unused import: Logger in risk/limits.ts' },
-    { qa: 'warn' as const, content: '⚠ Missing null check before API call on line 88' },
-    { qa: 'pass' as const, content: '✓ Integration test: /v1/orders endpoint — 200 OK' },
-    { qa: 'pass' as const, content: '✓ Schema migration dry-run succeeded' },
-    { qa: 'warn' as const, content: '⚠ Bundle size increased by 4.2 kB — review imports' },
-    { qa: 'pass' as const, content: '✓ Snapshot test: Dashboard renders correctly' },
+    { qa: 'pass' as const, content: '✓ Unit test passed: strategy.evaluateSignal', projectId: 'p1' },
+    { qa: 'pass' as const, content: '✓ Type check: src/engine/order.ts — no errors', projectId: 'p1' },
+    { qa: 'pass' as const, content: '✓ Code review: logic approved by QA agent', projectId: 'p1' },
+    { qa: 'pass' as const, content: '✓ Lint: 0 warnings, 0 errors', projectId: 'p2' },
+    { qa: 'warn' as const, content: '⚠ Type mismatch on line 42 — Signal | undefined', projectId: 'p1' },
+    { qa: 'warn' as const, content: '⚠ Unused import: Logger in risk/limits.ts', projectId: 'p1' },
+    { qa: 'warn' as const, content: '⚠ Missing null check before API call on line 88', projectId: 'p3' },
+    { qa: 'pass' as const, content: '✓ Integration test: /v1/orders endpoint — 200 OK', projectId: 'p1' },
+    { qa: 'pass' as const, content: '✓ Schema migration dry-run succeeded', projectId: 'p2' },
+    { qa: 'warn' as const, content: '⚠ Bundle size increased by 4.2 kB — review imports', projectId: 'p3' },
+    { qa: 'pass' as const, content: '✓ Snapshot test: Dashboard renders correctly', projectId: 'p1' },
+    { qa: 'warn' as const, content: '⚠ Kafka consumer lag detected — ingestion.ts', projectId: 'p4' },
+    { qa: 'pass' as const, content: '✓ Auth session token validated successfully', projectId: 'p5' },
   ]
 
   useEffect(() => {
@@ -1260,10 +1305,10 @@ export function Overview() {
       let entry: CodeLine
       if (isQA) {
         const q = QA_POOL[Math.floor(Math.random() * QA_POOL.length)]
-        entry = { id: codeCounter.current, kind: 'qa', content: q.content, qa: q.qa }
+        entry = { id: codeCounter.current, kind: 'qa', content: q.content, qa: q.qa, projectId: q.projectId }
       } else {
         const c = CODE_POOL[Math.floor(Math.random() * CODE_POOL.length)]
-        entry = { id: codeCounter.current, kind: 'code', content: c.code, file: c.file, lineNo: c.line }
+        entry = { id: codeCounter.current, kind: 'code', content: c.code, file: c.file, lineNo: c.line, projectId: c.projectId }
       }
       setCodeLines(prev => [...prev.slice(-79), entry])
     }
@@ -1335,6 +1380,7 @@ export function Overview() {
           <span style={{ background: '#34d399', color: '#080a0e', fontWeight: 800, fontSize: isMobile ? 12 : 14, padding: '2px 8px', borderRadius: 3, boxShadow: '0 0 12px rgba(52,211,153,0.3)', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>AI</span>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
+          <TenantSelector />
           <span style={{ fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', display: isDesktop ? 'block' : 'none' }}>v2.4.1</span>
           <div style={{ width: 30, height: 30, borderRadius: 4, background: 'rgba(52,211,153,0.06)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid rgba(52,211,153,0.15)`, fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>M</div>
         </div>
@@ -1443,7 +1489,7 @@ export function Overview() {
                     <span style={{ fontSize: 13, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, lineHeight: 1 }}>{'>'}</span>
                     <span className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>COMMAND</span>
                     <div style={{ width: 1, height: 12, background: '#252a35' }} />
-                    <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://prompt</span>
+                    <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://{selectedTenantId ? (projects.find(p => p.id === selectedTenantId)?.name?.toLowerCase().replace(/\s+/g, '-') ?? 'prompt') : 'prompt'}</span>
                   </div>
                   <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -1656,7 +1702,7 @@ export function Overview() {
 
           {/* Projects list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
-            {projects.map((project, pi) => {
+            {filteredProjects.map((project, pi) => {
               const isSel = selectedProjectId === project.id
               const buildCards = (column: boolean, wrap = false) => (
                 <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 16, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { paddingBottom: 6 }) }}>
@@ -2010,7 +2056,7 @@ export function Overview() {
               return { type: 'run-build', label: 'Run Build', color: '#f59e0b', tab: 'details' }
             }
 
-            const actionItems = projects.flatMap(p =>
+            const actionItems = filteredProjects.flatMap(p =>
               p.builds
                 .filter(b => {
                   if (b.status === 'failed' || b.status === 'queued' || b.status === 'running') return true
@@ -2145,7 +2191,11 @@ export function Overview() {
                 style={{ flex: 1, overflowY: 'auto', background: isDark ? '#0f1215' : '#f0f0f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
               >
                 <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#0f1215' : '#f0f0f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
-                {feedEntries.length > 0 && feedEntries.slice(0, 3).map(entry => {
+                {feedEntries.length > 0 && feedEntries.filter(entry => {
+                  if (!selectedTenantId) return true
+                  const tenantProject = filteredProjects[0]
+                  return tenantProject && entry.buildName.startsWith(tenantProject.name + ' / ')
+                }).slice(0, 3).map(entry => {
                   const pm = PHASE_META[entry.phase]
                   return (
                     <div key={`feed-${entry.id}`} style={{ padding: '5px 12px', borderBottom: `1px solid ${c.border}33`, fontFamily: 'inherit', lineHeight: 1.6 }}>
@@ -2155,7 +2205,7 @@ export function Overview() {
                     </div>
                   )
                 })}
-                {codeLines.map(line => {
+                {codeLines.filter(line => !selectedTenantId || line.projectId === selectedTenantId).map(line => {
                   if (line.kind === 'qa') {
                     const isPass = line.qa === 'pass'
                     return (
@@ -2216,7 +2266,7 @@ export function Overview() {
 
             {archTab === 'tree' ? (() => {
               const treeLines: Record<string, string[]> = {
-                'trading-bot': [
+                'p1': [
                   '\u251C\u2500\u2500 Backend',
                   '\u2502   \u251C\u2500\u2500 Core Engine',
                   '\u2502   \u251C\u2500\u2500 Risk Module',
@@ -2228,7 +2278,7 @@ export function Overview() {
                   '    \u251C\u2500\u2500 Backtester',
                   '    \u2514\u2500\u2500 Monitoring',
                 ],
-                'massa-site': [
+                'p2': [
                   '\u251C\u2500\u2500 Pages',
                   '\u2502   \u251C\u2500\u2500 Homepage',
                   '\u2502   \u251C\u2500\u2500 Pricing',
@@ -2237,7 +2287,7 @@ export function Overview() {
                   '    \u251C\u2500\u2500 API Settings',
                   '    \u2514\u2500\u2500 Auth Flow',
                 ],
-                'scraper': [
+                'p3': [
                   '\u251C\u2500\u2500 Pipeline',
                   '\u2502   \u251C\u2500\u2500 Crawler',
                   '\u2502   \u251C\u2500\u2500 Parser',
@@ -2319,11 +2369,11 @@ export function Overview() {
                   <div style={{ width: 10, height: 10, borderRadius: 99, background: '#34d399' }} />
                 </div>
                 <div style={{ flex: 1, background: '#151920', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: c.muted, border: `1px solid ${c.border}` }}>
-                  {previewProject.id === 'trading-bot' ? 'https://app.tradingbot.io' : previewProject.id === 'massa-site' ? 'https://massa.ai' : 'https://scraper.massa.ai'}
+                  {previewProject.id === 'p1' ? 'https://app.tradingbot.io' : previewProject.id === 'p2' ? 'https://massa.ai' : previewProject.id === 'p3' ? 'https://scraper.massa.ai' : previewProject.id === 'p4' ? 'https://pipeline.massa.ai' : 'https://portal.massa.ai'}
                 </div>
               </div>
               <div style={{ padding: 0, height: 380, overflow: 'hidden', position: 'relative' }}>
-                {previewProject.id === 'trading-bot' && (
+                {previewProject.id === 'p1' && (
                   <div style={{ padding: 16, height: '100%', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: '"JetBrains Mono", monospace' }}>
                     <div style={{ display: 'flex', gap: 12, flex: '0 0 auto' }}>
                       <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
@@ -2365,7 +2415,7 @@ export function Overview() {
                     </div>
                   </div>
                 )}
-                {previewProject.id === 'massa-site' && (
+                {previewProject.id === 'p2' && (
                   <div style={{ height: '100%', overflow: 'hidden' }}>
                     <div style={{ background: 'linear-gradient(180deg, #0a0f0a 0%, #060606 100%)', padding: '32px 40px', textAlign: 'center' }}>
                       <div style={{ fontSize: 11, letterSpacing: 4, color: c.muted, marginBottom: 12 }}>M A S S A</div>
@@ -2386,7 +2436,7 @@ export function Overview() {
                     </div>
                   </div>
                 )}
-                {previewProject.id === 'scraper' && (
+                {previewProject.id === 'p3' && (
                   <div style={{ padding: 16, height: '100%', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: '"JetBrains Mono", monospace' }}>
                     <div style={{ display: 'flex', gap: 12 }}>
                       <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
@@ -2414,6 +2464,60 @@ export function Overview() {
                       <div><span style={{ color: '#34d399' }}>[OK]</span> Stored 48 records to PostgreSQL <span style={{ color: '#9ca3af' }}>batch_id: b-2847</span></div>
                       <div><span style={{ color: '#60a5fa' }}>[PARSE]</span> Extracting 52 records from response...</div>
                       <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=145 <span style={{ color: '#9ca3af' }}>200 OK 198ms</span></div>
+                    </div>
+                  </div>
+                )}
+                {previewProject.id === 'p4' && (
+                  <div style={{ padding: 16, height: '100%', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: '"JetBrains Mono", monospace' }}>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>PIPELINE STATUS</div>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: '#f87171' }}>FAILED</div>
+                        <div style={{ fontSize: 11, color: '#f87171', marginTop: 2 }}>Ingestion error</div>
+                      </div>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>RECORDS PROCESSED</div>
+                        <div style={{ fontSize: 22, fontWeight: 800 }}>84,291</div>
+                        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Last 24h</div>
+                      </div>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>THROUGHPUT</div>
+                        <div style={{ fontSize: 22, fontWeight: 800 }}>1.2k/s</div>
+                        <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 2 }}>Below target</div>
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 10, border: `1px solid ${c.border}`, fontSize: 11, lineHeight: 1.8, color: '#888', overflow: 'hidden' }}>
+                      <div><span style={{ color: '#f87171' }}>[ERR]</span> KafkaConsumerError: Connection refused to broker-3 <span style={{ color: '#9ca3af' }}>14:23:01</span></div>
+                      <div><span style={{ color: '#f59e0b' }}>[WARN]</span> Consumer lag growing: partition 7 = 4,291 messages behind</div>
+                      <div><span style={{ color: '#34d399' }}>[OK]</span> Transform batch #12847 completed — 512 records normalized</div>
+                      <div><span style={{ color: '#f87171' }}>[ERR]</span> Retry 3/3 failed for broker-3, marking unhealthy</div>
+                      <div><span style={{ color: '#60a5fa' }}>[INFO]</span> Failover initiated to broker-5</div>
+                      <div><span style={{ color: '#34d399' }}>[OK]</span> Reconnected to broker-5 successfully</div>
+                    </div>
+                  </div>
+                )}
+                {previewProject.id === 'p5' && (
+                  <div style={{ padding: 16, height: '100%', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: '"JetBrains Mono", monospace' }}>
+                    <div style={{ background: '#111', borderRadius: 8, padding: 20, border: `1px solid ${c.border}`, textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, letterSpacing: 3, color: c.muted, marginBottom: 8 }}>USER PORTAL</div>
+                      <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 12 }}>Sign In</div>
+                      <div style={{ maxWidth: 280, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ background: '#0a0d10', border: `1px solid ${c.border}`, borderRadius: 6, padding: '10px 12px', fontSize: 12, color: c.muted, textAlign: 'left' }}>email@example.com</div>
+                        <div style={{ background: '#0a0d10', border: `1px solid ${c.border}`, borderRadius: 6, padding: '10px 12px', fontSize: 12, color: c.muted, textAlign: 'left' }}>••••••••</div>
+                        <div style={{ background: '#34d399', color: '#0a0d10', padding: '10px 24px', borderRadius: 8, fontWeight: 700, fontSize: 13, marginTop: 4 }}>Sign In</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>REGISTERED USERS</div>
+                        <div style={{ fontSize: 22, fontWeight: 800 }}>0</div>
+                        <div style={{ fontSize: 11, color: c.muted, marginTop: 2 }}>Not launched</div>
+                      </div>
+                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
+                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>BILLING</div>
+                        <div style={{ fontSize: 22, fontWeight: 800 }}>—</div>
+                        <div style={{ fontSize: 11, color: c.muted, marginTop: 2 }}>Pending setup</div>
+                      </div>
                     </div>
                   </div>
                 )}

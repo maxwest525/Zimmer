@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { WorkspaceHeader } from "@/components/WorkspaceHeader";
 import { ProjectTabs } from "@/components/ProjectTabs";
@@ -8,6 +8,7 @@ import { ActivitySidebar } from "@/components/ActivitySidebar";
 import { ActivityDrawer } from "@/components/ActivityDrawer";
 import { OpenProjectsTabBar } from "@/components/OpenProjectsTabBar";
 import { PROJECTS, PROJECT_CARDS, PROJECT_ACTIVITY, ActivityItem } from "@/data/mock";
+import { useTenant } from "@/contexts/TenantContext";
 
 type Tab = "canvas" | "builds" | "history";
 
@@ -46,7 +47,10 @@ interface WorkspaceProps {
 }
 
 export function Workspace({ initialProjectId }: WorkspaceProps) {
-  const defaultIds = initialProjectId ? [initialProjectId] : ["p1", "p2"];
+  const { selectedTenantId } = useTenant();
+
+  const effectiveProjectId = selectedTenantId || initialProjectId;
+  const defaultIds = effectiveProjectId ? [effectiveProjectId] : ["p1", "p2"];
   const [openProjectIds, setOpenProjectIds] = useState<string[]>(defaultIds);
   const [activeProjectId, setActiveProjectId] = useState(defaultIds[0]);
   const [activeTab, setActiveTab] = useState<Tab>("canvas");
@@ -54,12 +58,34 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
 
   useEffect(() => {
     if (!initialProjectId) return;
+    if (selectedTenantId) return;
     setOpenProjectIds((prev) => {
       if (prev.includes(initialProjectId)) return prev;
       return [initialProjectId, ...prev];
     });
     setActiveProjectId(initialProjectId);
-  }, [initialProjectId]);
+  }, [initialProjectId, selectedTenantId]);
+
+  const prevTenantRef = useRef(selectedTenantId);
+  useEffect(() => {
+    const prevTenant = prevTenantRef.current;
+    prevTenantRef.current = selectedTenantId;
+
+    if (selectedTenantId) {
+      const validProject = PROJECTS.find((p) => p.id === selectedTenantId);
+      if (!validProject) return;
+      setOpenProjectIds([selectedTenantId]);
+      setActiveProjectId(selectedTenantId);
+    } else if (prevTenant && !selectedTenantId) {
+      const restored = initialProjectId ? [initialProjectId] : ["p1", "p2"];
+      setOpenProjectIds(restored);
+      setActiveProjectId(restored[0]);
+    }
+  }, [selectedTenantId, initialProjectId]);
+
+  const sidebarProjects = selectedTenantId
+    ? PROJECTS.filter((p) => p.id === selectedTenantId)
+    : PROJECTS;
 
   const openProjects = openProjectIds.map((id) => PROJECTS.find((p) => p.id === id)!).filter(Boolean);
 
@@ -72,7 +98,13 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
   const isActive = activeProject.status === "running";
 
   const globalActivity = buildGlobalActivity(openProjectIds);
-  const runningCount = globalActivity.filter((a) => a.status === "running").length;
+  const filteredActivity = selectedTenantId
+    ? globalActivity.filter((a) => {
+        const project = PROJECTS.find((p) => p.id === selectedTenantId);
+        return project && a.projectName === project.name;
+      })
+    : globalActivity;
+  const runningCount = filteredActivity.filter((a) => a.status === "running").length;
 
   function handleSubmit(_value: string) {
   }
@@ -97,14 +129,12 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
       <ProjectSidebar
-        projects={PROJECTS}
+        projects={sidebarProjects}
         activeProjectId={resolvedActiveId}
         onSelectProject={handleSelectProject}
       />
 
-      {/* Center workspace: fixed top region + independently scrolling cards below */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Tab bar above workspace header */}
         {openProjects.length > 0 && (
           <OpenProjectsTabBar
             openProjects={openProjects}
@@ -114,7 +144,6 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
           />
         )}
 
-        {/* Fixed top region: header, tabs, writing canvas, action bar */}
         <WorkspaceHeader
           project={activeProject}
           onOpenActivity={() => setActivityOpen(true)}
@@ -125,20 +154,17 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
           <WritingCanvas onSubmit={handleSubmit} isActive={isActive} />
         </div>
 
-        {/* Independently scrolling execution cards region */}
         <div className="flex-1 overflow-y-auto border-t border-border/50">
           <ExecutionCardsPanel cards={cards} />
         </div>
       </main>
 
-      {/* Desktop: persistent right sidebar */}
       <div className="hidden lg:flex">
-        <ActivitySidebar items={globalActivity} isGlobal />
+        <ActivitySidebar items={filteredActivity} isGlobal />
       </div>
 
-      {/* Tablet/narrow: slide-over drawer triggered from header */}
       <ActivityDrawer
-        items={globalActivity}
+        items={filteredActivity}
         open={activityOpen}
         onClose={() => setActivityOpen(false)}
         isGlobal

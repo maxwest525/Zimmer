@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Project, ProjectStatus } from "@/data/mock";
 import { AlertCircle, Loader2, Circle, XCircle, Settings2, Activity, LayoutGrid } from "lucide-react";
+import { TenantSelector } from "@/components/TenantSelector";
 
 interface WorkspaceHeaderProps {
   project: Project;
@@ -64,7 +65,8 @@ export function WorkspaceHeader({ project, onOpenActivity, activityCount = 0 }: 
         <h1 className="text-base font-semibold text-foreground">{project.name}</h1>
         <StatusPill status={project.status} />
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
+        <TenantSelector />
         {onOpenActivity && (
           <button
             onClick={onOpenActivity}
