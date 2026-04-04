@@ -4,6 +4,7 @@ import { InlineCompanyLogo } from '@/components/CompanyLogo'
 import { NodeGraph } from '@/components/NodeGraph'
 import { TimelineSwimlane } from '@/components/TimelineSwimlane'
 import { ChatView } from '@/components/ChatView'
+import { IdeasView } from '@/components/IdeasView'
 import { ModelTooltip } from '@/components/ModelTooltip'
 import { MODEL_COLORS, getModelReason } from '@/data/modelRegistry'
 
@@ -913,7 +914,7 @@ export function Overview() {
   const [clarifyDone, setClarifyDone] = useState(false)
   const [clarifySummary, setClarifySummary] = useState('')
   const [clarifyOtherText, setClarifyOtherText] = useState('')
-  const [activeView, setActiveView] = useState<'dashboard' | 'chats'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [, navigate] = useLocation()
 
@@ -1347,6 +1348,7 @@ export function Overview() {
             {[
               { label: 'Dashboard', view: 'dashboard' as const, path: '/' },
               { label: 'Chats', view: 'chats' as const, path: '' },
+              { label: 'Ideas', view: 'ideas' as const, path: '' },
               { label: 'History', view: null, path: '' },
               { label: 'Automations', view: null, path: '' },
               { label: 'Marketing', view: null, path: '' },
@@ -1382,6 +1384,7 @@ export function Overview() {
             {[
               { label: 'Dashboard', view: 'dashboard' as const, path: '/' },
               { label: 'Chats', view: 'chats' as const, path: '' },
+              { label: 'Ideas', view: 'ideas' as const, path: '' },
               { label: 'History', view: null, path: '' },
               { label: 'Automations', view: null, path: '' },
               { label: 'Marketing', view: null, path: '' },
@@ -1414,6 +1417,10 @@ export function Overview() {
               messages={chatMessages}
               onMessagesChange={setChatMessages}
             />
+          </div>
+        ) : activeView === 'ideas' ? (
+          <div style={{ gridColumn: isDesktop ? '2 / -1' : '1 / -1', border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+            <IdeasView />
           </div>
         ) : <>
         {/* CENTER MAIN */}

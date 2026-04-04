@@ -56,7 +56,7 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 
 - Entry: `src/index.ts` — reads `PORT`, starts Express
 - App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health`; `src/routes/ai.ts` exposes `POST /ai/suggest` (prompt → AI suggestions) and `POST /ai/clarify` (prompt + previousAnswers → single clarifying question with multiple-choice options)
+- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health`; `src/routes/ai.ts` exposes `POST /ai/suggest` and `POST /ai/clarify`; `src/routes/ideas.ts` exposes CRUD for ideas (`GET /ideas`, `POST /ideas`, `PATCH /ideas/:id`, `DELETE /ideas/:id`, `POST /ideas/inbound`)
 - AI integration: Uses OpenAI via Replit AI Integrations proxy (env vars `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`), model `gpt-4o-mini`
 - Depends on: `@workspace/db`, `@workspace/api-zod`, `openai`
 - `pnpm --filter @workspace/api-server run dev` — run the dev server
@@ -69,7 +69,8 @@ Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client insta
 
 - `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
 - `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
+- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas
+- `src/schema/ideas.ts` — ideas table (id, content, category, source, starred, archived, createdAt, updatedAt)
 - `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
 - Exports: `.` (pool, db, schema), `./schema` (schema only)
 
@@ -104,7 +105,7 @@ React + Vite frontend-only workspace for the MASSA AI command workspace. Dark-th
 - InsideMassa.tsx has its own `useIsMobileIM()` hook for responsive behavior
 - Design: Terminal-inspired dark theme — bg `#0a0d10`, panel `#0a0d10`, terminal `#080a0e`, border `#14181e`/`#1c2028`, green accent `#34d399` with glow effects; monospace `JetBrains Mono` in UI chrome; `panel-header` CSS class for section labels; all inline styles, no Tailwind
 - Color palette: green `#34d399`, amber `#f59e0b`, red `#f87171`, blue `#60a5fa`, violet `#a78bfa`, text `#e8eaed`, muted `#6b7280`, dim `#4b5563`
-- Features: project cards (row/card views), build cards, chat modal, arch map modal, attachment menus, code stream, AI-powered prompt suggestions, vague mode clarify wizard
+- Features: project cards (row/card views), build cards, chat modal, arch map modal, attachment menus, code stream, AI-powered prompt suggestions, vague mode clarify wizard, Ideas page (persistent idea capture with star/archive/edit/delete, inbound API for email/SMS)
 - AI Suggestions: Debounced (800ms) call to `/api/ai/suggest` when prompt is 12+ chars; shows AI-generated prompt expansions in the terminal console
 - Clarify Wizard: Single-question-at-a-time modal with multiple-choice options, powered by `/api/ai/clarify`; shows Q&A history, "Other" free-text option, skip-to-build, and ready-to-build summary
 - Vite proxy: `/api` requests proxied to API server at `http://localhost:8080`
