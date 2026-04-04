@@ -1584,7 +1584,7 @@ export function Overview() {
                               <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                                   <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
+                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
                                 </div>
                                 <div style={{ fontSize: 10, color: isRunning ? sc : isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
                               </div>
@@ -1617,7 +1617,7 @@ export function Overview() {
                                     onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
                                     onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
                                   >💬</button>
-                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}99`, padding: '1px 5px', borderRadius: 4, background: `${sc}12`, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
+                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
                                 </div>
                               </div>
                               <div style={{ height: 3, background: isDark ? '#131619' : '#dfe8de', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
@@ -2254,7 +2254,7 @@ export function Overview() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ fontWeight: 800, fontSize: 16 }}>{activeBuild.title}</div>
-                      <ModelTooltip text={getModelReason(primarySkill(activeBuild.stack), activeBuild.buildContext)}><span style={{ fontSize: 10, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '1px 6px', borderRadius: 5, background: `${sc}14`, cursor: 'default' }}>{primarySkill(activeBuild.stack)}</span></ModelTooltip>
+                      <ModelTooltip text={getModelReason(primarySkill(activeBuild.stack), activeBuild.buildContext)}><span style={{ fontSize: 10, color: '#ffffff', fontWeight: 700, cursor: 'default' }}>{primarySkill(activeBuild.stack)}</span></ModelTooltip>
                     </div>
                     <div style={{ fontSize: 11, color: c.muted }}>{activeBuild.agent} · {activeBuild.agentRole}</div>
                   </div>
