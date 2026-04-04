@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'wouter'
 import { InlineCompanyLogo } from '@/components/CompanyLogo'
 import { NodeGraph } from '@/components/NodeGraph'
@@ -1351,17 +1351,17 @@ export function Overview() {
             return (
               <div className="terminal-input-box" style={{ border: `1px solid #1c2028`, background: '#080a0e', borderRadius: 10, marginBottom: 12, position: 'relative', boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.02)', overflow: 'hidden' }}>
                 {/* Terminal title bar with inline pipeline tracker */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px', borderBottom: '1px solid #14181e', background: '#0c0f14' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '6px 14px', borderBottom: '1px solid #14181e', background: '#0c0f14', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                     <span style={{ fontSize: 13, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, lineHeight: 1 }}>{'>'}</span>
                     <span className="panel-header" style={{ color: '#4b5563', fontSize: 9 }}>COMMAND</span>
                     <div style={{ width: 1, height: 12, background: '#1c2028' }} />
                     <span style={{ fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://prompt</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', flex: 1, position: 'relative' }}>
                     {flowSteps.map((step, i) => (
-                      <div key={step.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                      <Fragment key={step.label}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                           <div style={{
                             width: 22, height: 22, borderRadius: 3,
                             border: `1px solid ${step.active ? 'rgba(52,211,153,0.3)' : '#1c2028'}`,
@@ -1375,10 +1375,12 @@ export function Overview() {
                           }}>{i + 1}</div>
                           <div style={{ fontSize: 7, color: step.active ? '#6b7280' : '#374151', fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.3, textTransform: 'uppercase' }}>{step.label}</div>
                         </div>
-                        {i < flowSteps.length - 1 && <div style={{ width: 12, height: 1, background: step.active && flowSteps[i + 1].active ? 'rgba(52,211,153,0.25)' : '#1c2028', marginBottom: 10 }} />}
-                      </div>
+                        {i < flowSteps.length - 1 && <div style={{ flex: 1, height: 1, background: step.active && flowSteps[i + 1].active ? 'rgba(52,211,153,0.25)' : '#1c2028', marginBottom: 10, minWidth: 12 }} />}
+                      </Fragment>
                     ))}
-                    <div style={{ width: 1, height: 14, background: '#1c2028', marginLeft: 8 }} />
+                  </div>
+                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 1, height: 14, background: '#1c2028' }} />
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
                       <div style={{ width: 6, height: 6, borderRadius: 999, background: '#34d399', boxShadow: '0 0 6px rgba(52,211,153,0.5)', animation: 'subtle-glow 3s ease-in-out infinite' }} />
                       <span style={{ fontSize: 9, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600, opacity: 0.7 }}>LIVE</span>
