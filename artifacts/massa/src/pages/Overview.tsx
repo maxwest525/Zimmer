@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'wouter'
 import { InlineCompanyLogo } from '@/components/CompanyLogo'
 import { NodeGraph } from '@/components/NodeGraph'
@@ -821,10 +821,82 @@ export function Overview() {
   const [rawInput, setRawInput] = useState('')
   const [vagueMode, setVagueMode] = useState(false)
   const [showClarifyModal, setShowClarifyModal] = useState(false)
-  const [clarifyAnswers, setClarifyAnswers] = useState<Record<string, string>>({})
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false)
+  const [clarifyQuestion, setClarifyQuestion] = useState('')
+  const [clarifyOptions, setClarifyOptions] = useState<string[]>([])
+  const [clarifyHistory, setClarifyHistory] = useState<{question: string; answer: string}[]>([])
+  const [clarifyLoading, setClarifyLoading] = useState(false)
+  const [clarifyDone, setClarifyDone] = useState(false)
+  const [clarifySummary, setClarifySummary] = useState('')
+  const [clarifyOtherText, setClarifyOtherText] = useState('')
   const [activeView, setActiveView] = useState<'dashboard' | 'chats'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [, navigate] = useLocation()
+
+  useEffect(() => {
+    if (rawInput.trim().length < 12) {
+      setAiSuggestions([])
+      return
+    }
+    setSuggestionsLoading(true)
+    const controller = new AbortController()
+    const timer = setTimeout(() => {
+      fetch('/api/ai/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: rawInput.trim() }),
+        signal: controller.signal,
+      })
+        .then(r => r.json())
+        .then(d => setAiSuggestions(d.suggestions || []))
+        .catch(() => { if (!controller.signal.aborted) setAiSuggestions([]) })
+        .finally(() => { if (!controller.signal.aborted) setSuggestionsLoading(false) })
+    }, 800)
+    return () => { clearTimeout(timer); controller.abort(); setSuggestionsLoading(false) }
+  }, [rawInput])
+
+  const fetchClarifyQuestion = useCallback((prompt: string, history: {question: string; answer: string}[]) => {
+    setClarifyLoading(true)
+    fetch('/api/ai/clarify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, previousAnswers: history }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.done) {
+          setClarifyDone(true)
+          setClarifySummary(d.summary || '')
+        } else {
+          setClarifyQuestion(d.question || '')
+          setClarifyOptions([...(d.options || []), 'Other'])
+        }
+      })
+      .catch(() => {
+        setClarifyQuestion('What type of application are you building?')
+        setClarifyOptions(['Web app', 'Mobile app', 'API / Backend', 'Full-stack platform', 'Other'])
+      })
+      .finally(() => setClarifyLoading(false))
+  }, [])
+
+  const openClarifyWizard = useCallback(() => {
+    setClarifyHistory([])
+    setClarifyQuestion('')
+    setClarifyOptions([])
+    setClarifyDone(false)
+    setClarifySummary('')
+    setClarifyOtherText('')
+    setShowClarifyModal(true)
+    fetchClarifyQuestion(rawInput, [])
+  }, [rawInput, fetchClarifyQuestion])
+
+  const handleClarifyAnswer = useCallback((answer: string) => {
+    const newHistory = [...clarifyHistory, { question: clarifyQuestion, answer }]
+    setClarifyHistory(newHistory)
+    setClarifyOtherText('')
+    fetchClarifyQuestion(rawInput, newHistory)
+  }, [clarifyHistory, clarifyQuestion, rawInput, fetchClarifyQuestion])
 
   const [projects, setProjects] = useState<Project[]>([
     {
@@ -1303,13 +1375,6 @@ export function Overview() {
 
           {/* Input area — Terminal Command Console */}
           {(() => {
-            const suggestions = rawInput.trim().length > 10 ? [
-              rawInput.length < 60
-                ? `${rawInput.trim()} — with React frontend, Node.js backend, PostgreSQL, REST API, and deployment via Replit`
-                : rawInput.trim().replace(/\.$/, '') + ', structured as modular builds with clear agent routing per layer',
-              'Scope into 3 parallel builds: UI agent (Lovable), backend agent (Claude Code), and integration agent (n8n) — optimized for speed',
-            ] : []
-
             return (
               <div className="terminal-input-box" style={{ border: `1px solid #1c2028`, background: '#080a0e', borderRadius: 10, marginBottom: 12, position: 'relative', boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.02)', overflow: 'hidden' }}>
                 {/* Terminal title bar */}
@@ -1376,19 +1441,28 @@ export function Overview() {
                     )}
                   </div>
                 </div>
-                {suggestions.length > 0 && (
+                {(suggestionsLoading || aiSuggestions.length > 0) && (
                   <div style={{ borderTop: `1px solid #14181e`, padding: '8px 14px 10px' }}>
-                    <div className="panel-header" style={{ color: '#4b5563', marginBottom: 6, fontSize: 9 }}>SUGGESTIONS</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      {suggestions.map((s, i) => (
-                        <div key={i} onClick={() => setRawInput(s)}
-                          style={{ fontSize: 11, color: '#6b7280', background: '#0c0f14', border: `1px solid #14181e`, borderRadius: 6, padding: '6px 10px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}
-                          onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#1c2028'; e.currentTarget.style.color = '#9ca3af' }}
-                          onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = '#14181e'; e.currentTarget.style.color = '#6b7280' }}>
-                          <span style={{ color: '#34d399', fontWeight: 700, marginRight: 6, opacity: 0.6 }}>+</span>{s}
-                        </div>
-                      ))}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                      <div className="panel-header" style={{ color: '#4b5563', fontSize: 9 }}>AI SUGGESTIONS</div>
+                      {suggestionsLoading && <div style={{ width: 4, height: 4, borderRadius: 999, background: '#34d399', animation: 'subtle-glow 1s ease-in-out infinite' }} />}
                     </div>
+                    {suggestionsLoading && aiSuggestions.length === 0 ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0' }}>
+                        <span style={{ fontSize: 10, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>analyzing prompt...</span>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {aiSuggestions.map((s, i) => (
+                          <div key={i} onClick={() => setRawInput(s)}
+                            style={{ fontSize: 11, color: '#6b7280', background: '#0c0f14', border: `1px solid #14181e`, borderRadius: 6, padding: '6px 10px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#1c2028'; e.currentTarget.style.color = '#9ca3af' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = '#14181e'; e.currentTarget.style.color = '#6b7280' }}>
+                            <span style={{ color: '#34d399', fontWeight: 700, marginRight: 6, opacity: 0.6 }}>{'>'}</span>{s}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1401,7 +1475,7 @@ export function Overview() {
             <button
               onMouseEnter={() => setHoveredArchBtn('arch-build')}
               onMouseLeave={() => setHoveredArchBtn(null)}
-              onClick={() => { if (vagueMode && rawInput.trim().length > 0) setShowClarifyModal(true) }}
+              onClick={() => { if (vagueMode && rawInput.trim().length > 0) openClarifyWizard() }}
               style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '8px 16px', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
               <span style={{ marginRight: 6, opacity: 0.5 }}>▶</span>EXECUTE
             </button>
@@ -2453,62 +2527,125 @@ export function Overview() {
         </div>
       )}
 
-      {/* Clarify Modal */}
       {showClarifyModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(4px)' }}
           onClick={e => { if (e.target === e.currentTarget) setShowClarifyModal(false) }}>
-          <div style={{ background: '#0f0f0f', border: '1px solid #2a2a2a', borderRadius: 16, padding: 28, width: '100%', maxWidth: 560, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 24px 60px rgba(0,0,0,0.7)' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', marginBottom: 4 }}>Let's refine your build</div>
-                <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.5 }}>Answer a few quick questions so MASSA can build exactly what you need.</div>
+          <div style={{ background: '#0a0d10', border: '1px solid #1c2028', borderRadius: 12, width: '100%', maxWidth: 520, boxShadow: '0 24px 80px rgba(0,0,0,0.8), 0 0 40px rgba(52,211,153,0.03)', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid #14181e', background: '#0c0f14' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 13, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{'>'}</span>
+                <span className="panel-header" style={{ color: '#4b5563', fontSize: 9 }}>CLARIFY</span>
+                <div style={{ width: 1, height: 12, background: '#1c2028' }} />
+                <span style={{ fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://vague-mode</span>
               </div>
-              <button onClick={() => setShowClarifyModal(false)} style={{ background: 'transparent', border: 'none', color: c.muted, cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 4 }}>✕</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>step {clarifyHistory.length + (clarifyDone ? 0 : 1)}</span>
+                <button onClick={() => setShowClarifyModal(false)} style={{ background: 'transparent', border: 'none', color: '#4b5563', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '2px 4px', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>✕</button>
+              </div>
             </div>
 
-            {/* Original input preview */}
-            <div style={{ background: '#151515', border: '1px solid #222', borderRadius: 8, padding: '8px 12px', marginBottom: 20, marginTop: 14 }}>
-              <div style={{ fontSize: 9, color: c.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 3 }}>YOUR INPUT</div>
-              <div style={{ fontSize: 12, color: '#b0b0b0', lineHeight: 1.5 }}>{rawInput}</div>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid #14181e' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <span style={{ fontSize: 10, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', opacity: 0.5 }}>$</span>
+                <span className="panel-header" style={{ color: '#4b5563', fontSize: 9 }}>INPUT</span>
+              </div>
+              <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{rawInput}</div>
             </div>
 
-            {/* Questions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {[
-                { id: 'goal', label: "What's the main goal? What problem does this solve?", placeholder: 'e.g. Help our sales team track leads without switching tools' },
-                { id: 'user', label: 'Who is the end user — internal team, customers, or just you?', placeholder: 'e.g. Internal ops team of 5 people' },
-                { id: 'backend', label: 'Do you need a backend, database, or external integrations?', placeholder: 'e.g. Yes — needs Stripe, a database, and Slack notifications' },
-                { id: 'existing', label: 'Any existing systems, APIs, or codebases this connects to?', placeholder: 'e.g. Our existing CRM API at api.ourcompany.com' },
-                { id: 'constraints', label: 'Any timeline or hard constraints we should know about?', placeholder: 'e.g. Need an MVP in 2 weeks, no budget for paid APIs' },
-              ].map(q => (
-                <div key={q.id}>
-                  <div style={{ fontSize: 12, color: '#e0e0e0', fontWeight: 600, marginBottom: 6 }}>{q.label}</div>
-                  <textarea
-                    value={clarifyAnswers[q.id] || ''}
-                    onChange={e => setClarifyAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
-                    placeholder={q.placeholder}
-                    rows={2}
-                    style={{ width: '100%', background: '#151515', border: '1px solid #272727', borderRadius: 8, padding: '8px 10px', color: '#ffffff', fontSize: 12, lineHeight: 1.5, resize: 'vertical', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
-                  />
+            {clarifyHistory.length > 0 && (
+              <div style={{ padding: '8px 16px', borderBottom: '1px solid #14181e', maxHeight: 140, overflowY: 'auto' }}>
+                {clarifyHistory.map((h, i) => (
+                  <div key={i} style={{ marginBottom: i < clarifyHistory.length - 1 ? 8 : 0 }}>
+                    <div style={{ fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 2 }}>Q{i + 1}: {h.question}</div>
+                    <div style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', opacity: 0.8 }}>→ {h.answer}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ padding: '16px 16px 20px' }}>
+              {clarifyLoading ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '20px 0', justifyContent: 'center' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: 999, background: '#34d399', animation: 'subtle-glow 1s ease-in-out infinite' }} />
+                  <span style={{ fontSize: 11, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>generating question...</span>
                 </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
-              <button
-                onClick={() => setShowClarifyModal(false)}
-                onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-                style={{ flex: 1, background: c.green, color: '#081008', border: 'none', borderRadius: 9, padding: '10px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'opacity 0.15s' }}>
-                Build with answers
-              </button>
-              <button
-                onClick={() => setShowClarifyModal(false)}
-                onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
-                onMouseLeave={e => e.currentTarget.style.background = '#151920'}
-                style={{ background: '#151920', color: c.muted, border: '1px solid #1c2028', borderRadius: 9, padding: '10px 16px', fontSize: 12, cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>
-                Skip
-              </button>
+              ) : clarifyDone ? (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <span style={{ fontSize: 12, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>✓</span>
+                    <span className="panel-header" style={{ color: '#34d399', fontSize: 9 }}>READY TO BUILD</span>
+                  </div>
+                  {clarifySummary && (
+                    <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.6, fontFamily: '"JetBrains Mono", Menlo, monospace', background: '#0c0f14', border: '1px solid #14181e', borderRadius: 8, padding: '10px 12px', marginBottom: 16 }}>
+                      {clarifySummary}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setShowClarifyModal(false)}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#141e14'; e.currentTarget.style.boxShadow = '0 0 20px rgba(52,211,153,0.15)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#0c1210'; e.currentTarget.style.boxShadow = 'none' }}
+                    style={{ width: '100%', background: '#0c1210', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 8, padding: '10px 0', fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
+                    <span style={{ marginRight: 6, opacity: 0.5 }}>▶</span>EXECUTE BUILD
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize: 13, color: '#e8eaed', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
+                    {clarifyQuestion}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {clarifyOptions.map((opt, i) => (
+                      opt === 'Other' ? (
+                        <div key={i}>
+                          <div
+                            style={{ fontSize: 12, color: '#6b7280', background: '#0c0f14', border: '1px solid #14181e', borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
+                            onClick={() => {
+                              const el = document.getElementById('clarify-other-input')
+                              if (el) el.focus()
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#1c2028'; e.currentTarget.style.color = '#9ca3af' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#14181e'; e.currentTarget.style.color = '#6b7280' }}>
+                            <span style={{ color: '#4b5563', fontWeight: 700, fontSize: 10, flexShrink: 0 }}>{String.fromCharCode(65 + i)}.</span>
+                            <input
+                              id="clarify-other-input"
+                              value={clarifyOtherText}
+                              onChange={e => setClarifyOtherText(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter' && clarifyOtherText.trim()) handleClarifyAnswer(clarifyOtherText.trim()) }}
+                              placeholder="type your own answer..."
+                              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaed', fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}
+                            />
+                            {clarifyOtherText.trim() && (
+                              <button
+                                onClick={e => { e.stopPropagation(); handleClarifyAnswer(clarifyOtherText.trim()) }}
+                                style={{ background: 'transparent', border: 'none', color: '#34d399', cursor: 'pointer', fontSize: 11, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, padding: '2px 6px', flexShrink: 0 }}>
+                                →
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div key={i}
+                          onClick={() => handleClarifyAnswer(opt)}
+                          style={{ fontSize: 12, color: '#6b7280', background: '#0c0f14', border: '1px solid #14181e', borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.2)'; e.currentTarget.style.color = '#9ca3af' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = '#14181e'; e.currentTarget.style.color = '#6b7280' }}>
+                          <span style={{ color: '#34d399', fontWeight: 700, fontSize: 10, opacity: 0.5, flexShrink: 0 }}>{String.fromCharCode(65 + i)}.</span>
+                          {opt}
+                        </div>
+                      )
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                    <button
+                      onClick={() => { setClarifyDone(true); setClarifySummary('Building based on current context.') }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#9ca3af'}
+                      onMouseLeave={e => e.currentTarget.style.color = '#4b5563'}
+                      style={{ background: 'transparent', border: 'none', color: '#4b5563', cursor: 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '4px 8px', transition: 'color 0.15s' }}>
+                      skip → build now
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

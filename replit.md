@@ -56,8 +56,9 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 
 - Entry: `src/index.ts` — reads `PORT`, starts Express
 - App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
+- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health`; `src/routes/ai.ts` exposes `POST /ai/suggest` (prompt → AI suggestions) and `POST /ai/clarify` (prompt + previousAnswers → single clarifying question with multiple-choice options)
+- AI integration: Uses OpenAI via Replit AI Integrations proxy (env vars `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`), model `gpt-4o-mini`
+- Depends on: `@workspace/db`, `@workspace/api-zod`, `openai`
 - `pnpm --filter @workspace/api-server run dev` — run the dev server
 - `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
 - Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
@@ -103,7 +104,10 @@ React + Vite frontend-only workspace for the MASSA AI command workspace. Dark-th
 - InsideMassa.tsx has its own `useIsMobileIM()` hook for responsive behavior
 - Design: Terminal-inspired dark theme — bg `#0a0d10`, panel `#0a0d10`, terminal `#080a0e`, border `#14181e`/`#1c2028`, green accent `#34d399` with glow effects; monospace `JetBrains Mono` in UI chrome; `panel-header` CSS class for section labels; all inline styles, no Tailwind
 - Color palette: green `#34d399`, amber `#f59e0b`, red `#f87171`, blue `#60a5fa`, violet `#a78bfa`, text `#e8eaed`, muted `#6b7280`, dim `#4b5563`
-- Features: project cards (row/card views), build cards, chat modal, arch map modal, attachment menus, code stream
+- Features: project cards (row/card views), build cards, chat modal, arch map modal, attachment menus, code stream, AI-powered prompt suggestions, vague mode clarify wizard
+- AI Suggestions: Debounced (800ms) call to `/api/ai/suggest` when prompt is 12+ chars; shows AI-generated prompt expansions in the terminal console
+- Clarify Wizard: Single-question-at-a-time modal with multiple-choice options, powered by `/api/ai/clarify`; shows Q&A history, "Other" free-text option, skip-to-build, and ready-to-build summary
+- Vite proxy: `/api` requests proxied to API server at `http://localhost:8080`
 - Model registry: `src/data/modelRegistry.ts` — central registry of 12 AI models/tools (Claude, Claude Code, GPT-4o, Gemini, Lovable, Replit, Cursor, Bolt, Windsurf, n8n, Perplexity, Mistral) with categories, colors, capabilities, and contextual "why chosen" reason strings
 - ModelTooltip component: `src/components/ModelTooltip.tsx` — custom hover tooltip with 300ms delay, fade animation, dark theme styling; used on all model pill/badge instances
 - Logos: `src/lib/logos.ts` — SVG fallback logos for all models
