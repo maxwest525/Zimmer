@@ -1,8 +1,32 @@
 import { Router } from "express";
 import { db, ideasTable } from "@workspace/db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
+import { getResendClient } from "../lib/resend";
+
+const BACKUP_EMAIL = "Maxw@trumoveinc.com";
 
 const router = Router();
+
+async function emailIdea(content: string, category: string, source: string) {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    await client.emails.send({
+      from: fromEmail || "MASSA <onboarding@resend.dev>",
+      to: BACKUP_EMAIL,
+      subject: `[MASSA Idea] ${category} — ${content.slice(0, 60)}${content.length > 60 ? "..." : ""}`,
+      html: `
+        <div style="font-family:monospace;background:#0a0d10;color:#e8eaed;padding:24px;border-radius:8px;">
+          <h2 style="color:#34d399;font-size:14px;letter-spacing:2px;text-transform:uppercase;margin:0 0 16px;">New MASSA Idea</h2>
+          <p style="margin:0 0 12px;font-size:15px;line-height:1.6;">${content.replace(/\n/g, "<br>")}</p>
+          <hr style="border:none;border-top:1px solid #1c2028;margin:16px 0;">
+          <p style="margin:0;font-size:12px;color:#6b7280;">Category: ${category} &middot; Source: ${source} &middot; ${new Date().toLocaleString()}</p>
+        </div>
+      `,
+    });
+  } catch (err) {
+    console.error("Failed to send email backup:", err);
+  }
+}
 
 router.get("/ideas", async (_req, res) => {
   try {
@@ -25,14 +49,17 @@ router.post("/ideas", async (req, res) => {
       res.status(400).json({ error: "Content is required" });
       return;
     }
+    const cat = category || "general";
+    const src = source || "web";
     const [idea] = await db
       .insert(ideasTable)
       .values({
         content: content.trim(),
-        category: category || "general",
-        source: source || "web",
+        category: cat,
+        source: src,
       })
       .returning();
+    emailIdea(content.trim(), cat, src);
     res.json(idea);
   } catch (err) {
     console.error("Failed to create idea:", err);
@@ -102,23 +129,41 @@ router.get("/ideas/quick", (_req, res) => {
 <meta name="apple-mobile-web-app-title" content="MASSA Ideas">
 <title>MASSA — Quick Idea</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0d10;color:#e8eaed;font-family:'JetBrains Mono',monospace;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
-.wrap{width:100%;max-width:400px}
-h1{font-size:14px;color:#34d399;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;text-align:center}
-textarea{width:100%;background:#0c0f14;border:1px solid #1c2028;border-radius:8px;color:#e8eaed;font-family:inherit;font-size:16px;padding:14px;min-height:120px;resize:vertical;outline:none;transition:border-color .2s}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0d10;color:#e8eaed;font-family:'JetBrains Mono',monospace;min-height:100dvh;padding:20px;display:flex;flex-direction:column;align-items:center}
+.wrap{width:100%;max-width:440px;margin-top:20px}
+h1{font-size:14px;color:#34d399;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;text-align:center}
+textarea{width:100%;background:#0c0f14;border:1px solid #1c2028;border-radius:8px;color:#e8eaed;font-family:inherit;font-size:16px;padding:14px;min-height:100px;resize:vertical;outline:none;transition:border-color .2s}
 textarea:focus{border-color:#34d399}
 textarea::placeholder{color:#6b7280}
-.row{display:flex;gap:8px;margin-top:12px}
+.row{display:flex;gap:8px;margin-top:10px}
 select{flex:1;background:#0c0f14;border:1px solid #1c2028;border-radius:8px;color:#e8eaed;font-family:inherit;font-size:14px;padding:10px;outline:none;appearance:none;-webkit-appearance:none}
 select:focus{border-color:#34d399}
 button{flex:1;background:#34d399;color:#0a0d10;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;transition:opacity .2s}
 button:active{opacity:.7}
 button:disabled{opacity:.4;cursor:not-allowed}
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#34d399;color:#0a0d10;font-family:inherit;font-size:13px;font-weight:600;padding:10px 20px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#34d399;color:#0a0d10;font-family:inherit;font-size:13px;font-weight:600;padding:10px 20px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:10}
 .toast.show{opacity:1}
-.count{text-align:right;font-size:11px;color:#6b7280;margin-top:6px}
+.count{text-align:right;font-size:11px;color:#6b7280;margin-top:4px}
+.divider{border:none;border-top:1px solid #1c2028;margin:24px 0 16px}
+.section-title{font-size:12px;color:#34d399;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.section-title .count-badge{background:#1c2028;color:#9ca3af;font-size:11px;padding:2px 8px;border-radius:10px}
+.ideas-list{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;padding-right:4px}
+.ideas-list::-webkit-scrollbar{width:4px}
+.ideas-list::-webkit-scrollbar-track{background:transparent}
+.ideas-list::-webkit-scrollbar-thumb{background:#1c2028;border-radius:2px}
+.idea-card{background:#0c0f14;border:1px solid #1c2028;border-radius:8px;padding:12px;transition:border-color .2s}
+.idea-card:hover{border-color:#252a34}
+.idea-content{font-size:13px;line-height:1.5;color:#e8eaed;white-space:pre-wrap;word-break:break-word}
+.idea-meta{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;color:#6b7280}
+.idea-cat{background:#1c2028;color:#9ca3af;padding:1px 6px;border-radius:4px;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+.idea-star{color:#f59e0b}
+.empty{text-align:center;color:#6b7280;font-size:13px;padding:24px 0}
+.loading{text-align:center;color:#6b7280;font-size:13px;padding:24px 0}
+.tabs{display:flex;gap:4px;margin-bottom:12px}
+.tab{flex:1;background:#0c0f14;border:1px solid #1c2028;border-radius:6px;color:#6b7280;font-family:inherit;font-size:12px;padding:8px;cursor:pointer;text-align:center;transition:all .2s}
+.tab.active{background:#1c2028;color:#34d399;border-color:#34d399}
 </style>
 </head>
 <body>
@@ -137,23 +182,71 @@ button:disabled{opacity:.4;cursor:not-allowed}
 </select>
 <button id="btn" disabled>Send</button>
 </div>
+<hr class="divider">
+<div class="section-title">
+  <span>Recent Ideas</span>
+  <span class="count-badge" id="idea-count">...</span>
+</div>
+<div class="tabs">
+  <div class="tab active" data-filter="all">All</div>
+  <div class="tab" data-filter="starred">Starred</div>
+</div>
+<div id="ideas-container"><div class="loading">Loading ideas...</div></div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
 const txt=document.getElementById('txt'),btn=document.getElementById('btn'),cat=document.getElementById('cat'),len=document.getElementById('len'),toast=document.getElementById('toast');
+const container=document.getElementById('ideas-container'),countBadge=document.getElementById('idea-count');
+let allIdeas=[],currentFilter='all';
+
 txt.addEventListener('input',()=>{len.textContent=txt.value.length;btn.disabled=!txt.value.trim()});
 function showToast(msg,ok){toast.textContent=msg;toast.style.background=ok?'#34d399':'#ef4444';toast.style.color=ok?'#0a0d10':'#fff';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2000)}
+
+function timeAgo(d){const s=Math.floor((Date.now()-new Date(d).getTime())/1000);if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'}
+
+function renderIdeas(){
+  const ideas=currentFilter==='starred'?allIdeas.filter(i=>i.starred):allIdeas;
+  countBadge.textContent=ideas.length;
+  if(!ideas.length){container.innerHTML='<div class="empty">'+(currentFilter==='starred'?'No starred ideas yet':'No ideas yet — add one above!')+'</div>';return}
+  container.innerHTML='<div class="ideas-list">'+ideas.map(i=>'<div class="idea-card"><div class="idea-content">'+(i.starred?'<span class="idea-star">&#9733; </span>':'')+escHtml(i.content)+'</div><div class="idea-meta"><span class="idea-cat">'+escHtml(i.category)+'</span><span>'+escHtml(i.source)+'</span><span>'+timeAgo(i.created_at||i.createdAt)+'</span></div></div>').join('')+'</div>';
+}
+
+function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+async function loadIdeas(){
+  try{
+    const r=await fetch('/api/ideas');
+    if(!r.ok)throw new Error();
+    allIdeas=await r.json();
+    renderIdeas();
+  }catch{container.innerHTML='<div class="empty">Failed to load ideas</div>'}
+}
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    currentFilter=t.dataset.filter;
+    renderIdeas();
+  });
+});
+
 btn.addEventListener('click',async()=>{
   if(!txt.value.trim())return;
   btn.disabled=true;btn.textContent='...';
   try{
     const r=await fetch('/api/ideas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:txt.value.trim(),category:cat.value,source:'mobile'})});
     if(!r.ok)throw new Error();
-    txt.value='';len.textContent='0';showToast('Idea saved!',true);
+    const idea=await r.json();
+    txt.value='';len.textContent='0';showToast('Idea saved + emailed!',true);
+    allIdeas.unshift(idea);
+    renderIdeas();
   }catch{showToast('Failed to save',false)}
   finally{btn.disabled=false;btn.textContent='Send'}
 });
 txt.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&txt.value.trim()){e.preventDefault();btn.click()}});
+
+loadIdeas();
 </script>
 </body>
 </html>`);
@@ -193,6 +286,7 @@ router.post("/ideas/inbound", async (req, res) => {
         source,
       })
       .returning();
+    emailIdea(content.trim(), "inbox", source);
     if (isTwilio) {
       res.type("text/xml").send(
         `<Response><Message>Idea saved to MASSA.</Message></Response>`
