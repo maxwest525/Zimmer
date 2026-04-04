@@ -950,7 +950,7 @@ export function Overview() {
       fetch('/api/ai/suggest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: rawInput.trim() }),
+        body: JSON.stringify({ prompt: rawInput.trim(), model: 'sonnet-4.6' }),
         signal: controller.signal,
       })
         .then(r => r.json())
@@ -1673,7 +1673,7 @@ export function Overview() {
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                           {visibleSuggestions.map((s, i) => (
-                            <div key={`${i}-${s}`} onClick={() => setRawInput(s)}
+                            <div key={`${i}-${s}`} onClick={() => { setRawInput(s); setIgnoredAll(true); setAiSuggestions([]) }}
                               style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: '#6b7280', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 10, padding: '8px 10px 8px 14px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
                               onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#34d399'; e.currentTarget.style.color = '#d1d5db'; e.currentTarget.style.boxShadow = '0 0 12px rgba(52,211,153,0.08)' }}
                               onMouseLeave={e => { e.currentTarget.style.background = '#080a0e'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.boxShadow = 'none' }}>

@@ -9,10 +9,14 @@ const openai = new OpenAI({
 });
 
 router.post("/ai/suggest", async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt, model } = req.body;
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 5) {
     return res.json({ suggestions: [] });
   }
+
+  const modelContext = model
+    ? `The user is building with ${model}. Tailor suggestions to what works best with that tool — keep it practical, not theoretical.`
+    : "";
 
   try {
     const completion = await openai.chat.completions.create({
@@ -21,7 +25,17 @@ router.post("/ai/suggest", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You are MASSA AI, a build orchestration system. Given a user's project idea, suggest 2-3 improved/expanded versions of their prompt that would lead to better build results. Each suggestion should be a single sentence that expands on their idea with specifics about architecture, tech stack, or scope. Return ONLY a JSON array of strings, nothing else. Keep each under 120 characters.`,
+          content: `You help people write better prompts for AI coding tools. Given a user's idea, suggest 2-3 clearer, more specific versions of what they typed. ${modelContext}
+
+Rules:
+- Write like a human talking to an AI assistant, not like a technical spec
+- Focus on WHAT they want built and HOW it should work for the end user
+- Add useful details they might have forgotten (like "with mobile support" or "that saves to a database")
+- Do NOT mention architecture, frameworks, tech stacks, or implementation details
+- Keep each suggestion under 100 characters
+- Be conversational and clear — if a non-technical person reads it, they should understand it
+
+Return ONLY a JSON array of strings, nothing else.`,
         },
         { role: "user", content: prompt.trim() },
       ],
