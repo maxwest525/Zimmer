@@ -1557,16 +1557,15 @@ export function Overview() {
                           <div className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>AI SUGGESTIONS</div>
                           {suggestionsLoading && <div style={{ width: 4, height: 4, borderRadius: 999, background: '#34d399', animation: 'subtle-glow 1s ease-in-out infinite' }} />}
                         </div>
-                        {visibleSuggestions.length > 0 && (
-                          <button
-                            onClick={() => { setIgnoredAll(true); setAiSuggestions([]) }}
-                            onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)' }}
-                            onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.background = 'transparent' }}
-                            style={{ background: 'transparent', border: 'none', color: '#6b7280', fontSize: 9, cursor: 'pointer', padding: '2px 6px', borderRadius: 4, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s ease', letterSpacing: 0.3 }}
-                          >
-                            Ignore all suggestions
-                          </button>
-                        )}
+                        <button
+                          onClick={() => { setIgnoredAll(true); setAiSuggestions([]) }}
+                          onMouseEnter={e => { e.currentTarget.style.color = '#e8eaed' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = '#4b5563' }}
+                          style={{ background: 'transparent', border: 'none', color: '#4b5563', cursor: 'pointer', padding: '2px', borderRadius: 4, transition: 'color 0.15s ease', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          title="Dismiss suggestions"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
                       </div>
                       {suggestionsLoading && visibleSuggestions.length === 0 ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
@@ -1576,24 +1575,34 @@ export function Overview() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                           {visibleSuggestions.map((s, i) => (
                             <div key={`${i}-${s}`} onClick={() => setRawInput(s)}
-                              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#6b7280', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 20, padding: '5px 8px 5px 12px', cursor: 'pointer', lineHeight: 1.4, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
+                              style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 11, color: '#6b7280', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 10, padding: '6px 8px 6px 12px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
                               onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#34d399'; e.currentTarget.style.color = '#d1d5db'; e.currentTarget.style.boxShadow = '0 0 12px rgba(52,211,153,0.08)' }}
                               onMouseLeave={e => { e.currentTarget.style.background = '#080a0e'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.boxShadow = 'none' }}>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>
-                                <span style={{ color: '#34d399', fontWeight: 700, opacity: 0.5, flexShrink: 0 }}>{'›'}</span>
-                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{s}</span>
+                              <span style={{ display: 'flex', alignItems: 'flex-start', gap: 4, flex: 1, minWidth: 0 }}>
+                                <span style={{ color: '#34d399', fontWeight: 700, opacity: 0.5, flexShrink: 0, marginTop: 1 }}>{'›'}</span>
+                                <span>{s}</span>
                               </span>
                               <button
                                 onClick={e => { e.stopPropagation(); setDismissedSuggestions(prev => new Set(prev).add(s)) }}
                                 onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.1)' }}
                                 onMouseLeave={e => { e.currentTarget.style.color = '#4b5563'; e.currentTarget.style.background = 'transparent' }}
-                                style={{ background: 'transparent', border: 'none', color: '#4b5563', cursor: 'pointer', padding: '1px 3px', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s ease', lineHeight: 1 }}
+                                style={{ background: 'transparent', border: 'none', color: '#4b5563', cursor: 'pointer', padding: '1px 3px', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s ease', lineHeight: 1, marginTop: 2 }}
                               >
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                               </button>
                             </div>
                           ))}
                         </div>
+                      )}
+                      {visibleSuggestions.length > 0 && (
+                        <button
+                          onClick={() => { setIgnoredAll(true); setAiSuggestions([]) }}
+                          onMouseEnter={e => { e.currentTarget.style.color = '#9ca3af' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = '#4b5563' }}
+                          style={{ background: 'transparent', border: 'none', color: '#4b5563', fontSize: 9, cursor: 'pointer', padding: '6px 0 2px', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'color 0.15s ease', letterSpacing: 0.3, width: '100%', textAlign: 'center' }}
+                        >
+                          Ignore suggestions
+                        </button>
                       )}
                     </div>
                   )
