@@ -1762,6 +1762,25 @@ export function Overview() {
                               Preview
                             </button>
                           </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', border: `1px dashed ${c.border}`, borderRadius: 8, overflow: 'hidden', marginTop: 8, background: 'transparent' }}>
+                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', transition: 'background 0.15s', padding: '7px 10px', borderBottom: `1px dashed ${c.border}` }}
+                              onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
+                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                              <div style={{ width: 24, height: 24, borderRadius: 999, border: `1.5px dashed #333`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ fontSize: 13, color: '#555', lineHeight: 1 }}>+</div>
+                              </div>
+                              <div style={{ fontSize: 10, color: c.muted, fontWeight: 500 }}>Add Agent</div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', transition: 'background 0.15s', padding: '7px 10px' }}
+                              onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
+                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                              <div style={{ width: 24, height: 24, borderRadius: 999, border: `1.5px dashed #333`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ fontSize: 13, color: '#555', lineHeight: 1 }}>+</div>
+                              </div>
+                              <div style={{ fontSize: 10, color: c.muted, fontWeight: 500 }}>New Task</div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
