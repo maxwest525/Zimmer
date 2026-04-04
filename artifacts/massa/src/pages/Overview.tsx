@@ -1476,10 +1476,39 @@ export function Overview() {
                 </div>
                 {/* Bottom bar */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 14px 8px', borderTop: '1px solid #1e2330' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>mode:build</span>
-                    <div style={{ width: 1, height: 10, background: '#252a35' }} />
-                    <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>agent:multi</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      onMouseEnter={() => setHoveredArchBtn('arch-build')}
+                      onMouseLeave={() => setHoveredArchBtn(null)}
+                      onClick={() => { if (vagueMode && rawInput.trim().length > 0) openClarifyWizard() }}
+                      style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
+                      <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>EXECUTE
+                    </button>
+                    <ModelTooltip text={getModelReason('Claude')}>
+                      <div
+                        onMouseEnter={() => setHoveredArchBtn('claude-rec')}
+                        onMouseLeave={() => setHoveredArchBtn(null)}
+                        style={{ border: '1px solid #1e2330', padding: '5px 10px', borderRadius: 4, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' ? '#0f1215' : '#0a0d10', fontSize: 9, cursor: 'default', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                        <span style={{ color: '#9ca3af', marginRight: 4 }}>llm:</span>
+                        <span style={{ color: '#6b7280' }}>sonnet-4.6</span>
+                      </div>
+                    </ModelTooltip>
+                    <div style={{ position: 'relative' }}
+                      onMouseEnter={() => setHoveredArchBtn('nebulous-tip')}
+                      onMouseLeave={() => setHoveredArchBtn(null)}
+                    >
+                      <button
+                        onClick={() => setVagueMode(v => !v)}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = vagueMode ? 'rgba(52,211,153,0.06)' : '#0c0f14'; e.currentTarget.style.color = vagueMode ? '#34d399' : '#9ca3af' }}
+                        style={{ padding: '5px 10px', borderRadius: 4, border: vagueMode ? '1px solid rgba(52,211,153,0.3)' : '1px solid #1e2330', background: vagueMode ? 'rgba(52,211,153,0.06)' : '#0c0f14', color: vagueMode ? '#34d399' : '#9ca3af', fontWeight: 600, fontSize: 9, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'nowrap' }}>nebulous mode</button>
+                      {hoveredArchBtn === 'nebulous-tip' && (
+                        <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 8, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#9ca3af', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                          <div style={{ fontWeight: 700, color: '#e8eaed', marginBottom: 4, fontSize: 10 }}>NEBULOUS MODE {vagueMode ? '[ON]' : '[OFF]'}</div>
+                          When enabled, MASSA will ask clarifying questions before building if your prompt is broad or ambiguous.
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
                     <button
@@ -1538,41 +1567,6 @@ export function Overview() {
             )
           })()}
 
-
-          {/* Action bar — Terminal controls */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 20, alignItems: 'center' }}>
-            <button
-              onMouseEnter={() => setHoveredArchBtn('arch-build')}
-              onMouseLeave={() => setHoveredArchBtn(null)}
-              onClick={() => { if (vagueMode && rawInput.trim().length > 0) openClarifyWizard() }}
-              style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '8px 16px', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
-              <span style={{ marginRight: 6, opacity: 0.5 }}>▶</span>EXECUTE
-            </button>
-            <ModelTooltip text={getModelReason('Claude')}>
-              <div
-                onMouseEnter={() => setHoveredArchBtn('claude-rec')}
-                onMouseLeave={() => setHoveredArchBtn(null)}
-                style={{ border: '1px solid #1e2330', padding: '8px 12px', borderRadius: 6, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' ? '#0f1215' : '#0a0d10', fontSize: 11, cursor: 'default', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                <span style={{ color: '#9ca3af', marginRight: 4 }}>llm:</span>
-                <span style={{ color: '#6b7280' }}>sonnet-4.6</span>
-              </div>
-            </ModelTooltip>
-            {/* Vague mode toggle */}
-            <div style={{ position: 'relative' }}
-              onMouseEnter={() => setHoveredArchBtn('vague-tip')}
-              onMouseLeave={() => setHoveredArchBtn(null)}
-            >
-              <button
-                onClick={() => setVagueMode(v => !v)}
-                style={{ width: 30, height: 30, borderRadius: 6, border: vagueMode ? `1px solid rgba(52,211,153,0.3)` : '1px solid #1e2330', background: vagueMode ? 'rgba(52,211,153,0.06)' : '#0a0d10', color: vagueMode ? '#34d399' : '#9ca3af', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: vagueMode ? '0 0 8px rgba(52,211,153,0.1)' : 'none' }}>?</button>
-              {hoveredArchBtn === 'vague-tip' && (
-                <div style={{ position: 'absolute', bottom: '100%', right: 0, marginBottom: 8, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#9ca3af', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                  <div style={{ fontWeight: 700, color: '#e8eaed', marginBottom: 4, fontSize: 10 }}>VAGUE MODE {vagueMode ? '[ON]' : '[OFF]'}</div>
-                  When enabled, MASSA will ask clarifying questions before building if your prompt is broad or ambiguous.
-                </div>
-              )}
-            </div>
-          </div>
 
           {/* Projects header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
