@@ -178,6 +178,35 @@ export const MODEL_REGISTRY: ModelEntry[] = [
       research: 'Rapidly summarizes documents and extracts key points',
     },
   },
+  {
+    name: 'Grok',
+    label: 'Reason',
+    category: 'thinking',
+    role: 'Conversational reasoner',
+    color: '#e44d26',
+    capabilities: ['Real-time info', 'Conversational reasoning', 'Humor', 'Analysis'],
+    reasons: {
+      default: 'Selected for real-time reasoning with a conversational edge',
+      ui: 'Generates creative copy and conversational UI text',
+      backend: 'Analyzes logic and suggests unconventional solutions',
+      research: 'Pulls in current information and synthesizes insights',
+      automation: 'Reasons through complex routing with contextual awareness',
+    },
+  },
+  {
+    name: 'Gemma',
+    label: 'Lite',
+    category: 'thinking',
+    role: 'Lightweight local model',
+    color: '#4285f4',
+    capabilities: ['Fast tasks', 'On-device', 'Summarization', 'Classification'],
+    reasons: {
+      default: 'Selected for fast, lightweight tasks that benefit from local execution',
+      backend: 'Handles quick classification and data labeling',
+      automation: 'Runs low-latency triage and intent detection',
+      research: 'Summarizes short documents and extracts structured data',
+    },
+  },
 ]
 
 export const MODEL_COLORS: Record<string, string> = {

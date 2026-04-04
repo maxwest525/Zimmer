@@ -104,13 +104,18 @@ export function InsideMassa() {
     },
     {
       input: 'Analyze competitor pricing and build a comparison dashboard.',
-      uses: ['Perplexity', 'Gemini', 'Replit'],
-      why: 'Research + multimodal analysis + full-stack deploy',
+      uses: ['Perplexity', 'Grok', 'Gemini', 'Replit'],
+      why: 'Research + real-time reasoning + multimodal analysis + deploy',
     },
     {
       input: 'Refactor our entire auth module to use OAuth2.',
       uses: ['Claude', 'Cursor', 'Windsurf'],
       why: 'Planning + precise edits + cross-file refactoring',
+    },
+    {
+      input: 'Classify and tag 10k support tickets, then summarize trends.',
+      uses: ['Gemma', 'Mistral', 'Claude', 'n8n'],
+      why: 'Fast classification + summarization + planning + automation',
     },
   ]
 
@@ -330,6 +335,65 @@ export function InsideMassa() {
                   <div style={{ fontSize: 11, color: c.muted }}>{sys.why}</div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* INTERCHANGEABILITY NOTES */}
+          <div style={{ marginBottom: 36 }}>
+            <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 14 }}>MODEL INTERCHANGEABILITY</div>
+            <div style={{ border: `1px solid ${c.border}`, borderRadius: 16, padding: '20px 22px', background: c.alt }}>
+              <p style={{ margin: '0 0 14px', fontSize: 13, color: c.muted, lineHeight: 1.6 }}>
+                MASSA picks the best model for each task, but several models can fill a similar role depending on the situation. Here's how they overlap:
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
+                {[
+                  {
+                    pair: 'Claude & GPT-4o & Grok',
+                    colors: ['#34d399', '#a78bfa', '#e44d26'],
+                    note: 'All three handle deep reasoning and analysis. Claude excels at structured planning, GPT-4o at multi-step logic and math, and Grok brings real-time awareness with a conversational style. They can often fill a similar role depending on the task.',
+                  },
+                  {
+                    pair: 'Gemma & Mistral',
+                    colors: ['#4285f4', '#fb923c'],
+                    note: 'Both are lightweight, fast models suited for quick tasks like summarization, classification, and triage. Gemma is optimized for on-device and local execution, while Mistral shines in translation and rapid inference — either can step in when speed matters most.',
+                  },
+                  {
+                    pair: 'Lovable & Replit & Bolt',
+                    colors: ['#f472b6', '#f97316', '#fbbf24'],
+                    note: 'All three can produce UI and ship working apps quickly. Lovable focuses on polished front-end components, Replit handles full-stack prototyping with deployment, and Bolt specializes in rapid scaffolding and MVPs — they can substitute for one another in build-focused tasks.',
+                  },
+                  {
+                    pair: 'Cursor & Windsurf',
+                    colors: ['#818cf8', '#22d3ee'],
+                    note: 'Both are code-editing tools that work across files. Cursor is best for precise refactoring and debugging, while Windsurf excels at large-scale, codebase-aware multi-file edits — either can handle code changes depending on scope.',
+                  },
+                  {
+                    pair: 'Perplexity & Grok',
+                    colors: ['#f59e0b', '#e44d26'],
+                    note: 'Both can pull in current information for research. Perplexity is purpose-built for structured web search and fact-checking, while Grok offers a more conversational approach to real-time reasoning — they can often substitute when up-to-date knowledge is needed.',
+                  },
+                  {
+                    pair: 'Gemini & GPT-4o',
+                    colors: ['#60a5fa', '#a78bfa'],
+                    note: 'Both support multimodal inputs and long-context analysis. Gemini specializes in vision and mixed-media tasks, while GPT-4o brings stronger structured reasoning — they can fill a similar role for complex, multi-format work.',
+                  },
+                ].map((item) => (
+                  <div key={item.pair} style={{
+                    border: `1px solid ${c.border}`,
+                    borderRadius: 12,
+                    padding: '14px 16px',
+                    background: c.panel,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                      {item.colors.map((col, ci) => (
+                        <div key={ci} style={{ width: 8, height: 8, borderRadius: '50%', background: col }} />
+                      ))}
+                      <span style={{ fontSize: 12, fontWeight: 700, color: c.text }}>{item.pair}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.55 }}>{item.note}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

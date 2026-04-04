@@ -36,7 +36,7 @@ const SKILL_COLORS: Record<string, string> = {
   'APIs': '#f59e0b',
 }
 
-const SKILL_PRIORITY = ['n8n', 'Perplexity', 'Lovable', 'Replit', 'Bolt', 'Windsurf', 'Cursor', 'Claude Code', 'Gemini', 'GPT-4o', 'Mistral', 'APIs', 'Claude']
+const SKILL_PRIORITY = ['n8n', 'Perplexity', 'Lovable', 'Replit', 'Bolt', 'Windsurf', 'Cursor', 'Claude Code', 'Gemini', 'GPT-4o', 'Mistral', 'Grok', 'Gemma', 'APIs', 'Claude']
 
 function skillColor(stack: string[]): string {
   for (const s of SKILL_PRIORITY) {

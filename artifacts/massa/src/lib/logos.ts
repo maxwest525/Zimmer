@@ -108,6 +108,20 @@ export const COMPANY_LOGOS: Record<string, LogoInfo> = {
     ),
     label: 'Mistral',
   },
+  'Grok': {
+    url: 'https://logo.clearbit.com/x.ai',
+    fallbackUrl: toDataUrl(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a0906"/><text x="12" y="16.5" text-anchor="middle" fill="#e44d26" font-size="13" font-weight="800" font-family="sans-serif">G</text></svg>`
+    ),
+    label: 'xAI',
+  },
+  'Gemma': {
+    url: 'https://logo.clearbit.com/google.com',
+    fallbackUrl: toDataUrl(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0a1628"/><path d="M12 4 L18 8 L18 16 L12 20 L6 16 L6 8 Z" fill="none" stroke="#4285f4" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="#4285f4"/></svg>`
+    ),
+    label: 'Google',
+  },
 }
 
 export function getLogoInfo(name: string): LogoInfo | null {
