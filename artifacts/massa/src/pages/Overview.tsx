@@ -1572,8 +1572,8 @@ export function Overview() {
                   </div>
                 </div>
                 {/* Bottom bar */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 14px 8px', borderTop: '1px solid #1e2330' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px 10px', borderTop: '1px solid #1e2330' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <button
                       onMouseEnter={() => setHoveredArchBtn('arch-build')}
                       onMouseLeave={() => setHoveredArchBtn(null)}
