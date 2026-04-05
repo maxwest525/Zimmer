@@ -5,13 +5,11 @@ import { InlineCompanyLogo } from "@/components/CompanyLogo";
 import {
   ChevronDown,
   ChevronUp,
-  Loader2,
   CheckCircle2,
-  Clock,
-  XCircle,
   Layers,
   FileOutput,
 } from "lucide-react";
+import { getPhaseIcon, getActionIcon } from "@/lib/actionIcons";
 
 interface StatusBadgeProps {
   status: TaskStatus;
@@ -25,12 +23,12 @@ function StatusBadge({ status }: StatusBadgeProps) {
     running: {
       label: "Running",
       className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_6px_rgba(52,211,153,0.1)]",
-      icon: <Loader2 className="w-3 h-3 animate-spin" />,
+      icon: <span className="w-3 h-3 inline-flex items-center justify-center">{getPhaseIcon('building', 12)}</span>,
     },
     queued: {
       label: "Queued",
       className: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-      icon: <Clock className="w-3 h-3" />,
+      icon: <span className="w-3 h-3 inline-flex items-center justify-center">{getPhaseIcon('queued', 12)}</span>,
     },
     completed: {
       label: "",
@@ -40,12 +38,12 @@ function StatusBadge({ status }: StatusBadgeProps) {
     failed: {
       label: "Failed",
       className: "bg-red-500/10 text-red-400 border-red-500/20",
-      icon: <XCircle className="w-3 h-3" />,
+      icon: <span className="w-3 h-3 inline-flex items-center justify-center">{getActionIcon('fix-error', 12)}</span>,
     },
     "needs-review": {
       label: "Needs Review",
       className: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-      icon: <Clock className="w-3 h-3" />,
+      icon: <span className="w-3 h-3 inline-flex items-center justify-center">{getPhaseIcon('deploying', 12)}</span>,
     },
   };
 

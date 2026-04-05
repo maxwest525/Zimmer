@@ -10,7 +10,7 @@ import { MODEL_COLORS, getModelReason } from '@/data/modelRegistry'
 import { TenantSelector } from '@/components/TenantSelector'
 import { useTenant } from '@/contexts/TenantContext'
 import { useProjects } from '@/contexts/ProjectContext'
-import { MessageSquare, ArrowRight, AlertTriangle, Eye, Play } from 'lucide-react'
+import { getPhaseIcon, getActionIcon, getTabIcon, ThinkingIcon, BuildingIcon } from '@/lib/actionIcons'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -70,33 +70,38 @@ function getPhase(builds: Build[]): Phase {
   return 'deploying'
 }
 
-const PHASE_META: Record<Phase, { label: string; color: string; desc: string }> = {
-  thinking: { label: 'Thinking', color: '#a78bfa', desc: 'Claude is interpreting and planning the work' },
-  building: { label: 'Building', color: '#34d399', desc: 'Claude Code is executing the build' },
-  deploying: { label: 'Deploying', color: '#60a5fa', desc: 'Lovable / Replit is rendering the interface' },
-  done: { label: 'Complete', color: '#4ade80', desc: 'All builds finished successfully' },
-  queued: { label: 'Queued', color: '#f59e0b', desc: 'Waiting to start' },
+const PHASE_META: Record<Phase, { label: string; color: string; desc: string; icon: (size?: number) => React.ReactNode }> = {
+  thinking: { label: 'Thinking', color: '#a78bfa', desc: 'Claude is interpreting and planning the work', icon: (s = 12) => getPhaseIcon('thinking', s) },
+  building: { label: 'Building', color: '#34d399', desc: 'Claude Code is executing the build', icon: (s = 12) => getPhaseIcon('building', s) },
+  deploying: { label: 'Deploying', color: '#60a5fa', desc: 'Lovable / Replit is rendering the interface', icon: (s = 12) => getPhaseIcon('deploying', s) },
+  done: { label: 'Complete', color: '#4ade80', desc: 'All builds finished successfully', icon: (s = 12) => getPhaseIcon('done', s) },
+  queued: { label: 'Queued', color: '#f59e0b', desc: 'Waiting to start', icon: (s = 12) => getPhaseIcon('queued', s) },
 }
 
 function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: Record<string, string>; size?: 'sm' | 'lg' }) {
   const fs = size === 'lg' ? 13 : 11
   const pad = size === 'lg' ? '5px 12px' : '3px 8px'
+  const iconSize = size === 'lg' ? 12 : 10
   if (status === 'running') return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#e8eaed', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', padding: pad, borderRadius: 999, fontWeight: 600, boxShadow: '0 0 6px rgba(52,211,153,0.15)' }}>
-      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#34d399', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />
+      <span style={{ display: 'inline-flex', flexShrink: 0, color: '#34d399' }}>{getPhaseIcon('building', iconSize)}</span>
       Building
     </span>
   )
   if (status === 'queued') return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f59e0b', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
-      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#f59e0b', display: 'inline-block', flexShrink: 0 }} /> Pending
+      <span style={{ display: 'inline-flex', flexShrink: 0, color: '#f59e0b' }}>{getPhaseIcon('queued', iconSize)}</span> Pending
     </span>
   )
   if (status === 'complete') return null
   if (status === 'failed') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f87171', background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>✕ Failed</span>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f87171', background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
+      <span style={{ display: 'inline-flex', flexShrink: 0, color: '#f87171' }}>{getActionIcon('fix-error', iconSize)}</span> Failed
+    </span>
   )
-  return <span style={{ fontSize: fs, color: '#9ca3af', background: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', padding: pad, borderRadius: 999, fontWeight: 600 }}>Idle</span>
+  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#9ca3af', background: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
+    <span style={{ display: 'inline-flex', flexShrink: 0, color: '#9ca3af' }}>{getPhaseIcon('queued', iconSize)}</span> Idle
+  </span>
 }
 
 function getBuildType(stack: string[], title: string): 'ui' | 'backend' | 'database' | 'automation' {
@@ -2145,7 +2150,7 @@ export function Overview() {
                         {thinkingLines.length > 0 && (
                           <Ticker lines={thinkingLines} render={(line) => (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 4 }}>
-                              <span style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>▸</span>
+                              <span style={{ display: 'inline-flex', flexShrink: 0, color: '#a78bfa' }}><ThinkingIcon size={10} /></span>
                               <span style={{ fontSize: 10, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.agent}</span>
                               <span style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.text}</span>
                             </div>
@@ -2155,7 +2160,7 @@ export function Overview() {
                         {codeStreamLines.length > 0 && (
                           <Ticker lines={codeStreamLines} render={(line) => (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 6 }}>
-                              <span style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>›</span>
+                              <span style={{ display: 'inline-flex', flexShrink: 0, color: '#34d399' }}><BuildingIcon size={10} /></span>
                               <span style={{ fontSize: 10, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.file}</span>
                               <span style={{ fontSize: 10, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.code}</span>
                             </div>
@@ -2164,13 +2169,6 @@ export function Overview() {
 
                         {(() => {
                           type ActionType = 'response-ready' | 'review-plan' | 'run-build' | 'fix-error' | 'apply-changes'
-                          const actionIconMap: Record<ActionType, typeof MessageSquare> = {
-                            'response-ready': MessageSquare,
-                            'apply-changes': ArrowRight,
-                            'fix-error': AlertTriangle,
-                            'review-plan': Eye,
-                            'run-build': Play,
-                          }
                           const getProjectActionInfo = (build: typeof allBuilds[0]): { type: ActionType; label: string; color: string; tab: 'chat' | 'details' } | null => {
                             const msgs = chatMessages[build.id]
                             const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
@@ -2243,13 +2241,13 @@ export function Overview() {
                                       style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', cursor: 'pointer', borderTop: idx > 0 ? '1px solid #14181e' : 'none', transition: 'background 0.15s' }}
                                     >
                                       {item.action ? (
-                                        (() => { const Icon = actionIconMap[item.action.type]; return <Icon size={10} style={{ color: item.action.color, flexShrink: 0 }} /> })()
+                                        <span style={{ display: 'inline-flex', flexShrink: 0, color: item.action.color }}>{getActionIcon(item.action.type, 10)}</span>
                                       ) : (
                                         <span style={{ fontSize: 9, color: statusColor(item.status), fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>▸</span>
                                       )}
                                       <span style={{ fontSize: 9, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
                                       {item.action ? (
-                                        <span style={{ fontSize: 8, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: 'transparent', borderRadius: 3, border: 'none', flexShrink: 0, fontWeight: 600 }}>{item.action.label}</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: 'transparent', borderRadius: 3, border: 'none', flexShrink: 0, fontWeight: 600 }}><span style={{ display: 'inline-flex', color: item.action.color }}>{getActionIcon(item.action.type, 9)}</span>{item.action.label}</span>
                                       ) : (
                                         <span style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 4px', background: '#111', borderRadius: 3, flexShrink: 0 }}>{item.status}</span>
                                       )}
@@ -2460,13 +2458,6 @@ export function Overview() {
           {/* ACTION REQUIRED Panel */}
           {(() => {
             type ActionType = 'response-ready' | 'review-plan' | 'run-build' | 'fix-error' | 'apply-changes'
-            const actionIconMap: Record<ActionType, typeof MessageSquare> = {
-              'response-ready': MessageSquare,
-              'apply-changes': ArrowRight,
-              'fix-error': AlertTriangle,
-              'review-plan': Eye,
-              'run-build': Play,
-            }
             const getActionInfo = (build: Build & { projectName: string }): { type: ActionType; label: string; color: string; tab: 'chat' | 'details' } => {
               const msgs = chatMessages[build.id]
               const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
@@ -2545,7 +2536,7 @@ export function Overview() {
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          {(() => { const Icon = actionIconMap[item.action.type]; return <Icon size={14} style={{ color: item.action.color, flexShrink: 0 }} /> })()}
+                          <span style={{ display: 'inline-flex', flexShrink: 0, color: item.action.color }}>{getActionIcon(item.action.type, 14)}</span>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4 }}>{item.projectName}</div>
                             <div style={{ fontSize: 9, color: '#9ca3af', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2 }}>{item.title}</div>
@@ -2572,7 +2563,7 @@ export function Overview() {
                               cursor: 'pointer',
                               transition: 'all 0.15s ease',
                               flexShrink: 0,
-                            }}>{item.action.label}</button>
+                            }}><span style={{ display: 'inline-flex', marginRight: 4 }}>{getActionIcon(item.action.type, 9)}</span>{item.action.label}</button>
                           <button
                             onClick={(e) => {
                               const el = e.currentTarget.closest('[data-action-item]') as HTMLElement
@@ -2626,7 +2617,7 @@ export function Overview() {
                     <div key={`feed-${entry.id}`} style={{ padding: '5px 12px', borderBottom: `1px solid ${c.border}33`, fontFamily: 'inherit', lineHeight: 1.6 }}>
                       <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.buildName}</div>
                       <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.agent} — {entry.status}</div>
-                      <div style={{ fontSize: 10, color: pm.color, fontVariantNumeric: 'tabular-nums' }}>{entry.time} - {pm.label}</div>
+                      <div style={{ fontSize: 10, color: pm.color, fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ display: 'inline-flex', flexShrink: 0 }}>{pm.icon(10)}</span>{entry.time} - {pm.label}</div>
                     </div>
                   )
                 })}
@@ -3044,15 +3035,15 @@ export function Overview() {
 
                     <div style={{ display: 'flex', gap: 1, background: '#0d1014', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 0, borderBottom: '1px solid #252a35', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }}>
                       {([
-                        { key: 'chat' as const, label: 'Chat', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
-                        { key: 'archmap' as const, label: 'Arch Map', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
-                        { key: 'preview' as const, label: 'Preview', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> },
-                        { key: 'addagent' as const, label: '+ Agent', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> },
-                        { key: 'addtask' as const, label: '+ Task', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> },
-                        { key: 'details' as const, label: 'Details', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> },
-                        { key: 'code' as const, label: 'Code', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> },
-                        { key: 'thinking' as const, label: 'Thinking', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg> },
-                        { key: 'revert' as const, label: 'Revert', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> },
+                        { key: 'chat' as const, label: 'Chat', icon: getTabIcon('chat') },
+                        { key: 'archmap' as const, label: 'Arch Map', icon: getTabIcon('archmap') },
+                        { key: 'preview' as const, label: 'Preview', icon: getTabIcon('preview') },
+                        { key: 'addagent' as const, label: '+ Agent', icon: getTabIcon('addagent') },
+                        { key: 'addtask' as const, label: '+ Task', icon: getTabIcon('addtask') },
+                        { key: 'details' as const, label: 'Details', icon: getTabIcon('details') },
+                        { key: 'code' as const, label: 'Code', icon: getTabIcon('code') },
+                        { key: 'thinking' as const, label: 'Thinking', icon: getTabIcon('thinking') },
+                        { key: 'revert' as const, label: 'Revert', icon: getTabIcon('revert') },
                       ]).map(tab => {
                         const isActive = buildModalTab === tab.key;
                         return (
