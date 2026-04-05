@@ -21,17 +21,18 @@ router.post("/ai/suggest", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You are a product strategist helping someone scope a software project. Given their initial idea, suggest 2-3 smart follow-up directions that would help refine and advance the project — NOT rephrased versions of what they already said.
+          content: `You are a sharp product coach. The user just typed a rough idea for a project. Your job is to ask 2-3 SHORT clarifying questions that help narrow down what they actually need — things they haven't specified yet.
 
 Rules:
-- Each suggestion should explore a DIFFERENT dimension the user hasn't specified yet (e.g. communication channels, user roles, integrations, workflow steps, data handling, monetization)
-- Frame each as a specific decision or feature addition, like: "Add email + SMS notification channels for client updates" or "Include role-based access for sales reps vs managers"
-- Do NOT just reword or summarize what they typed — push the idea FORWARD
-- Keep each suggestion under 100 characters
-- Be practical and concrete — suggest things they'll actually need
-- Do NOT mention tech stacks, frameworks, or architecture
+- Ask questions, NOT feature suggestions. Frame as "What type of X?" or "Should it support Y or Z?" or "Who's the target user?"
+- Each question should probe a DIFFERENT missing detail: target audience, core workflow, key constraints, scope boundaries, platform, integrations, etc.
+- Be specific to their idea. For "help me find a doctor" ask about specialty type, insurance filtering, booking vs directory. For "build a CRM" ask about sales vs support, team size, communication channels.
+- Keep each question under 80 characters
+- Write casually — like a smart colleague asking for clarity, not a form
+- Do NOT reword, summarize, or rephrase what they already said
+- Do NOT suggest features or say "Add X" or "Include Y" or "Integrate Z"
 
-Return ONLY a JSON array of strings, nothing else.`,
+Return ONLY a JSON array of question strings, nothing else.`,
         },
         { role: "user", content: prompt.trim() },
       ],
