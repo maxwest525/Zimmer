@@ -29,7 +29,7 @@ function StatusIcon({ status, className }: StatusIconProps) {
     return (
       <span
         className={cn(
-          "inline-block w-2 h-2 rounded-full bg-emerald-500",
+          "inline-block w-2 h-2 rounded-full bg-white",
           className
         )}
       />
@@ -38,7 +38,7 @@ function StatusIcon({ status, className }: StatusIconProps) {
   if (status === "needs-review") {
     return (
       <AlertCircle
-        className={cn("w-3.5 h-3.5 text-amber-500", className)}
+        className={cn("w-3.5 h-3.5 text-white", className)}
         strokeWidth={2}
       />
     );
@@ -46,7 +46,7 @@ function StatusIcon({ status, className }: StatusIconProps) {
   if (status === "failed") {
     return (
       <XCircle
-        className={cn("w-3.5 h-3.5 text-red-500", className)}
+        className={cn("w-3.5 h-3.5 text-white", className)}
         strokeWidth={2}
       />
     );
@@ -54,14 +54,14 @@ function StatusIcon({ status, className }: StatusIconProps) {
   if (status === "completed") {
     return (
       <CheckCircle2
-        className={cn("w-3.5 h-3.5 text-emerald-500", className)}
+        className={cn("w-3.5 h-3.5 text-white", className)}
         strokeWidth={2}
       />
     );
   }
   return (
     <Circle
-      className={cn("w-3.5 h-3.5 text-muted-foreground/70", className)}
+      className={cn("w-3.5 h-3.5 text-white", className)}
       strokeWidth={2}
     />
   );
@@ -137,7 +137,7 @@ export function ProjectSidebar({
         <button
           onClick={() => setManualCollapsed((c) => (c === null ? !isNarrow : !c))}
           className={cn(
-            "flex items-center justify-center w-6 h-6 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors",
+            "flex items-center justify-center w-6 h-6 rounded hover:bg-accent text-white hover:text-white transition-colors",
             collapsed && "mx-auto"
           )}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -183,7 +183,7 @@ export function ProjectSidebar({
           )}
           title="Image Generator"
         >
-          <ImagePlus className="w-3.5 h-3.5 shrink-0 text-violet-400" />
+          <ImagePlus className="w-3.5 h-3.5 shrink-0 text-white" />
           {!collapsed && <span>Image Generator</span>}
         </button>
         <button
@@ -194,7 +194,7 @@ export function ProjectSidebar({
           )}
           title="Video Generator"
         >
-          <Film className="w-3.5 h-3.5 shrink-0 text-cyan-400" />
+          <Film className="w-3.5 h-3.5 shrink-0 text-white" />
           {!collapsed && <span>Video Generator</span>}
         </button>
         <button
@@ -205,7 +205,7 @@ export function ProjectSidebar({
           )}
           title="Figma"
         >
-          <Layers className="w-3.5 h-3.5 shrink-0 text-pink-400" />
+          <Layers className="w-3.5 h-3.5 shrink-0 text-white" />
           {!collapsed && <span>Figma</span>}
         </button>
       </div>
@@ -261,7 +261,7 @@ export function ProjectSidebar({
                     className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-accent transition-all cursor-pointer"
                     title="More actions"
                   >
-                    <CheckCircle2 className="w-3 h-3 text-muted-foreground/70 hover:text-emerald-500" />
+                    <CheckCircle2 className="w-3 h-3 text-muted-foreground/70 hover:text-white" />
                   </span>
                 )}
               </button>
@@ -274,7 +274,7 @@ export function ProjectSidebar({
                     }}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left hover:bg-accent transition-colors"
                   >
-                    <PackageCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    <PackageCheck className="w-3.5 h-3.5 text-white" />
                     <span>Push to Completed</span>
                   </button>
                 </div>
@@ -293,7 +293,7 @@ export function ProjectSidebar({
           )}
           title="Completed Products"
         >
-          <PackageCheck className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+          <PackageCheck className="w-3.5 h-3.5 shrink-0 text-white" />
           {!collapsed && (
             <>
               <span className="flex-1 text-left">Completed Products</span>
