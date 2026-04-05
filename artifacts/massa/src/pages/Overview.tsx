@@ -2102,7 +2102,7 @@ export function Overview() {
                     <div
                       style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '260px minmax(0, 1fr)', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: isMobile ? 10 : 14, background: c.alt }}>
 
-                      <div onClick={() => setSelectedProjectId(project.id)} style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+                      <div onClick={() => setSelectedProjectId(project.id)} style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0, alignSelf: 'stretch' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                           <div style={{ fontWeight: 700, fontSize: 17, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                             {project.name}
@@ -2168,12 +2168,12 @@ export function Overview() {
                           ))}
                         </div>
 
-                        <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
+                        <div style={{ display: 'flex', gap: 5, flex: 1, minHeight: 36, marginBottom: 10 }}>
                           {['+ Agent', '+ Task'].map(label => (
                             <button key={label}
                               onMouseEnter={e => { e.currentTarget.style.background = '#0f1215'; e.currentTarget.style.color = '#ccc'; e.currentTarget.style.borderColor = '#34d399' }}
                               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = c.border }}
-                              style={{ flex: 1, textAlign: 'center', padding: '6px 0', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s, border-color 0.15s' }}>
+                              style={{ flex: 1, textAlign: 'center', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', fontSize: 11, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s, border-color 0.15s', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               {label}
                             </button>
                           ))}
