@@ -1021,6 +1021,7 @@ export function Overview() {
   const [chatProject, setChatProject] = useState<string | null>(null)
   const [chatProjectBuildId, setChatProjectBuildId] = useState<string | null>(null)
   const [expandedBuildId, setExpandedBuildId] = useState<string | null>(null)
+  const [expandedBuildCard, setExpandedBuildCard] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
   const [buildModalTab, setBuildModalTab] = useState<'chat' | 'details' | 'code' | 'thinking' | 'revert' | 'preview'>('chat')
   const [revertConfirmed, setRevertConfirmed] = useState<string | null>(null)
@@ -1623,7 +1624,7 @@ export function Overview() {
       )}
 
       {/* 3-COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 42px' : 'minmax(0, 1fr) 260px') : (`${leftNavCollapsed ? '42px' : '180px'} minmax(0, 1fr) ${rightPanelCollapsed ? '42px' : '260px'}`), gap: isMobile ? 12 : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 42px' : 'minmax(0, 1fr) 200px') : (`${leftNavCollapsed ? '42px' : '160px'} minmax(0, 1fr) ${rightPanelCollapsed ? '42px' : '200px'}`), gap: isMobile ? 12 : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease' }}>
 
         {/* LEFT SIDEBAR — hidden on mobile/tablet */}
         {isDesktop && <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: leftNavCollapsed ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2, overflow: 'hidden', transition: 'padding 0.3s ease' }}>
@@ -1974,6 +1975,7 @@ export function Overview() {
                 <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 16, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { paddingBottom: 6 }) }}>
                   {project.builds.map((build) => {
                     const sc = skillColor(build.stack)
+                    const ps = primarySkill(build.stack)
                     const isRunning = build.status === 'running'
                     const isFailed = build.status === 'failed'
                     const isComplete = build.status === 'complete'
@@ -1981,11 +1983,12 @@ export function Overview() {
                     const isDragOver = dragOverId === build.id && draggedBuild?.buildId !== build.id
                     const bt = getBuildType(build.stack, build.title)
                     const statusText = getInlineStatus(build)
+                    const isCardExpanded = expandedBuildCard === build.id
 
                     return (
                       <div key={build.id} draggable onDragStart={() => handleDragStart(build.id, project.id)} onDragOver={e => handleDragOver(e, build.id)} onDrop={e => handleDrop(e, build.id, project.id)} onDragEnd={handleDragEnd}
                         onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(build.id) }}
-                        style={{ ...(column ? { width: '100%' } : { minWidth: 176, maxWidth: 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : isComplete ? `${sc}30` : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s' }}>
+                        style={{ ...(column ? { width: '100%' } : { minWidth: isCardExpanded ? 260 : 176, maxWidth: isCardExpanded ? 260 : 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : isComplete ? `${sc}30` : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s, min-width 0.2s, max-width 0.2s' }}>
 
                         {column ? (
                           <>
@@ -1997,6 +2000,7 @@ export function Overview() {
                               <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                                   <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
+                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
                                 </div>
                                 <div style={{ fontSize: 10, color: isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
                               </div>
@@ -2019,8 +2023,18 @@ export function Overview() {
                           <>
                             <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
                             <div style={{ padding: '8px 10px 8px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                                <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{build.title}</div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 4 }}>
+                                <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setExpandedBuildCard(isCardExpanded ? null : build.id) }}
+                                    title={isCardExpanded ? 'Collapse' : 'Expand'}
+                                    style={{ width: 20, height: 20, borderRadius: 4, border: `1px solid ${c.border}`, background: isCardExpanded ? `${sc}15` : 'transparent', color: isCardExpanded ? sc : c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, flexShrink: 0, padding: 0, transition: 'color 0.15s, border-color 0.15s, background 0.15s' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = sc; e.currentTarget.style.borderColor = sc }}
+                                    onMouseLeave={e => { if (!isCardExpanded) { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border } }}
+                                  ><span style={{ transform: isCardExpanded ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', display: 'inline-block' }}>▸</span></button>
+                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
+                                </div>
                               </div>
                               <div style={{ height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden', marginBottom: 4 }}>
                                 <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
@@ -2046,6 +2060,47 @@ export function Overview() {
                                   }}>{l}</div>
                                 ))}
                               </div>
+
+                              {isCardExpanded && (() => {
+                                const ctx = (build.buildContext || 'backend') as string
+                                const snippets = CODE_SNIPPETS[ctx] || CODE_SNIPPETS.backend
+                                const buildSnippets = snippets.slice(0, 3)
+                                return (
+                                  <div style={{ marginTop: 8, borderTop: `1px solid ${c.border}`, paddingTop: 8 }}>
+                                    <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Thinking</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}`, marginBottom: 6, overflow: 'hidden' }}>
+                                      <span style={{ fontSize: 9, color: '#555', flexShrink: 0 }}>▸</span>
+                                      <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{build.agent}</span>
+                                      <span style={{ fontSize: 9, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{statusText}</span>
+                                    </div>
+
+                                    <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Code</div>
+                                    {buildSnippets.map((s, si) => (
+                                      <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}`, marginBottom: 3, overflow: 'hidden' }}>
+                                        <span style={{ fontSize: 8, color: '#555', flexShrink: 0 }}>›</span>
+                                        <span style={{ fontSize: 8, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{s.file}</span>
+                                        <span style={{ fontSize: 8, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.code}</span>
+                                      </div>
+                                    ))}
+
+                                    <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, marginTop: 6, textTransform: 'uppercase' }}>Build</div>
+                                    <div style={{ padding: '4px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}` }}>
+                                      <div style={{ fontSize: 9, color: '#999', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 3 }}>{build.summary}</div>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                                        <div style={{ flex: 1, height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden' }}>
+                                          <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
+                                        </div>
+                                        <span style={{ fontSize: 9, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
+                                      </div>
+                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                                        {build.stack.map(s => (
+                                          <span key={s} style={{ fontSize: 8, color: '#888', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 4px', background: '#111', borderRadius: 3, border: `1px solid ${c.border}` }}>{s}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })()}
                             </div>
                           </>
                         )}
