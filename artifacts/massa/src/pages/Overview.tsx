@@ -2002,11 +2002,8 @@ export function Overview() {
                                   ><span style={{ transform: isCardExpanded ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', display: 'inline-block' }}>▸</span></button>
                                 </div>
                               </div>
-                              <div style={{ height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden', marginBottom: 4 }}>
+                              <div style={{ height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden' }}>
                                 <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                              </div>
-                              <div style={{ fontSize: 10, color: isFailed ? '#f87171' : isComplete ? '#34d399' : '#f59e0b', fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>
-                                {isRunning ? (build.progress < 30 ? 'Thinking…' : build.progress < 60 ? 'Planning…' : 'Building…') : isComplete ? 'Completed' : isFailed ? 'Failed — action required' : statusText}
                               </div>
                               <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
                                 {[
