@@ -2170,12 +2170,12 @@ export function Overview() {
 
                         <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
                           {['+ Agent', '+ Task'].map(label => (
-                            <div key={label}
-                              style={{ flex: 1, textAlign: 'center', padding: '6px 0', borderRadius: 4, border: `1px dashed ${c.border}`, fontSize: 10, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s' }}
-                              onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
-                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            <button key={label}
+                              onMouseEnter={e => { e.currentTarget.style.background = '#0f1215'; e.currentTarget.style.color = '#ccc'; e.currentTarget.style.borderColor = '#34d399' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = c.border }}
+                              style={{ flex: 1, textAlign: 'center', padding: '6px 0', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s, border-color 0.15s' }}>
                               {label}
-                            </div>
+                            </button>
                           ))}
                         </div>
 
