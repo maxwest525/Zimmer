@@ -1986,11 +1986,8 @@ export function Overview() {
                           </>
                         ) : (
                           <>
-                            <div style={{ padding: '8px 8px 0' }}>
-                              <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
-                            </div>
-                            <div style={{ padding: '8px 10px 8px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 4 }}>
+                            <div style={{ padding: '8px 10px 0' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 6 }}>
                                 <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                   <button
@@ -2002,6 +1999,11 @@ export function Overview() {
                                   ><span style={{ transform: isCardExpanded ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', display: 'inline-block' }}>▸</span></button>
                                 </div>
                               </div>
+                            </div>
+                            <div style={{ padding: '0 8px' }}>
+                              <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
+                            </div>
+                            <div style={{ padding: '8px 10px 8px' }}>
                               <div style={{ height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden' }}>
                                 <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
                               </div>
