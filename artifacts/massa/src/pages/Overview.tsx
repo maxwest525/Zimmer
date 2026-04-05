@@ -1979,7 +1979,9 @@ export function Overview() {
                           </>
                         ) : (
                           <>
-                            <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
+                            <div style={{ padding: '8px 8px 0' }}>
+                              <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
+                            </div>
                             <div style={{ padding: '8px 10px 8px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4, marginBottom: 4 }}>
                                 <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
