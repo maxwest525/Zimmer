@@ -2066,6 +2066,24 @@ export function Overview() {
                               <div style={{ fontSize: 10, color: isFailed ? '#f87171' : isComplete ? '#34d399' : '#f59e0b', fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>
                                 {isRunning ? (build.progress < 30 ? 'Thinking…' : build.progress < 60 ? 'Planning…' : 'Building…') : isComplete ? 'Completed' : isFailed ? 'Failed — action required' : statusText}
                               </div>
+                              <div style={{ display: 'flex', gap: 3, marginTop: 6, marginBottom: 5 }}>
+                                {['Chat', 'Arch Map', 'Preview'].map(l => (
+                                  <button key={l} onClick={(e: React.MouseEvent) => { e.stopPropagation(); if (l === 'Chat') { setSelectedChatBuildId(build.id); setChatOriginBuildId(null); setActiveView('chats'); } }} style={{
+                                    padding: '4px 0', borderRadius: 3, flex: 1,
+                                    background: 'transparent', border: '1px solid #1a1a1a',
+                                    color: '#555', fontSize: 9, fontFamily: 'var(--f)', cursor: 'pointer',
+                                  }}>{l}</button>
+                                ))}
+                              </div>
+                              <div style={{ display: 'flex', gap: 3 }}>
+                                {['+ Agent', '+ Task'].map(l => (
+                                  <div key={l} onClick={(e: React.MouseEvent) => { e.stopPropagation(); }} style={{
+                                    flex: 1, textAlign: 'center' as const, padding: '4px 0',
+                                    borderRadius: 3, border: '1px dashed #181818',
+                                    fontSize: 8, color: '#2a2a2a', fontFamily: 'var(--f)', cursor: 'pointer',
+                                  }}>{l}</div>
+                                ))}
+                              </div>
                             </div>
                           </>
                         )}
