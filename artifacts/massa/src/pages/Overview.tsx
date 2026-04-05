@@ -1954,12 +1954,12 @@ export function Overview() {
                     return (
                       <div key={build.id} draggable onDragStart={() => handleDragStart(build.id, project.id)} onDragOver={e => handleDragOver(e, build.id)} onDrop={e => handleDrop(e, build.id, project.id)} onDragEnd={handleDragEnd}
                         onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(build.id) }}
-                        style={{ ...(column ? { width: '100%' } : { minWidth: isCardExpanded ? 260 : 176, maxWidth: isCardExpanded ? 260 : 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? sc : isFailed ? '#ff6b6b' : isComplete ? `${sc}30` : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s, min-width 0.2s, max-width 0.2s' }}>
+                        style={{ ...(column ? { width: '100%' } : { minWidth: isCardExpanded ? 260 : 176, maxWidth: isCardExpanded ? 260 : 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? '#888' : isFailed ? '#555' : isComplete ? '#333' : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s, min-width 0.2s, max-width 0.2s' }}>
 
                         {column ? (
                           <>
                             <div style={{ width: 50, flexShrink: 0, padding: 8, position: 'relative' }}>
-                              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: sc, borderRadius: '12px 0 0 12px' }} />
+                              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: '#555', borderRadius: '12px 0 0 12px' }} />
                               <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} size="mini" />
                             </div>
                             <div style={{ flex: 1, padding: '8px 10px 8px 4px', display: 'flex', alignItems: 'center', gap: 12 }}>
