@@ -3037,10 +3037,45 @@ export function Overview() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 2, background: '#131619', borderRadius: 8, padding: 3, width: 'fit-content', marginBottom: 0 }}>
-                      {(['chat', 'details', 'code', 'thinking', 'revert', 'preview'] as const).map(tab => (
-                        <button key={tab} onClick={() => setBuildModalTab(tab)} style={{ border: 'none', background: buildModalTab === tab ? '#1e2430' : 'transparent', color: buildModalTab === tab ? '#e8eaed' : c.muted, padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', textTransform: 'capitalize' }}>{tab}</button>
-                      ))}
+                    <div style={{ display: 'flex', gap: 1, background: '#0d1014', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 0, borderBottom: '1px solid #252a35', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }}>
+                      {([
+                        { key: 'chat' as const, label: 'Chat', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
+                        { key: 'details' as const, label: 'Details', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> },
+                        { key: 'code' as const, label: 'Code', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> },
+                        { key: 'thinking' as const, label: 'Thinking', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg> },
+                        { key: 'revert' as const, label: 'Revert', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> },
+                        { key: 'preview' as const, label: 'Preview', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> },
+                      ]).map(tab => {
+                        const isActive = buildModalTab === tab.key;
+                        return (
+                          <button
+                            key={tab.key}
+                            onClick={() => setBuildModalTab(tab.key)}
+                            onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = '#1a1e28'; e.currentTarget.style.color = '#d1d5db'; } }}
+                            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = c.muted; } }}
+                            style={{
+                              border: 'none',
+                              background: isActive ? '#1e2430' : 'transparent',
+                              color: isActive ? '#e8eaed' : c.muted,
+                              padding: '7px 14px',
+                              borderRadius: 7,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 5,
+                              position: 'relative' as const,
+                              boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.3)' : 'none',
+                              borderBottom: isActive ? `2px solid ${c.green}` : '2px solid transparent',
+                            }}
+                          >
+                            {tab.icon}
+                            {tab.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
