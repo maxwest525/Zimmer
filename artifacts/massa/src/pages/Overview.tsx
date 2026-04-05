@@ -1198,7 +1198,8 @@ export function Overview() {
       .finally(() => setClarifyLoading(false))
   }, [])
 
-  const openClarifyWizard = useCallback(() => {
+  const openClarifyWizard = useCallback((promptOverride?: string) => {
+    const prompt = promptOverride || rawInput
     setClarifyHistory([])
     setClarifyQuestion('')
     setClarifyOptions([])
@@ -1206,7 +1207,7 @@ export function Overview() {
     setClarifySummary('')
     setClarifyOtherText('')
     setShowClarifyModal(true)
-    fetchClarifyQuestion(rawInput, [])
+    fetchClarifyQuestion(prompt, [])
   }, [rawInput, fetchClarifyQuestion])
 
   const handleClarifyAnswer = useCallback((answer: string) => {
@@ -1739,7 +1740,7 @@ export function Overview() {
                     <button
                       onMouseEnter={() => setHoveredArchBtn('arch-build')}
                       onMouseLeave={() => setHoveredArchBtn(null)}
-                      onClick={() => { if (vagueMode && rawInput.trim().length > 0) openClarifyWizard() }}
+                      onClick={() => { if (rawInput.trim().length > 0) openClarifyWizard() }}
                       style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
                       <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>EXECUTE
                     </button>
@@ -1850,7 +1851,7 @@ export function Overview() {
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                           {visibleSuggestions.map((s, i) => (
-                            <div key={`${i}-${s}`} onClick={() => { setRawInput(s); setIgnoredAll(true); setAiSuggestions([]) }}
+                            <div key={`${i}-${s}`} onClick={() => { setRawInput(s); setIgnoredAll(true); setAiSuggestions([]); openClarifyWizard(s) }}
                               style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: '#9ca3af', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 10, padding: '8px 10px 8px 14px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
                               onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#34d399'; e.currentTarget.style.color = '#d1d5db'; e.currentTarget.style.boxShadow = '0 0 12px rgba(52,211,153,0.08)' }}
                               onMouseLeave={e => { e.currentTarget.style.background = '#080a0e'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.boxShadow = 'none' }}>
