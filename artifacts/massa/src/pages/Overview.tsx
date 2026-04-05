@@ -1570,29 +1570,11 @@ export function Overview() {
 
       {/* HEADER */}
       <div style={{ height: 56, border: `1px solid #1e2330`, background: '#080a0e', display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-        {!isDesktop && (
-          <button
-            onClick={() => setMobileNavOpen(!mobileNavOpen)}
-            title={mobileNavOpen ? 'Collapse nav' : 'Expand nav'}
-            style={{ width: 28, height: 28, borderRadius: 4, border: '1px solid #1e2330', background: mobileNavOpen ? 'rgba(52,211,153,0.06)' : 'transparent', color: mobileNavOpen ? '#34d399' : '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, padding: 0, flexShrink: 0, transition: 'all 0.15s', zIndex: 2, fontFamily: '"JetBrains Mono", Menlo, monospace' }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
-            onMouseLeave={e => { e.currentTarget.style.color = mobileNavOpen ? '#34d399' : '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
-          ><span style={{ display: 'inline-block', transform: mobileNavOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>»</span></button>
-        )}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, letterSpacing: 8, color: '#e8eaed', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA</span>
           <span style={{ background: '#34d399', color: '#080a0e', fontWeight: 800, fontSize: isMobile ? 12 : 14, padding: '2px 8px', borderRadius: 3, boxShadow: '0 0 12px rgba(52,211,153,0.3)', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>AI</span>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
-          {!isDesktop && (
-            <button
-              onClick={() => setMobileRightOpen(!mobileRightOpen)}
-              title={mobileRightOpen ? 'Collapse feed' : 'Expand feed'}
-              style={{ width: 28, height: 28, borderRadius: 4, border: '1px solid #1e2330', background: mobileRightOpen ? 'rgba(52,211,153,0.06)' : 'transparent', color: mobileRightOpen ? '#34d399' : '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, padding: 0, flexShrink: 0, transition: 'all 0.15s', fontFamily: '"JetBrains Mono", Menlo, monospace' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
-              onMouseLeave={e => { e.currentTarget.style.color = mobileRightOpen ? '#34d399' : '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
-            ><span style={{ display: 'inline-block', transform: mobileRightOpen ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>»</span></button>
-          )}
           <TenantSelector />
           <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: isDesktop ? 'block' : 'none' }}>v2.4.1</span>
           <div style={{ width: 30, height: 30, borderRadius: 4, background: 'rgba(52,211,153,0.06)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid rgba(52,211,153,0.15)`, fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>M</div>
@@ -1616,18 +1598,18 @@ export function Overview() {
               ><span style={{ display: 'inline-block', transform: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>»</span></button>
             </div>
             {[
-              { label: 'Dashboard', icon: '⌂', view: 'dashboard' as const, path: '' },
-              { label: 'Chats', icon: '◈', view: 'chats' as const, path: '' },
-              { label: 'Ideas', icon: '◇', view: 'ideas' as const, path: '' },
-              { label: 'History', icon: '↻', view: null, path: '' },
-              { label: 'Automations', icon: '⚡', view: null, path: '' },
-              { label: 'Marketing', icon: '◎', view: null, path: '' },
-              { label: 'Skills', icon: '⬡', view: null, path: '' },
-              { label: 'APIs', icon: '⟡', view: null, path: '' },
-              { label: 'Web Scraper', icon: '⊘', view: null, path: '' },
-              { label: 'Inside MASSA', icon: '⊞', view: null, path: '' },
-              { label: 'Current Projects', icon: '☰', view: null, path: '/completed' },
-              { label: 'Published', icon: '◉', view: null, path: '/completed?tab=published' },
+              { label: 'Dashboard', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, view: 'dashboard' as const, path: '' },
+              { label: 'Chats', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, view: 'chats' as const, path: '' },
+              { label: 'Ideas', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>, view: 'ideas' as const, path: '' },
+              { label: 'History', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>, view: null, path: '' },
+              { label: 'Automations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, view: null, path: '' },
+              { label: 'Marketing', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>, view: null, path: '' },
+              { label: 'Skills', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>, view: null, path: '' },
+              { label: 'APIs', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>, view: null, path: '' },
+              { label: 'Web Scraper', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, view: null, path: '' },
+              { label: 'Inside MASSA', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, view: null, path: '' },
+              { label: 'Current Projects', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, view: null, path: '/completed' },
+              { label: 'Published', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>, view: null, path: '/completed?tab=published' },
             ].map(item => {
               const active = item.view ? activeView === item.view : false
               const clickable = item.view !== null || item.path !== ''
@@ -1635,11 +1617,11 @@ export function Overview() {
                 <div key={item.label} onClick={() => {
                   if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
                   else if (item.path) { navigate(item.path) }
-                }} title={(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? item.label : undefined} style={{ padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '8px 0' : '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330', textAlign: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                }} title={(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? item.label : undefined} style={{ padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '8px 0' : '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330', textAlign: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, gap: 8 }}>
                   {(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? (
-                    <span style={{ fontSize: 14 }}>{item.icon}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon}</span>
                   ) : (
-                    <>{active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}</>
+                    <><span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, opacity: 0.7 }}>{item.icon}</span>{item.label}</>
                   )}
                 </div>
               )
@@ -2422,14 +2404,14 @@ export function Overview() {
           {(isDesktop ? rightPanelCollapsed : !mobileRightOpen) && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, marginTop: 4 }}>
               {[
-                { icon: '▶', label: 'Ready Builds', color: readyBuildsCount > 0 ? '#f59e0b' : '#9ca3af' },
-                { icon: '⚠', label: 'Action Required', color: '#f59e0b' },
-                { icon: '⟩', label: 'Code Stream', color: '#34d399' },
+                { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>, label: 'Ready Builds', color: readyBuildsCount > 0 ? '#f59e0b' : '#9ca3af' },
+                { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, label: 'Action Required', color: '#f59e0b' },
+                { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>, label: 'Code Stream', color: '#34d399' },
               ].map(item => (
                 <div
                   key={item.label}
                   title={item.label}
-                  style={{ padding: '8px 0', fontSize: 14, color: item.color, textAlign: 'center', cursor: 'default', borderBottom: '1px solid #1e2330', width: '100%', display: 'flex', justifyContent: 'center' }}
+                  style={{ padding: '8px 0', color: item.color, textAlign: 'center', cursor: 'default', borderBottom: '1px solid #1e2330', width: '100%', display: 'flex', justifyContent: 'center' }}
                 >
                   {item.icon}
                 </div>
