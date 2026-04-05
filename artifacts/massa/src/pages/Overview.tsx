@@ -1549,7 +1549,7 @@ export function Overview() {
   const previewProject = projects.find(p => p.id === livePreviewProject)
 
   return (
-    <div style={{ minHeight: '100vh', background: c.bg, color: c.text, fontFamily: 'Inter, Arial, sans-serif', padding: 16 }}>
+    <div style={{ minHeight: '100vh', background: c.bg, color: c.text, fontFamily: 'Inter, Arial, sans-serif', padding: isMobile ? '12px 10px' : '16px 24px' }}>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         @keyframes phase-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
