@@ -10,6 +10,7 @@ import { MODEL_COLORS, getModelReason } from '@/data/modelRegistry'
 import { TenantSelector } from '@/components/TenantSelector'
 import { useTenant } from '@/contexts/TenantContext'
 import { useProjects } from '@/contexts/ProjectContext'
+import { MessageSquare, ArrowRight, AlertTriangle, Eye, Play } from 'lucide-react'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -2169,6 +2170,13 @@ export function Overview() {
 
                         {(() => {
                           type ActionType = 'response-ready' | 'review-plan' | 'run-build' | 'fix-error' | 'apply-changes'
+                          const actionIconMap: Record<ActionType, typeof MessageSquare> = {
+                            'response-ready': MessageSquare,
+                            'apply-changes': ArrowRight,
+                            'fix-error': AlertTriangle,
+                            'review-plan': Eye,
+                            'run-build': Play,
+                          }
                           const getProjectActionInfo = (build: typeof allBuilds[0]): { type: ActionType; label: string; color: string; tab: 'chat' | 'details' } | null => {
                             const msgs = chatMessages[build.id]
                             const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
@@ -2241,13 +2249,13 @@ export function Overview() {
                                       style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', cursor: 'pointer', borderTop: idx > 0 ? '1px solid #14181e' : 'none', transition: 'background 0.15s' }}
                                     >
                                       {item.action ? (
-                                        <span style={{ width: 4, height: 4, borderRadius: '50%', background: item.action.color, flexShrink: 0 }} />
+                                        (() => { const Icon = actionIconMap[item.action.type]; return <Icon size={10} style={{ color: item.action.color, flexShrink: 0 }} /> })()
                                       ) : (
                                         <span style={{ fontSize: 9, color: statusColor(item.status), fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>▸</span>
                                       )}
                                       <span style={{ fontSize: 9, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
                                       {item.action ? (
-                                        <span style={{ fontSize: 8, color: item.action.color, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: `${item.action.color}15`, borderRadius: 3, border: `1px solid ${item.action.color}30`, flexShrink: 0, fontWeight: 600 }}>{item.action.label}</span>
+                                        <span style={{ fontSize: 8, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: 'transparent', borderRadius: 3, border: 'none', flexShrink: 0, fontWeight: 600 }}>{item.action.label}</span>
                                       ) : (
                                         <span style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 4px', background: '#111', borderRadius: 3, flexShrink: 0 }}>{item.status}</span>
                                       )}
@@ -2458,6 +2466,13 @@ export function Overview() {
           {/* ACTION REQUIRED Panel */}
           {(() => {
             type ActionType = 'response-ready' | 'review-plan' | 'run-build' | 'fix-error' | 'apply-changes'
+            const actionIconMap: Record<ActionType, typeof MessageSquare> = {
+              'response-ready': MessageSquare,
+              'apply-changes': ArrowRight,
+              'fix-error': AlertTriangle,
+              'review-plan': Eye,
+              'run-build': Play,
+            }
             const getActionInfo = (build: Build & { projectName: string }): { type: ActionType; label: string; color: string; tab: 'chat' | 'details' } => {
               const msgs = chatMessages[build.id]
               const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
@@ -2536,6 +2551,7 @@ export function Overview() {
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {(() => { const Icon = actionIconMap[item.action.type]; return <Icon size={14} style={{ color: item.action.color, flexShrink: 0 }} /> })()}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4 }}>{item.projectName}</div>
                             <div style={{ fontSize: 9, color: '#9ca3af', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2 }}>{item.title}</div>
@@ -2548,13 +2564,13 @@ export function Overview() {
                               dismissItem(item.id, item.action.type, el)
                             }}
                             onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
-                            onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.color = '#9ca3af' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#9ca3af' }}
                             style={{
                               fontSize: 9,
                               fontWeight: 600,
                               color: '#9ca3af',
-                              background: '#0c0f14',
-                              border: '1px solid #1e2330',
+                              background: 'transparent',
+                              border: 'none',
                               borderRadius: 4,
                               padding: '4px 10px',
                               fontFamily: '"JetBrains Mono", Menlo, monospace',
