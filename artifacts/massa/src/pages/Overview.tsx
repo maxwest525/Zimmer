@@ -2005,19 +2005,23 @@ export function Overview() {
                               <div style={{ fontSize: 10, color: isFailed ? '#f87171' : isComplete ? '#34d399' : '#f59e0b', fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>
                                 {isRunning ? (build.progress < 30 ? 'Thinking…' : build.progress < 60 ? 'Planning…' : 'Building…') : isComplete ? 'Completed' : isFailed ? 'Failed — action required' : statusText}
                               </div>
-                              <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
+                              <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
                                 {[
-                                  { label: 'Chat', tab: 'chat' as const, dashed: false },
-                                  { label: 'Arch Map', tab: 'archmap' as const, dashed: false },
-                                  { label: 'Preview', tab: 'preview' as const, dashed: false },
-                                  { label: '+ Agent', tab: 'addagent' as const, dashed: true },
-                                  { label: '+ Task', tab: 'addtask' as const, dashed: true },
+                                  { label: 'Chat', tab: 'chat' as const },
+                                  { label: 'Code', tab: 'code' as const },
+                                  { label: 'Details', tab: 'details' as const },
+                                  { label: 'Revert', tab: 'revert' as const },
+                                  { label: 'Preview', tab: 'preview' as const },
                                 ].map(btn => (
-                                  <button key={btn.label} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setBuildModalTab(btn.tab); setExpandedBuildId(build.id) }} style={{
-                                    padding: '4px 0', borderRadius: 3, flex: 1,
-                                    background: 'transparent', border: `1px ${btn.dashed ? 'dashed' : 'solid'} #1a1a1a`,
-                                    color: btn.dashed ? '#2a2a2a' : '#555', fontSize: btn.dashed ? 8 : 9, fontFamily: 'var(--f)', cursor: 'pointer',
-                                  }}>{btn.label}</button>
+                                  <button key={btn.label} title={btn.label} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setBuildModalTab(btn.tab); setExpandedBuildId(build.id) }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.color = '#ccc' }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#777' }}
+                                    style={{
+                                      width: 30, height: 30, borderRadius: 4, flex: 'none',
+                                      background: 'transparent', border: '1px solid #1e2330',
+                                      color: '#777', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      padding: 0, transition: 'border-color 0.15s, color 0.15s',
+                                    }}>{getTabIcon(btn.tab, 14)}</button>
                                 ))}
                               </div>
 
