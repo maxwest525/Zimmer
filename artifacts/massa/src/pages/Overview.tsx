@@ -1245,28 +1245,6 @@ export function Overview() {
         { id: 'scheduler', title: 'Scheduler', summary: 'Daily export and email delivery', status: 'queued', progress: 0, stack: ['Mistral', 'n8n', 'Windsurf'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['crawler'], buildContext: 'automation' },
       ],
     },
-    {
-      id: 'p4',
-      name: 'Data Pipeline',
-      goal: 'ETL pipeline for ingesting, transforming, and storing analytics data',
-      status: 'failed',
-      lifecycle: 'active',
-      builds: [
-        { id: 'ingestion', title: 'Ingestion Layer', summary: 'Stream connectors and batch import handlers', status: 'failed', progress: 38, stack: ['Claude', 'Claude Code', 'Kafka'], agent: 'Data Agent', agentRole: 'Data Engineer', buildContext: 'backend' },
-        { id: 'transform', title: 'Transform Engine', summary: 'Data cleaning, normalization, and enrichment', status: 'queued', progress: 0, stack: ['GPT-4o', 'Claude Code'], agent: 'Transform Agent', agentRole: 'Data Engineer', dependsOn: ['ingestion'], buildContext: 'backend' },
-      ],
-    },
-    {
-      id: 'p5',
-      name: 'User Portal',
-      goal: 'Self-service portal for account management and billing',
-      status: 'idle',
-      lifecycle: 'active',
-      builds: [
-        { id: 'auth-flow', title: 'Auth Flow', summary: 'Login, signup, and session management', status: 'queued', progress: 0, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'Auth Agent', agentRole: 'Security Engineer', buildContext: 'backend' },
-        { id: 'billing-ui', title: 'Billing Dashboard', summary: 'Subscription management and invoice history', status: 'queued', progress: 0, stack: ['Claude', 'Replit', 'Stripe'], agent: 'UI Agent', agentRole: 'Frontend Designer', dependsOn: ['auth-flow'], buildContext: 'ui' },
-      ],
-    },
   ])
 
   useEffect(() => {
@@ -1504,10 +1482,6 @@ export function Overview() {
     { file: 'src/scraper/parser.ts', line: 11, code: '// Send alert to #trading-alerts channel', projectId: 'p3' },
     { file: 'src/scraper/exporter.ts', line: 12, code: 'await slackClient.chat.postMessage({ channel, text: message })', projectId: 'p3' },
     { file: 'src/engine/order.ts', line: 55, code: 'export type Order = { id: string; side: "buy" | "sell"; qty: number }', projectId: 'p1' },
-    { file: 'src/pipeline/ingestion.ts', line: 8, code: 'const stream = kafka.consumer({ groupId: "etl-group" })', projectId: 'p4' },
-    { file: 'src/pipeline/transform.ts', line: 22, code: 'const cleaned = records.filter(r => r.valid).map(normalize)', projectId: 'p4' },
-    { file: 'src/portal/auth.ts', line: 15, code: 'const session = await createSession(user.id, { ttl: 86400 })', projectId: 'p5' },
-    { file: 'src/portal/billing.tsx', line: 31, code: 'const { subscription } = useStripeCustomer(userId)', projectId: 'p5' },
   ]
   const QA_POOL = [
     { qa: 'pass' as const, content: '✓ Unit test passed: strategy.evaluateSignal', projectId: 'p1' },
@@ -1521,8 +1495,6 @@ export function Overview() {
     { qa: 'pass' as const, content: '✓ Schema migration dry-run succeeded', projectId: 'p2' },
     { qa: 'warn' as const, content: '⚠ Bundle size increased by 4.2 kB — review imports', projectId: 'p3' },
     { qa: 'pass' as const, content: '✓ Snapshot test: Dashboard renders correctly', projectId: 'p1' },
-    { qa: 'warn' as const, content: '⚠ Kafka consumer lag detected — ingestion.ts', projectId: 'p4' },
-    { qa: 'pass' as const, content: '✓ Auth session token validated successfully', projectId: 'p5' },
   ]
 
   useEffect(() => {
@@ -2795,7 +2767,7 @@ export function Overview() {
                   <div style={{ width: 10, height: 10, borderRadius: 99, background: '#34d399' }} />
                 </div>
                 <div style={{ flex: 1, background: '#151920', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: c.muted, border: `1px solid ${c.border}` }}>
-                  {previewProject.id === 'p1' ? 'https://app.tradingbot.io' : previewProject.id === 'p2' ? 'https://massa.ai' : previewProject.id === 'p3' ? 'https://scraper.massa.ai' : previewProject.id === 'p4' ? 'https://pipeline.massa.ai' : 'https://portal.massa.ai'}
+                  {previewProject.id === 'p1' ? 'https://app.tradingbot.io' : previewProject.id === 'p2' ? 'https://massa.ai' : 'https://scraper.massa.ai'}
                 </div>
               </div>
               <div style={{ padding: 0, height: 380, overflow: 'hidden', position: 'relative' }}>
@@ -2890,60 +2862,6 @@ export function Overview() {
                       <div><span style={{ color: '#34d399' }}>[OK]</span> Stored 48 records to PostgreSQL <span style={{ color: '#9ca3af' }}>batch_id: b-2847</span></div>
                       <div><span style={{ color: '#60a5fa' }}>[PARSE]</span> Extracting 52 records from response...</div>
                       <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=145 <span style={{ color: '#9ca3af' }}>200 OK 198ms</span></div>
-                    </div>
-                  </div>
-                )}
-                {previewProject.id === 'p4' && (
-                  <div style={{ padding: 16, height: '100%', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: '"JetBrains Mono", monospace' }}>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>PIPELINE STATUS</div>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: '#f87171' }}>FAILED</div>
-                        <div style={{ fontSize: 11, color: '#f87171', marginTop: 2 }}>Ingestion error</div>
-                      </div>
-                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>RECORDS PROCESSED</div>
-                        <div style={{ fontSize: 22, fontWeight: 800 }}>84,291</div>
-                        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Last 24h</div>
-                      </div>
-                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>THROUGHPUT</div>
-                        <div style={{ fontSize: 22, fontWeight: 800 }}>1.2k/s</div>
-                        <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 2 }}>Below target</div>
-                      </div>
-                    </div>
-                    <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 10, border: `1px solid ${c.border}`, fontSize: 11, lineHeight: 1.8, color: '#b0b0b0', overflow: 'hidden' }}>
-                      <div><span style={{ color: '#f87171' }}>[ERR]</span> KafkaConsumerError: Connection refused to broker-3 <span style={{ color: '#9ca3af' }}>14:23:01</span></div>
-                      <div><span style={{ color: '#f59e0b' }}>[WARN]</span> Consumer lag growing: partition 7 = 4,291 messages behind</div>
-                      <div><span style={{ color: '#34d399' }}>[OK]</span> Transform batch #12847 completed — 512 records normalized</div>
-                      <div><span style={{ color: '#f87171' }}>[ERR]</span> Retry 3/3 failed for broker-3, marking unhealthy</div>
-                      <div><span style={{ color: '#60a5fa' }}>[INFO]</span> Failover initiated to broker-5</div>
-                      <div><span style={{ color: '#34d399' }}>[OK]</span> Reconnected to broker-5 successfully</div>
-                    </div>
-                  </div>
-                )}
-                {previewProject.id === 'p5' && (
-                  <div style={{ padding: 16, height: '100%', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: '"JetBrains Mono", monospace' }}>
-                    <div style={{ background: '#111', borderRadius: 8, padding: 20, border: `1px solid ${c.border}`, textAlign: 'center' }}>
-                      <div style={{ fontSize: 10, letterSpacing: 3, color: c.muted, marginBottom: 8 }}>USER PORTAL</div>
-                      <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 12 }}>Sign In</div>
-                      <div style={{ maxWidth: 280, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <div style={{ background: '#0a0d10', border: `1px solid ${c.border}`, borderRadius: 6, padding: '10px 12px', fontSize: 12, color: c.muted, textAlign: 'left' }}>email@example.com</div>
-                        <div style={{ background: '#0a0d10', border: `1px solid ${c.border}`, borderRadius: 6, padding: '10px 12px', fontSize: 12, color: c.muted, textAlign: 'left' }}>••••••••</div>
-                        <div style={{ background: '#34d399', color: '#0a0d10', padding: '10px 24px', borderRadius: 8, fontWeight: 700, fontSize: 13, marginTop: 4 }}>Sign In</div>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>REGISTERED USERS</div>
-                        <div style={{ fontSize: 22, fontWeight: 800 }}>0</div>
-                        <div style={{ fontSize: 11, color: c.muted, marginTop: 2 }}>Not launched</div>
-                      </div>
-                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>BILLING</div>
-                        <div style={{ fontSize: 22, fontWeight: 800 }}>—</div>
-                        <div style={{ fontSize: 11, color: c.muted, marginTop: 2 }}>Pending setup</div>
-                      </div>
                     </div>
                   </div>
                 )}

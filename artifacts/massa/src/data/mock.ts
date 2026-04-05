@@ -71,22 +71,6 @@ export const PROJECTS: Project[] = [
     lastActive: "3h ago",
     lifecycle: "active",
   },
-  {
-    id: "p4",
-    name: "Data Pipeline",
-    status: "failed",
-    taskCount: 1,
-    lastActive: "5h ago",
-    lifecycle: "active",
-  },
-  {
-    id: "p5",
-    name: "User Portal",
-    status: "idle",
-    taskCount: 0,
-    lastActive: "1d ago",
-    lifecycle: "active",
-  },
 ];
 
 export const PROJECT_CARDS: Record<string, ExecutionCard[]> = {
@@ -154,19 +138,6 @@ export const PROJECT_CARDS: Record<string, ExecutionCard[]> = {
     },
   ],
   p3: [],
-  p4: [
-    {
-      id: "ec7",
-      title: "ETL Pipeline",
-      goal: "Extract data from S3, transform with dbt models, and load into the analytics warehouse.",
-      status: "failed",
-      progress: 35,
-      stack: ["Claude Code", "dbt", "Airflow"],
-      outputs: ["dbt/models/staging/", "airflow/dags/etl_pipeline.py"],
-      startedAt: "5h ago",
-    },
-  ],
-  p5: [],
 };
 
 export const PROJECT_ACTIVITY: Record<string, ActivityItem[]> = {
@@ -186,13 +157,6 @@ export const PROJECT_ACTIVITY: Record<string, ActivityItem[]> = {
   ],
   p3: [
     { id: "a11", label: "Project initialized", sublabel: "Alert Automation", status: "completed", timestamp: "3h ago" },
-  ],
-  p4: [
-    { id: "a12", label: "ETL pipeline failed", sublabel: "dbt transform error", status: "failed", timestamp: "5h ago" },
-    { id: "a13", label: "Pipeline started", sublabel: "Data Pipeline", status: "completed", timestamp: "5h ago" },
-  ],
-  p5: [
-    { id: "a14", label: "Project initialized", sublabel: "User Portal", status: "completed", timestamp: "1d ago" },
   ],
 };
 
