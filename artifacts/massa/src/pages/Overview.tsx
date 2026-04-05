@@ -1093,6 +1093,8 @@ export function Overview() {
   const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
   const [pendingDropdown, setPendingDropdown] = useState<string | null>(null)
+  const [addPromptModal, setAddPromptModal] = useState<{ type: 'agent' | 'task'; projectId: string } | null>(null)
+  const [addPromptText, setAddPromptText] = useState('')
   const [leftNavCollapsed, setLeftNavCollapsed] = useState(false)
   const [projectMenuOpen, setProjectMenuOpen] = useState<string | null>(null)
   const [archTab, setArchTab] = useState<'tree' | 'graph' | 'timeline'>('tree')
@@ -2169,12 +2171,13 @@ export function Overview() {
                         </div>
 
                         <div style={{ display: 'flex', gap: 5, flex: 1, minHeight: 36, marginBottom: 10 }}>
-                          {['+ Agent', '+ Task'].map(label => (
-                            <button key={label}
+                          {([{ label: '+ Agent', type: 'agent' as const }, { label: '+ Task', type: 'task' as const }]).map(btn => (
+                            <button key={btn.label}
+                              onClick={(e) => { e.stopPropagation(); setAddPromptText(''); setAddPromptModal({ type: btn.type, projectId: project.id }) }}
                               onMouseEnter={e => { e.currentTarget.style.background = '#0f1215'; e.currentTarget.style.color = '#ccc'; e.currentTarget.style.borderColor = '#34d399' }}
                               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = c.border }}
                               style={{ flex: 1, textAlign: 'center', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', fontSize: 11, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s, border-color 0.15s', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              {label}
+                              {btn.label}
                             </button>
                           ))}
                         </div>
@@ -3428,6 +3431,56 @@ export function Overview() {
                 </>
               )
             })()}
+          </div>
+        </div>
+      )}
+
+      {addPromptModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(4px)' }}
+          onClick={e => { if (e.target === e.currentTarget) setAddPromptModal(null) }}>
+          <div style={{ background: '#0a0d10', border: '1px solid #252a35', borderRadius: 12, width: '100%', maxWidth: 440, boxShadow: '0 24px 80px rgba(0,0,0,0.8)', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid #1e2330', background: '#0c0f14' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 13, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>+</span>
+                <span className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>{addPromptModal.type === 'agent' ? 'ADD AGENT' : 'ADD TASK'}</span>
+              </div>
+              <button onClick={() => setAddPromptModal(null)}
+                onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
+                onMouseLeave={e => e.currentTarget.style.color = '#555'}
+                style={{ background: 'transparent', border: 'none', color: '#555', cursor: 'pointer', padding: 4, display: 'flex', transition: 'color 0.15s' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div style={{ padding: 16 }}>
+              <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.5 }}>
+                {addPromptModal.type === 'agent'
+                  ? 'Describe the agent you want to add — its role, focus area, and what it should handle.'
+                  : 'Describe the task — what needs to be done, any constraints, and expected outcome.'}
+              </div>
+              <textarea
+                autoFocus
+                value={addPromptText}
+                onChange={e => setAddPromptText(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && addPromptText.trim()) { e.preventDefault(); setAddPromptModal(null) } }}
+                placeholder={addPromptModal.type === 'agent' ? 'e.g. A QA agent that reviews code for bugs and edge cases...' : 'e.g. Set up authentication with email + OAuth support...'}
+                style={{ width: '100%', minHeight: 100, background: '#080a0e', border: '1px solid #1e2330', borderRadius: 8, padding: '10px 12px', color: '#e8eaed', fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace', resize: 'vertical', outline: 'none', lineHeight: 1.6, boxSizing: 'border-box' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                <button onClick={() => setAddPromptModal(null)}
+                  onMouseEnter={e => e.currentTarget.style.background = '#1e2330'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  style={{ padding: '6px 14px', borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#9ca3af', fontSize: 10, fontWeight: 700, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s' }}>
+                  Cancel
+                </button>
+                <button
+                  onClick={() => { if (addPromptText.trim()) setAddPromptModal(null) }}
+                  onMouseEnter={e => { if (addPromptText.trim()) { e.currentTarget.style.background = '#141e14'; e.currentTarget.style.boxShadow = '0 0 16px rgba(52,211,153,0.1)' } }}
+                  onMouseLeave={e => { e.currentTarget.style.background = addPromptText.trim() ? '#0c1210' : 'transparent'; e.currentTarget.style.boxShadow = 'none' }}
+                  style={{ padding: '6px 14px', borderRadius: 4, border: `1px solid ${addPromptText.trim() ? 'rgba(52,211,153,0.3)' : '#1e2330'}`, background: addPromptText.trim() ? '#0c1210' : 'transparent', color: addPromptText.trim() ? '#34d399' : '#555', fontSize: 10, fontWeight: 700, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: addPromptText.trim() ? 'pointer' : 'default', transition: 'all 0.15s', letterSpacing: 0.3 }}>
+                  <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>{addPromptModal.type === 'agent' ? 'Add Agent' : 'Add Task'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
