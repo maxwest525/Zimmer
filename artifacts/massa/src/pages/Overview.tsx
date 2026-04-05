@@ -1954,7 +1954,9 @@ export function Overview() {
                     return (
                       <div key={build.id} draggable onDragStart={() => handleDragStart(build.id, project.id)} onDragOver={e => handleDragOver(e, build.id)} onDrop={e => handleDrop(e, build.id, project.id)} onDragEnd={handleDragEnd}
                         onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(build.id) }}
-                        style={{ ...(column ? { width: '100%' } : { minWidth: isCardExpanded ? 260 : 176, maxWidth: isCardExpanded ? 260 : 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? '#888' : isFailed ? '#555' : isComplete ? '#333' : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border 0.2s, min-width 0.2s, max-width 0.2s' }}>
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = isCardExpanded ? '#aaa' : '#666' }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = isDragOver ? '#888' : isCardExpanded ? '#777' : isFailed ? '#555' : isComplete ? '#333' : c.border }}
+                        style={{ ...(column ? { width: '100%' } : { minWidth: isCardExpanded ? 260 : 176, maxWidth: isCardExpanded ? 260 : 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? '#888' : isCardExpanded ? '#777' : isFailed ? '#555' : isComplete ? '#333' : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border-color 0.2s, min-width 0.2s, max-width 0.2s' }}>
 
                         {column ? (
                           <>
