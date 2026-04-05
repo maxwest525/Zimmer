@@ -1016,6 +1016,7 @@ export function Overview() {
   const { selectedTenantId } = useTenant()
   const { completeProject, archiveProject, deleteProject, projectLifecycles } = useProjects()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [mobileRightOpen, setMobileRightOpen] = useState(false)
   const [expandedProject, setExpandedProject] = useState<string | null>(null)
   const [livePreviewProject, setLivePreviewProject] = useState<string | null>(null)
   const [chatProject, setChatProject] = useState<string | null>(null)
@@ -1570,74 +1571,49 @@ export function Overview() {
       {/* HEADER */}
       <div style={{ height: 56, border: `1px solid #1e2330`, background: '#080a0e', display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
         {!isDesktop && (
-          <button onClick={() => setMobileNavOpen(!mobileNavOpen)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 6, display: 'flex', flexDirection: 'column', gap: 4, zIndex: 2 }}>
-            <div style={{ width: 18, height: 2, background: '#9ca3af' }} />
-            <div style={{ width: 18, height: 2, background: '#9ca3af' }} />
-            <div style={{ width: 18, height: 2, background: '#9ca3af' }} />
-          </button>
+          <button
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            title={mobileNavOpen ? 'Collapse nav' : 'Expand nav'}
+            style={{ width: 28, height: 28, borderRadius: 4, border: '1px solid #1e2330', background: mobileNavOpen ? 'rgba(52,211,153,0.06)' : 'transparent', color: mobileNavOpen ? '#34d399' : '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, padding: 0, flexShrink: 0, transition: 'all 0.15s', zIndex: 2, fontFamily: '"JetBrains Mono", Menlo, monospace' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
+            onMouseLeave={e => { e.currentTarget.style.color = mobileNavOpen ? '#34d399' : '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
+          ><span style={{ display: 'inline-block', transform: mobileNavOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>»</span></button>
         )}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, letterSpacing: 8, color: '#e8eaed', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA</span>
           <span style={{ background: '#34d399', color: '#080a0e', fontWeight: 800, fontSize: isMobile ? 12 : 14, padding: '2px 8px', borderRadius: 3, boxShadow: '0 0 12px rgba(52,211,153,0.3)', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>AI</span>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
+          {!isDesktop && (
+            <button
+              onClick={() => setMobileRightOpen(!mobileRightOpen)}
+              title={mobileRightOpen ? 'Collapse feed' : 'Expand feed'}
+              style={{ width: 28, height: 28, borderRadius: 4, border: '1px solid #1e2330', background: mobileRightOpen ? 'rgba(52,211,153,0.06)' : 'transparent', color: mobileRightOpen ? '#34d399' : '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, padding: 0, flexShrink: 0, transition: 'all 0.15s', fontFamily: '"JetBrains Mono", Menlo, monospace' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
+              onMouseLeave={e => { e.currentTarget.style.color = mobileRightOpen ? '#34d399' : '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
+            ><span style={{ display: 'inline-block', transform: mobileRightOpen ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>»</span></button>
+          )}
           <TenantSelector />
           <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: isDesktop ? 'block' : 'none' }}>v2.4.1</span>
           <div style={{ width: 30, height: 30, borderRadius: 4, background: 'rgba(52,211,153,0.06)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid rgba(52,211,153,0.15)`, fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>M</div>
         </div>
       </div>
 
-      {/* MOBILE NAV OVERLAY */}
-      {!isDesktop && mobileNavOpen && (
-        <div onClick={() => setMobileNavOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 260, height: '100%', background: '#0a0d10', border: `1px solid #1e2330`, padding: 16, overflowY: 'auto' }}>
-            <div className="panel-header" style={{ color: '#9ca3af', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid #1e2330' }}>SYS://NAV</div>
-            {[
-              { label: 'Dashboard', view: 'dashboard' as const, path: '' },
-              { label: 'Chats', view: 'chats' as const, path: '' },
-              { label: 'Ideas', view: 'ideas' as const, path: '' },
-              { label: 'History', view: null, path: '' },
-              { label: 'Automations', view: null, path: '' },
-              { label: 'Marketing', view: null, path: '' },
-              { label: 'Skills', view: null, path: '' },
-              { label: 'APIs', view: null, path: '' },
-              { label: 'Web Scraper', view: null, path: '' },
-              { label: 'Inside MASSA', view: null, path: '' },
-              { label: 'Current Projects', view: null, path: '/completed' },
-              { label: 'Published', view: null, path: '/completed?tab=published' },
-            ].map(item => {
-              const active = item.view === activeView || (item.label === 'Dashboard' && activeView === 'dashboard')
-              return (
-              <div key={item.label}
-                onClick={() => {
-                  if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
-                  if (item.path) navigate(item.path)
-                  setMobileNavOpen(false)
-                }}
-                style={{ padding: '10px 10px', borderRadius: 0, cursor: 'pointer', color: active ? '#34d399' : '#9ca3af', fontSize: 12, fontWeight: active ? 600 : 500, borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', background: active ? 'rgba(52,211,153,0.04)' : 'transparent', marginBottom: 0, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330' }}>
-                {active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}
-              </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
       {/* 3-COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 42px' : 'minmax(0, 1fr) 200px') : (`${leftNavCollapsed ? '42px' : '160px'} minmax(0, 1fr) ${rightPanelCollapsed ? '42px' : '200px'}`), gap: isMobile ? 12 : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? (`${mobileNavOpen ? '160px' : '42px'} minmax(0, 1fr) ${mobileRightOpen ? '160px' : '42px'}`) : isTablet ? (`${mobileNavOpen ? '160px' : '42px'} minmax(0, 1fr) ${mobileRightOpen ? '180px' : '42px'}`) : (`${leftNavCollapsed ? '42px' : '160px'} minmax(0, 1fr) ${rightPanelCollapsed ? '42px' : '200px'}`), gap: isMobile ? 6 : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease' }}>
 
-        {/* LEFT SIDEBAR — hidden on mobile/tablet */}
-        {isDesktop && <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: leftNavCollapsed ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2, overflow: 'hidden', transition: 'padding 0.3s ease' }}>
+        {/* LEFT SIDEBAR */}
+        <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2, overflow: 'hidden', transition: 'padding 0.3s ease' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: leftNavCollapsed ? 'center' : 'space-between', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid #1e2330' }}>
-              {!leftNavCollapsed && <span className="panel-header" style={{ color: '#9ca3af' }}>SYS://NAV</span>}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : 'space-between', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid #1e2330' }}>
+              {!(isDesktop ? leftNavCollapsed : !mobileNavOpen) && <span className="panel-header" style={{ color: '#9ca3af' }}>SYS://NAV</span>}
               <button
-                onClick={() => setLeftNavCollapsed(!leftNavCollapsed)}
-                title={leftNavCollapsed ? 'Expand nav' : 'Collapse nav'}
+                onClick={() => isDesktop ? setLeftNavCollapsed(!leftNavCollapsed) : setMobileNavOpen(!mobileNavOpen)}
+                title={(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'Expand nav' : 'Collapse nav'}
                 style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
                 onMouseLeave={e => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
-              ><span style={{ display: 'inline-block', transform: leftNavCollapsed ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>«</span></button>
+              ><span style={{ display: 'inline-block', transform: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>»</span></button>
             </div>
             {[
               { label: 'Dashboard', icon: '⌂', view: 'dashboard' as const, path: '' },
@@ -1659,8 +1635,8 @@ export function Overview() {
                 <div key={item.label} onClick={() => {
                   if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
                   else if (item.path) { navigate(item.path) }
-                }} title={leftNavCollapsed ? item.label : undefined} style={{ padding: leftNavCollapsed ? '8px 0' : '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330', textAlign: leftNavCollapsed ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                  {leftNavCollapsed ? (
+                }} title={(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? item.label : undefined} style={{ padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '8px 0' : '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330', textAlign: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                  {(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? (
                     <span style={{ fontSize: 14 }}>{item.icon}</span>
                   ) : (
                     <>{active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}</>
@@ -1669,11 +1645,11 @@ export function Overview() {
               )
             })}
           </div>
-        </div>}
+        </div>
 
         {/* CENTER + RIGHT AREA */}
         {activeView === 'chats' ? (
-          <div style={{ gridColumn: isDesktop ? '2 / -1' : '1 / -1' }}>
+          <div style={{ gridColumn: '2 / -1' }}>
             <ChatView
               projects={projects}
               selectedBuildId={selectedChatBuildId}
@@ -1685,7 +1661,7 @@ export function Overview() {
             />
           </div>
         ) : activeView === 'ideas' ? (
-          <div style={{ gridColumn: isDesktop ? '2 / -1' : '1 / -1', border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+          <div style={{ gridColumn: '2 / -1', border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
             <IdeasView enhancingId={enhancingId} onTurnIntoPrompt={async (content, ideaId) => {
               setEnhancingId(ideaId)
               try {
@@ -2420,31 +2396,30 @@ export function Overview() {
         </div>
 
         {/* RIGHT PANEL — Live Feed */}
-        {isMobile ? null :
         <div style={{
           border: `1px solid #1e2330`,
           background: '#0a0d10',
-          padding: rightPanelCollapsed ? '12px 4px' : 14,
+          padding: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? '12px 4px' : 14,
           display: 'flex',
           flexDirection: 'column',
-          gap: rightPanelCollapsed ? 0 : 18,
+          gap: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 0 : 18,
           overflow: 'hidden',
           borderRadius: 2,
           position: 'relative',
           transition: 'padding 0.3s ease, gap 0.3s ease',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: rightPanelCollapsed ? 'center' : 'space-between', marginBottom: rightPanelCollapsed ? 0 : -4 }}>
-            {!rightPanelCollapsed && <span className="panel-header" style={{ color: '#9ca3af' }}>LIVE FEED</span>}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 'center' : 'space-between', marginBottom: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 0 : -4 }}>
+            {!(isDesktop ? rightPanelCollapsed : !mobileRightOpen) && <span className="panel-header" style={{ color: '#9ca3af' }}>LIVE FEED</span>}
             <button
-              onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
-              title={rightPanelCollapsed ? 'Expand panel' : 'Collapse panel'}
+              onClick={() => isDesktop ? setRightPanelCollapsed(!rightPanelCollapsed) : setMobileRightOpen(!mobileRightOpen)}
+              title={(isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 'Expand panel' : 'Collapse panel'}
               style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
               onMouseLeave={e => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
-            ><span style={{ display: 'inline-block', transform: rightPanelCollapsed ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>»</span></button>
+            ><span style={{ display: 'inline-block', transform: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>»</span></button>
           </div>
 
-          {!rightPanelCollapsed && <>
+          {!(isDesktop ? rightPanelCollapsed : !mobileRightOpen) && <>
           {/* Ready Builds KPI */}
           <div style={{ border: `1px solid #1e2330`, background: '#080a0e', borderRadius: 6, padding: 12 }}>
             {sectionHeader('READY BUILDS', 'readyBuilds')}
@@ -2667,7 +2642,7 @@ export function Overview() {
             )}
           </div>
         </>}
-        </div>}
+        </div>
         </>}
       </div>
 
