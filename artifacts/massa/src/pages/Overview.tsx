@@ -2179,26 +2179,6 @@ export function Overview() {
                           ))}
                         </div>
 
-                        {thinkingLines.length > 0 && (
-                          <Ticker lines={thinkingLines} render={(line) => (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 4 }}>
-                              <span style={{ display: 'inline-flex', flexShrink: 0, color: '#a78bfa' }}><ThinkingIcon size={10} /></span>
-                              <span style={{ fontSize: 10, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.agent}</span>
-                              <span style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.text}</span>
-                            </div>
-                          )} />
-                        )}
-
-                        {codeStreamLines.length > 0 && (
-                          <Ticker lines={codeStreamLines} render={(line) => (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 6 }}>
-                              <span style={{ display: 'inline-flex', flexShrink: 0, color: '#34d399' }}><BuildingIcon size={10} /></span>
-                              <span style={{ fontSize: 10, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.file}</span>
-                              <span style={{ fontSize: 10, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.code}</span>
-                            </div>
-                          )} />
-                        )}
-
                         {(() => {
                           type ActionType = 'response-ready' | 'review-plan' | 'run-build' | 'fix-error' | 'apply-changes'
                           const getProjectActionInfo = (build: typeof allBuilds[0]): { type: ActionType; label: string; color: string; tab: 'chat' | 'details' } | null => {
@@ -2290,6 +2270,26 @@ export function Overview() {
                             </div>
                           )
                         })()}
+
+                        {thinkingLines.length > 0 && (
+                          <Ticker lines={thinkingLines} render={(line) => (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 4 }}>
+                              <span style={{ display: 'inline-flex', flexShrink: 0, color: '#a78bfa' }}><ThinkingIcon size={10} /></span>
+                              <span style={{ fontSize: 10, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.agent}</span>
+                              <span style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.text}</span>
+                            </div>
+                          )} />
+                        )}
+
+                        {codeStreamLines.length > 0 && (
+                          <Ticker lines={codeStreamLines} render={(line) => (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 6 }}>
+                              <span style={{ display: 'inline-flex', flexShrink: 0, color: '#34d399' }}><BuildingIcon size={10} /></span>
+                              <span style={{ fontSize: 10, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.file}</span>
+                              <span style={{ fontSize: 10, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.code}</span>
+                            </div>
+                          )} />
+                        )}
 
                       </div>
 
