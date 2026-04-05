@@ -1025,7 +1025,7 @@ export function Overview() {
   const [expandedBuildId, setExpandedBuildId] = useState<string | null>(null)
   const [expandedBuildCard, setExpandedBuildCard] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
-  const [buildModalTab, setBuildModalTab] = useState<'chat' | 'details' | 'code' | 'thinking' | 'revert' | 'preview'>('chat')
+  const [buildModalTab, setBuildModalTab] = useState<'chat' | 'details' | 'code' | 'thinking' | 'revert' | 'preview' | 'archmap' | 'addagent' | 'addtask'>('chat')
   const [revertConfirmed, setRevertConfirmed] = useState<string | null>(null)
   const [revertPending, setRevertPending] = useState<string | null>(null)
   const [chatMessages, setChatMessages] = useState<Record<string, { id: string; role: 'user' | 'agent'; content: string; time: string }[]>>(() => {
@@ -2000,22 +2000,19 @@ export function Overview() {
                               <div style={{ fontSize: 10, color: isFailed ? '#f87171' : isComplete ? '#34d399' : '#f59e0b', fontStyle: isRunning ? 'italic' : 'normal', lineHeight: 1.3, minHeight: 14 }}>
                                 {isRunning ? (build.progress < 30 ? 'Thinking…' : build.progress < 60 ? 'Planning…' : 'Building…') : isComplete ? 'Completed' : isFailed ? 'Failed — action required' : statusText}
                               </div>
-                              <div style={{ display: 'flex', gap: 3, marginTop: 6, marginBottom: 5 }}>
-                                {['Chat', 'Arch Map', 'Preview'].map(l => (
-                                  <button key={l} onClick={(e: React.MouseEvent) => { e.stopPropagation(); if (l === 'Chat') { setSelectedChatBuildId(build.id); setChatOriginBuildId(null); setActiveView('chats'); } }} style={{
+                              <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
+                                {[
+                                  { label: 'Chat', tab: 'chat' as const, dashed: false },
+                                  { label: 'Arch Map', tab: 'archmap' as const, dashed: false },
+                                  { label: 'Preview', tab: 'preview' as const, dashed: false },
+                                  { label: '+ Agent', tab: 'addagent' as const, dashed: true },
+                                  { label: '+ Task', tab: 'addtask' as const, dashed: true },
+                                ].map(btn => (
+                                  <button key={btn.label} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setBuildModalTab(btn.tab); setExpandedBuildId(build.id) }} style={{
                                     padding: '4px 0', borderRadius: 3, flex: 1,
-                                    background: 'transparent', border: '1px solid #1a1a1a',
-                                    color: '#555', fontSize: 9, fontFamily: 'var(--f)', cursor: 'pointer',
-                                  }}>{l}</button>
-                                ))}
-                              </div>
-                              <div style={{ display: 'flex', gap: 3 }}>
-                                {['+ Agent', '+ Task'].map(l => (
-                                  <div key={l} onClick={(e: React.MouseEvent) => { e.stopPropagation(); }} style={{
-                                    flex: 1, textAlign: 'center' as const, padding: '4px 0',
-                                    borderRadius: 3, border: '1px dashed #181818',
-                                    fontSize: 8, color: '#2a2a2a', fontFamily: 'var(--f)', cursor: 'pointer',
-                                  }}>{l}</div>
+                                    background: 'transparent', border: `1px ${btn.dashed ? 'dashed' : 'solid'} #1a1a1a`,
+                                    color: btn.dashed ? '#2a2a2a' : '#555', fontSize: btn.dashed ? 8 : 9, fontFamily: 'var(--f)', cursor: 'pointer',
+                                  }}>{btn.label}</button>
                                 ))}
                               </div>
 
@@ -3048,11 +3045,14 @@ export function Overview() {
                     <div style={{ display: 'flex', gap: 1, background: '#0d1014', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 0, borderBottom: '1px solid #252a35', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }}>
                       {([
                         { key: 'chat' as const, label: 'Chat', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
+                        { key: 'archmap' as const, label: 'Arch Map', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
+                        { key: 'preview' as const, label: 'Preview', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> },
+                        { key: 'addagent' as const, label: '+ Agent', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> },
+                        { key: 'addtask' as const, label: '+ Task', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> },
                         { key: 'details' as const, label: 'Details', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> },
                         { key: 'code' as const, label: 'Code', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> },
                         { key: 'thinking' as const, label: 'Thinking', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg> },
                         { key: 'revert' as const, label: 'Revert', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> },
-                        { key: 'preview' as const, label: 'Preview', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> },
                       ]).map(tab => {
                         const isActive = buildModalTab === tab.key;
                         return (
@@ -3153,6 +3153,36 @@ export function Overview() {
                             style={{ border: '1px solid #252a35', background: '#151920', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}
                           >Send</button>
                         </div>
+                      </div>
+                    </div>
+                  ) : buildModalTab === 'archmap' ? (
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24, width: '100%', textAlign: 'center' }}>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={c.muted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12 }}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Architecture Map</div>
+                        <div style={{ fontSize: 12, color: c.muted, marginBottom: 16 }}>View the full architecture map for {expandedBuild.project.name}</div>
+                        <button
+                          onClick={() => { setExpandedBuildId(null); setExpandedProject(expandedBuild.project.id) }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                          onMouseLeave={e => e.currentTarget.style.background = '#151920'}
+                          style={{ border: `1px solid ${c.green}44`, background: '#151920', color: c.green, padding: '8px 20px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}
+                        >Open Arch Map</button>
+                      </div>
+                    </div>
+                  ) : buildModalTab === 'addagent' ? (
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ background: c.alt, border: `1px dashed ${c.border}`, borderRadius: 12, padding: 24, width: '100%', textAlign: 'center' }}>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={c.muted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12 }}><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Add Agent</div>
+                        <div style={{ fontSize: 12, color: c.muted }}>Coming soon — assign additional agents to this build</div>
+                      </div>
+                    </div>
+                  ) : buildModalTab === 'addtask' ? (
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ background: c.alt, border: `1px dashed ${c.border}`, borderRadius: 12, padding: 24, width: '100%', textAlign: 'center' }}>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={c.muted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12 }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Add Task</div>
+                        <div style={{ fontSize: 12, color: c.muted }}>Coming soon — create new tasks for this build</div>
                       </div>
                     </div>
                   ) : buildModalTab === 'details' ? (
