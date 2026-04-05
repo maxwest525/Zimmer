@@ -2167,39 +2167,9 @@ export function Overview() {
                           )} />
                         )}
 
-                        <div style={{ marginBottom: 8, position: 'relative' }}>
-                          <div
-                            onClick={(e) => { e.stopPropagation(); setPendingDropdown(isPendingOpen ? null : project.id) }}
-                            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 8px', borderRadius: 4, cursor: 'pointer', background: '#080808', border: `1px solid ${c.border}` }}>
-                            <span style={{ fontSize: 11, color: '#999', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                              {allBuilds.filter(b => b.status !== 'complete').length} pending
-                            </span>
-                            <span style={{ fontSize: 10, color: '#444', transform: isPendingOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>▾</span>
-                          </div>
-
-                          {isPendingOpen && (
-                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 3, background: '#0c0c0c', border: `1px solid ${c.border}`, borderRadius: 5, padding: '2px 0', zIndex: 20, boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
-                              {allBuilds.map((b, i) => (
-                                <div key={b.id}
-                                  onClick={(e) => { e.stopPropagation(); setBuildModalTab('chat'); setExpandedBuildId(b.id) }}
-                                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', cursor: 'pointer', borderTop: i > 0 ? '1px solid #1a1a1a' : 'none' }}
-                                  onMouseEnter={e => e.currentTarget.style.background = '#151920'}
-                                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                                  <span style={{ fontSize: 9, color: statusColor(b.status), fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>▸</span>
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: 10, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.title}</div>
-                                    <div style={{ fontSize: 8, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.agent} · {b.progress}%</div>
-                                  </div>
-                                  <span style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 4px', background: '#111', borderRadius: 3, flexShrink: 0 }}>{b.status}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
                         {(() => {
                           type ActionType = 'response-ready' | 'review-plan' | 'run-build' | 'fix-error' | 'apply-changes'
-                          const getProjectActionInfo = (build: typeof allBuilds[0]): { type: ActionType; label: string; color: string; tab: 'chat' | 'details' } => {
+                          const getProjectActionInfo = (build: typeof allBuilds[0]): { type: ActionType; label: string; color: string; tab: 'chat' | 'details' } | null => {
                             const msgs = chatMessages[build.id]
                             const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
                             const agentReplied = lastMsg?.role === 'agent'
@@ -2208,57 +2178,83 @@ export function Overview() {
                             if (build.status === 'running') return { type: 'review-plan', label: 'Review Plan', color: '#f59e0b', tab: 'details' }
                             if (build.status === 'queued') return { type: 'run-build', label: 'Run Build', color: '#f59e0b', tab: 'details' }
                             if (build.status === 'complete' && agentReplied) return { type: 'apply-changes', label: 'Apply Changes', color: '#34d399', tab: 'chat' }
-                            return { type: 'run-build', label: 'Run Build', color: '#f59e0b', tab: 'details' }
+                            return null
                           }
-                          const projectActionItems = allBuilds
-                            .filter(b => {
-                              if (b.status === 'failed' || b.status === 'queued' || b.status === 'running') return true
-                              if (b.status === 'complete') {
-                                const msgs = chatMessages[b.id]
-                                const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
-                                return lastMsg?.role === 'agent'
-                              }
-                              return false
-                            })
+                          const pendingBuilds = allBuilds.filter(b => b.status !== 'complete')
+                          const combinedItems = allBuilds
+                            .filter(b => b.status !== 'complete' || getProjectActionInfo(b) !== null)
                             .map(b => ({ ...b, action: getProjectActionInfo(b) }))
+                          const actionItems = combinedItems.filter(b => b.action !== null)
                           const actionPriority: Record<ActionType, number> = { 'fix-error': 0, 'response-ready': 1, 'review-plan': 2, 'apply-changes': 3, 'run-build': 4 }
-                          const sortedActions = [...projectActionItems].sort((a, b) => (actionPriority[a.action.type] ?? 5) - (actionPriority[b.action.type] ?? 5))
+                          const sortedCombined = [...combinedItems].sort((a, b) => {
+                            const aHasAction = a.action !== null
+                            const bHasAction = b.action !== null
+                            if (aHasAction && !bHasAction) return -1
+                            if (!aHasAction && bHasAction) return 1
+                            if (aHasAction && bHasAction) return (actionPriority[a.action!.type] ?? 5) - (actionPriority[b.action!.type] ?? 5)
+                            return 0
+                          })
+                          const firstAction = sortedCombined.find(b => b.action !== null)
+                          const actionCount = actionItems.length
 
-                          if (sortedActions.length === 0) return null
+                          if (sortedCombined.length === 0) return null
 
                           return (
                             <div style={{ marginBottom: 8, background: '#080808', border: `1px solid ${c.border}`, borderRadius: 4, overflow: 'hidden' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', borderBottom: `1px solid ${c.border}` }}>
+                              <div
+                                onClick={(e) => { e.stopPropagation(); setPendingDropdown(isPendingOpen ? null : project.id) }}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 8px', cursor: 'pointer' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                  <span style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Actions</span>
-                                  <span style={{ fontSize: 8, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{sortedActions.length}</span>
+                                  <span style={{ fontSize: 11, color: '#999', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                                    {pendingBuilds.length} pending
+                                  </span>
+                                  {actionCount > 0 && (
+                                    <span style={{ fontSize: 8, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>· {actionCount} action{actionCount !== 1 ? 's' : ''}</span>
+                                  )}
                                 </div>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    if (sortedActions.length > 0) {
-                                      setBuildModalTab(sortedActions[0].action.tab)
-                                      setExpandedBuildId(sortedActions[0].id)
-                                    }
-                                  }}
-                                  onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
-                                  onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.color = '#9ca3af' }}
-                                  style={{ fontSize: 8, fontWeight: 600, color: '#9ca3af', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 3, padding: '2px 8px', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'all 0.15s ease' }}
-                                >Run All</button>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  {actionCount > 0 && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        if (firstAction?.action) {
+                                          setBuildModalTab(firstAction.action.tab)
+                                          setExpandedBuildId(firstAction.id)
+                                        }
+                                      }}
+                                      onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
+                                      onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.color = '#9ca3af' }}
+                                      style={{ fontSize: 8, fontWeight: 600, color: '#9ca3af', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 3, padding: '2px 8px', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'all 0.15s ease' }}
+                                    >Run All</button>
+                                  )}
+                                  <span style={{ fontSize: 10, color: '#444', transform: isPendingOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>▾</span>
+                                </div>
                               </div>
-                              {sortedActions.map((item, idx) => (
-                                <div
-                                  key={item.id}
-                                  onClick={(e) => { e.stopPropagation(); setBuildModalTab(item.action.tab); setExpandedBuildId(item.id) }}
-                                  onMouseEnter={e => e.currentTarget.style.background = '#0f1215'}
-                                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', cursor: 'pointer', borderTop: idx > 0 ? '1px solid #14181e' : 'none', transition: 'background 0.15s' }}
-                                >
-                                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: item.action.color, flexShrink: 0 }} />
-                                  <span style={{ fontSize: 9, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
-                                  <span style={{ fontSize: 8, color: item.action.color, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: `${item.action.color}15`, borderRadius: 3, border: `1px solid ${item.action.color}30`, flexShrink: 0, fontWeight: 600 }}>{item.action.label}</span>
+                              {isPendingOpen && (
+                                <div style={{ borderTop: `1px solid ${c.border}` }}>
+                                  {sortedCombined.map((item, idx) => (
+                                    <div
+                                      key={item.id}
+                                      onClick={(e) => { e.stopPropagation(); setBuildModalTab(item.action?.tab ?? 'chat'); setExpandedBuildId(item.id) }}
+                                      onMouseEnter={e => e.currentTarget.style.background = '#0f1215'}
+                                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', cursor: 'pointer', borderTop: idx > 0 ? '1px solid #14181e' : 'none', transition: 'background 0.15s' }}
+                                    >
+                                      {item.action ? (
+                                        <span style={{ width: 4, height: 4, borderRadius: '50%', background: item.action.color, flexShrink: 0 }} />
+                                      ) : (
+                                        <span style={{ fontSize: 9, color: statusColor(item.status), fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>▸</span>
+                                      )}
+                                      <span style={{ fontSize: 9, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
+                                      {item.action ? (
+                                        <span style={{ fontSize: 8, color: item.action.color, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: `${item.action.color}15`, borderRadius: 3, border: `1px solid ${item.action.color}30`, flexShrink: 0, fontWeight: 600 }}>{item.action.label}</span>
+                                      ) : (
+                                        <span style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 4px', background: '#111', borderRadius: 3, flexShrink: 0 }}>{item.status}</span>
+                                      )}
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
+                              )}
                             </div>
                           )
                         })()}
