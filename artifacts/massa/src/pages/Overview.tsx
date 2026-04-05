@@ -2007,7 +2007,7 @@ export function Overview() {
                               <div style={{ height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden' }}>
                                 <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
                               </div>
-                              <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+                              <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
                                 {[
                                   { label: 'Chat', tab: 'chat' as const },
                                   { label: 'Code', tab: 'code' as const },
@@ -2019,11 +2019,11 @@ export function Overview() {
                                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.color = '#ccc' }}
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#777' }}
                                     style={{
-                                      width: 30, height: 30, borderRadius: 4, flex: 'none',
+                                      flex: 1, height: 28, borderRadius: 4,
                                       background: 'transparent', border: '1px solid #1e2330',
                                       color: '#777', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                      padding: 0, transition: 'border-color 0.15s, color 0.15s',
-                                    }}>{getTabIcon(btn.tab, 14)}</button>
+                                      padding: 0, transition: 'border-color 0.15s, color 0.15s', minWidth: 0,
+                                    }}>{getTabIcon(btn.tab, 13)}</button>
                                 ))}
                               </div>
 
