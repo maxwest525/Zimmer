@@ -1934,7 +1934,6 @@ export function Overview() {
                 <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 16, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { paddingBottom: 6 }) }}>
                   {project.builds.map((build) => {
                     const sc = skillColor(build.stack)
-                    const ps = primarySkill(build.stack)
                     const isRunning = build.status === 'running'
                     const isFailed = build.status === 'failed'
                     const isComplete = build.status === 'complete'
@@ -1959,7 +1958,6 @@ export function Overview() {
                               <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                                   <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
                                 </div>
                                 <div style={{ fontSize: 10, color: isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
                               </div>
@@ -1994,7 +1992,6 @@ export function Overview() {
                                     onMouseEnter={e => { e.currentTarget.style.color = sc; e.currentTarget.style.borderColor = sc }}
                                     onMouseLeave={e => { if (!isCardExpanded) { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border } }}
                                   ><span style={{ transform: isCardExpanded ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s', display: 'inline-block' }}>▸</span></button>
-                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
                                 </div>
                               </div>
                               <div style={{ height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden', marginBottom: 4 }}>
@@ -2947,7 +2944,6 @@ export function Overview() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ fontWeight: 800, fontSize: 16 }}>{activeBuild.title}</div>
-                      <ModelTooltip text={getModelReason(primarySkill(activeBuild.stack), activeBuild.buildContext)}><span style={{ fontSize: 10, color: '#ffffff', fontWeight: 700, cursor: 'default' }}>{primarySkill(activeBuild.stack)}</span></ModelTooltip>
                     </div>
                     <div style={{ fontSize: 11, color: c.muted }}>{activeBuild.agent} · {activeBuild.agentRole}</div>
                   </div>
@@ -3031,7 +3027,6 @@ export function Overview() {
           <div onClick={e => e.stopPropagation()} style={{ width: 'min(860px, 100%)', height: 'min(78vh, 640px)', background: c.panel, border: '1px solid #2a3040', borderRadius: 18, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)' }}>
             {(() => {
               const sc = skillColor(expandedBuild.build.stack)
-              const ps = primarySkill(expandedBuild.build.stack)
               const msgs = chatMessages[expandedBuild.build.id] || []
               return (
                 <>
@@ -3041,7 +3036,6 @@ export function Overview() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                           <div style={{ fontWeight: 800, fontSize: 20 }}>{expandedBuild.build.title}</div>
                           {expandedBuild.build.status !== 'complete' && <StatusBadge status={expandedBuild.build.status} colors={c} size="lg" />}
-                          <span style={{ fontSize: 11, color: '#ffffff', fontWeight: 700, border: `1px solid ${sc}44`, padding: '2px 7px', borderRadius: 6, background: `${sc}14` }}>{ps}</span>
                         </div>
                         <div style={{ fontSize: 12, color: c.muted }}>{expandedBuild.project.name} · {expandedBuild.build.agent} ({expandedBuild.build.agentRole})</div>
                       </div>
