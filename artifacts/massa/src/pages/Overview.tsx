@@ -2419,6 +2419,24 @@ export function Overview() {
             ><span style={{ display: 'inline-block', transform: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>»</span></button>
           </div>
 
+          {(isDesktop ? rightPanelCollapsed : !mobileRightOpen) && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, marginTop: 4 }}>
+              {[
+                { icon: '▶', label: 'Ready Builds', color: readyBuildsCount > 0 ? '#f59e0b' : '#9ca3af' },
+                { icon: '⚠', label: 'Action Required', color: '#f59e0b' },
+                { icon: '⟩', label: 'Code Stream', color: '#34d399' },
+              ].map(item => (
+                <div
+                  key={item.label}
+                  title={item.label}
+                  style={{ padding: '8px 0', fontSize: 14, color: item.color, textAlign: 'center', cursor: 'default', borderBottom: '1px solid #1e2330', width: '100%', display: 'flex', justifyContent: 'center' }}
+                >
+                  {item.icon}
+                </div>
+              ))}
+            </div>
+          )}
+
           {!(isDesktop ? rightPanelCollapsed : !mobileRightOpen) && <>
           {/* Ready Builds KPI */}
           <div style={{ border: `1px solid #1e2330`, background: '#080a0e', borderRadius: 6, padding: 12 }}>
