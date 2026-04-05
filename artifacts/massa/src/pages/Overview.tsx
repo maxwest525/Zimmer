@@ -1113,6 +1113,69 @@ export function Overview() {
   const [, navigate] = useLocation()
   const [typedPlaceholder, setTypedPlaceholder] = useState('')
   const [showSuggestionsTooltip, setShowSuggestionsTooltip] = useState(false)
+  const [navSearchQuery, setNavSearchQuery] = useState('')
+  const [navSearchFocused, setNavSearchFocused] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false)
+  const [collapsedNavSections, setCollapsedNavSections] = useState<Record<string, boolean>>({})
+  const navSearchRef = useRef<HTMLInputElement>(null)
+  const notifRef = useRef<HTMLDivElement>(null)
+  const avatarRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleCmdK = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        navSearchRef.current?.focus()
+      }
+    }
+    document.addEventListener('keydown', handleCmdK)
+    return () => document.removeEventListener('keydown', handleCmdK)
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotificationsOpen(false)
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) setAvatarDropdownOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const toggleNavSection = (section: string) => {
+    setCollapsedNavSections(prev => ({ ...prev, [section]: !prev[section] }))
+  }
+
+  const NAV_ITEMS = [
+    { section: 'Core', items: [
+      { label: 'Dashboard', icon: '⌂', view: 'dashboard' as const, path: '', shortcut: 'D' },
+      { label: 'Chats', icon: '◈', view: 'chats' as const, path: '', shortcut: 'C' },
+      { label: 'Ideas', icon: '◇', view: 'ideas' as const, path: '', shortcut: 'I' },
+    ]},
+    { section: 'Tools', items: [
+      { label: 'History', icon: '↻', view: null, path: '', shortcut: 'H' },
+      { label: 'Automations', icon: '⚡', view: null, path: '', shortcut: 'A' },
+      { label: 'Marketing', icon: '◎', view: null, path: '', shortcut: 'M' },
+      { label: 'Skills', icon: '⬡', view: null, path: '', shortcut: 'S' },
+      { label: 'APIs', icon: '⟡', view: null, path: '', shortcut: 'P' },
+      { label: 'Web Scraper', icon: '⊘', view: null, path: '', shortcut: 'W' },
+    ]},
+    { section: 'Projects', items: [
+      { label: 'Inside MASSA', icon: '⊞', view: null, path: '', shortcut: 'N' },
+      { label: 'Current Projects', icon: '☰', view: null, path: '/completed', shortcut: 'R' },
+      { label: 'Published', icon: '◉', view: null, path: '/completed?tab=published', shortcut: 'B' },
+    ]},
+  ]
+
+  const filteredNavItems = useMemo(() => {
+    if (!navSearchQuery.trim()) return NAV_ITEMS
+    const q = navSearchQuery.toLowerCase()
+    const filtered = NAV_ITEMS.map(group => ({
+      ...group,
+      items: group.items.filter(item => item.label.toLowerCase().includes(q))
+    })).filter(group => group.items.length > 0)
+    return filtered
+  }, [navSearchQuery])
 
   useEffect(() => {
     const fullText = '> describe what you want to build...'
@@ -1376,6 +1439,46 @@ export function Overview() {
     [filteredProjects]
   )
 
+  const actionRequiredCount = useMemo(() => {
+    return filteredProjects.flatMap(p =>
+      p.builds.filter(b => {
+        if (b.status === 'failed' || b.status === 'running') return true
+        if (b.status === 'complete') {
+          const msgs = chatMessages[b.id]
+          const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
+          return lastMsg?.role === 'agent'
+        }
+        return false
+      })
+    ).length
+  }, [filteredProjects, chatMessages])
+
+  const searchMatchedProjects = useMemo(() => {
+    if (!navSearchQuery.trim()) return []
+    const q = navSearchQuery.toLowerCase()
+    return projects.filter(p => p.name.toLowerCase().includes(q))
+  }, [navSearchQuery, projects])
+
+  const handleSearchNavigate = useCallback(() => {
+    const allNavItems = filteredNavItems.flatMap(g => g.items)
+    if (allNavItems.length > 0) {
+      const first = allNavItems[0]
+      if (first.view) { setActiveView(first.view); setChatOriginBuildId(null) }
+      else if (first.path) { navigate(first.path) }
+      setNavSearchQuery('')
+      navSearchRef.current?.blur()
+      setMobileNavOpen(false)
+      return
+    }
+    if (searchMatchedProjects.length > 0) {
+      const proj = searchMatchedProjects[0]
+      setExpandedProject(proj.id)
+      setNavSearchQuery('')
+      navSearchRef.current?.blur()
+      setMobileNavOpen(false)
+    }
+  }, [filteredNavItems, searchMatchedProjects, navigate])
+
   const handleStartAll = () => {
     const targetIds = new Set(filteredProjects.map(p => p.id))
     setProjects(cur => cur.map(p => {
@@ -1556,6 +1659,19 @@ export function Overview() {
         @keyframes subtle-glow { 0%,100%{box-shadow: 0 0 4px rgba(52,211,153,0.15)} 50%{box-shadow: 0 0 8px rgba(52,211,153,0.25)} }
         @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes suggestion-slide-in { 0%{opacity:0;transform:translateY(6px) scale(0.97)} 100%{opacity:1;transform:translateY(0) scale(1)} }
+        @keyframes logo-pulse { 0%,100%{filter:drop-shadow(0 0 4px rgba(52,211,153,0.2))} 50%{filter:drop-shadow(0 0 10px rgba(52,211,153,0.5))} }
+        @keyframes active-slide-in { 0%{transform:scaleY(0);opacity:0} 100%{transform:scaleY(1);opacity:1} }
+        @keyframes dropdown-fade-in { 0%{opacity:0;transform:translateY(-6px)} 100%{opacity:1;transform:translateY(0)} }
+        @keyframes mobile-slide-in { 0%{transform:translateX(-100%)} 100%{transform:translateX(0)} }
+        @keyframes nav-item-hover-glow { 0%{box-shadow:none} 100%{box-shadow:0 0 8px rgba(52,211,153,0.12)} }
+        .nav-item-hover:hover { background: rgba(52,211,153,0.06) !important; transform: translateX(2px); }
+        .nav-item-hover { transition: all 0.2s ease !important; }
+        .header-btn:hover { background: rgba(52,211,153,0.1) !important; color: #34d399 !important; border-color: rgba(52,211,153,0.3) !important; transform: scale(1.05); }
+        .header-btn { transition: all 0.2s ease !important; }
+        .nav-section-header:hover { color: #e8eaed !important; }
+        .nav-section-header { transition: color 0.15s ease !important; cursor: pointer; }
+        .shortcut-hint { opacity: 0; transition: opacity 0.2s ease; }
+        .nav-item-hover:hover .shortcut-hint { opacity: 1; }
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { height: 4px; width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -1568,57 +1684,198 @@ export function Overview() {
       `}</style>
 
       {/* HEADER */}
-      <div style={{ height: 56, border: `1px solid #1e2330`, background: '#080a0e', display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+      <div style={{ height: 56, border: '1px solid rgba(30,35,48,0.8)', background: 'rgba(8,10,14,0.75)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', padding: '0 16px', marginBottom: 12, position: 'relative', borderRadius: 4, boxShadow: '0 2px 12px rgba(0,0,0,0.5), inset 0 -1px 0 rgba(52,211,153,0.08)' }}>
         {!isDesktop && (
-          <button onClick={() => setMobileNavOpen(!mobileNavOpen)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 6, display: 'flex', flexDirection: 'column', gap: 4, zIndex: 2 }}>
-            <div style={{ width: 18, height: 2, background: '#9ca3af' }} />
-            <div style={{ width: 18, height: 2, background: '#9ca3af' }} />
-            <div style={{ width: 18, height: 2, background: '#9ca3af' }} />
+          <button onClick={() => setMobileNavOpen(!mobileNavOpen)} className="header-btn" style={{ background: 'transparent', border: '1px solid transparent', color: '#9ca3af', cursor: 'pointer', padding: 6, display: 'flex', flexDirection: 'column', gap: 3, borderRadius: 4, marginRight: 8 }}>
+            <div style={{ width: 16, height: 1.5, background: 'currentColor', borderRadius: 1, transition: 'all 0.2s' }} />
+            <div style={{ width: 16, height: 1.5, background: 'currentColor', borderRadius: 1, transition: 'all 0.2s' }} />
+            <div style={{ width: 16, height: 1.5, background: 'currentColor', borderRadius: 1, transition: 'all 0.2s' }} />
           </button>
         )}
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, letterSpacing: 8, color: '#e8eaed', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA</span>
-          <span style={{ background: '#34d399', color: '#080a0e', fontWeight: 800, fontSize: isMobile ? 12 : 14, padding: '2px 8px', borderRadius: 3, boxShadow: '0 0 12px rgba(52,211,153,0.3)', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>AI</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', flexShrink: 0 }} onMouseEnter={e => e.currentTarget.style.animation = 'logo-pulse 2s ease-in-out infinite'} onMouseLeave={e => e.currentTarget.style.animation = 'none'}>
+          <span style={{ fontSize: isMobile ? 16 : 18, fontWeight: 800, letterSpacing: 6, color: '#e8eaed', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA</span>
+          <span style={{ background: '#34d399', color: '#080a0e', fontWeight: 800, fontSize: isMobile ? 10 : 12, padding: '1px 6px', borderRadius: 3, boxShadow: '0 0 12px rgba(52,211,153,0.3)', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>AI</span>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
+
+        {!isMobile && (
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 16px', maxWidth: 420, margin: '0 auto' }}>
+            <div style={{ position: 'relative', width: '100%' }}>
+              <input
+                ref={navSearchRef}
+                type="text"
+                value={navSearchQuery}
+                onChange={e => setNavSearchQuery(e.target.value)}
+                onFocus={() => setNavSearchFocused(true)}
+                onBlur={() => setTimeout(() => setNavSearchFocused(false), 200)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearchNavigate() } if (e.key === 'Escape') { setNavSearchQuery(''); navSearchRef.current?.blur() } }}
+                placeholder="Search navigation..."
+                style={{ width: '100%', height: 32, background: navSearchFocused ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${navSearchFocused ? 'rgba(52,211,153,0.3)' : 'rgba(30,35,48,0.8)'}`, borderRadius: 6, padding: '0 36px 0 32px', color: '#e8eaed', fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.2s ease' }}
+              />
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', background: 'rgba(255,255,255,0.05)', padding: '2px 5px', borderRadius: 3, border: '1px solid rgba(255,255,255,0.08)', pointerEvents: 'none' }}>⌘K</span>
+              {navSearchFocused && navSearchQuery.trim() && (filteredNavItems.length > 0 || searchMatchedProjects.length > 0) && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#0a0d10', border: '1px solid #1e2330', borderRadius: 8, boxShadow: '0 12px 32px rgba(0,0,0,0.6)', zIndex: 300, animation: 'dropdown-fade-in 0.15s ease', overflow: 'hidden', maxHeight: 300, overflowY: 'auto' }}>
+                  {filteredNavItems.map(group => (
+                    <div key={group.section}>
+                      <div style={{ padding: '6px 12px 3px', fontSize: 9, color: '#6b7280', fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{group.section}</div>
+                      {group.items.map(item => (
+                        <button key={item.label} onMouseDown={e => { e.preventDefault(); if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) } else if (item.path) { navigate(item.path) } setNavSearchQuery(''); navSearchRef.current?.blur() }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'transparent', border: 'none', borderBottom: '1px solid #14181e', cursor: 'pointer', color: '#e8eaed', fontSize: 11, fontWeight: 500, fontFamily: '"JetBrains Mono", Menlo, monospace', textAlign: 'left', transition: 'background 0.12s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.06)' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                          <span style={{ fontSize: 13, opacity: 0.5 }}>{item.icon}</span>
+                          <span>{item.label}</span>
+                          <span style={{ marginLeft: 'auto', fontSize: 9, color: '#4b5563', background: 'rgba(255,255,255,0.04)', padding: '1px 4px', borderRadius: 2, border: '1px solid rgba(255,255,255,0.06)' }}>{item.shortcut}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                  {searchMatchedProjects.length > 0 && (
+                    <div>
+                      <div style={{ padding: '6px 12px 3px', fontSize: 9, color: '#6b7280', fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Projects</div>
+                      {searchMatchedProjects.map(proj => (
+                        <button key={proj.id} onMouseDown={e => { e.preventDefault(); setExpandedProject(proj.id); setNavSearchQuery(''); navSearchRef.current?.blur() }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'transparent', border: 'none', borderBottom: '1px solid #14181e', cursor: 'pointer', color: '#e8eaed', fontSize: 11, fontWeight: 500, fontFamily: '"JetBrains Mono", Menlo, monospace', textAlign: 'left', transition: 'background 0.12s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.06)' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                          <span style={{ width: 6, height: 6, borderRadius: 3, background: proj.status === 'running' ? '#34d399' : proj.status === 'failed' ? '#f87171' : '#f59e0b', flexShrink: 0 }} />
+                          <span>{proj.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div style={{ marginLeft: isMobile ? 'auto' : 0, display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+          {isDesktop && (
+            <>
+              <button onClick={() => setLeftNavCollapsed(!leftNavCollapsed)} className="header-btn" title="Toggle sidebar" style={{ width: 30, height: 30, borderRadius: 4, border: '1px solid rgba(30,35,48,0.8)', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, padding: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" /></svg>
+              </button>
+              <button onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)} className="header-btn" title="Toggle right panel" style={{ width: 30, height: 30, borderRadius: 4, border: '1px solid rgba(30,35,48,0.8)', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, padding: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="15" y1="3" x2="15" y2="21" /></svg>
+              </button>
+              <button onClick={() => { setActiveView('dashboard'); navSearchRef.current?.focus() }} className="header-btn" title="New Project" style={{ width: 30, height: 30, borderRadius: 4, border: '1px solid rgba(52,211,153,0.2)', background: 'rgba(52,211,153,0.04)', color: '#34d399', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, padding: 0, fontWeight: 600 }}>+</button>
+            </>
+          )}
+
+          <div ref={notifRef} style={{ position: 'relative' }}>
+            <button onClick={() => { setNotificationsOpen(!notificationsOpen); setAvatarDropdownOpen(false) }} className="header-btn" title="Notifications" style={{ width: 30, height: 30, borderRadius: 4, border: '1px solid rgba(30,35,48,0.8)', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, position: 'relative' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+              {(readyBuildsCount + actionRequiredCount) > 0 && (
+                <span style={{ position: 'absolute', top: 2, right: 2, minWidth: 14, height: 14, borderRadius: 7, background: '#f87171', color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '0 3px', lineHeight: 1 }}>{readyBuildsCount + actionRequiredCount}</span>
+              )}
+            </button>
+            {notificationsOpen && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 280, background: '#0a0d10', border: '1px solid #1e2330', borderRadius: 8, boxShadow: '0 12px 32px rgba(0,0,0,0.6)', zIndex: 200, animation: 'dropdown-fade-in 0.2s ease', overflow: 'hidden' }}>
+                <div style={{ padding: '10px 14px', borderBottom: '1px solid #1e2330', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#e8eaed', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5 }}>Notifications</span>
+                  <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{readyBuildsCount + actionRequiredCount} pending</span>
+                </div>
+                {readyBuildsCount > 0 && (
+                  <div style={{ padding: '10px 14px', borderBottom: '1px solid #14181e', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: 3, background: '#f59e0b', flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: 11, color: '#e8eaed', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>{readyBuildsCount} builds queued</div>
+                      <div style={{ fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', marginTop: 2 }}>Ready to start</div>
+                    </div>
+                  </div>
+                )}
+                {actionRequiredCount > 0 && (
+                  <div style={{ padding: '10px 14px', borderBottom: '1px solid #14181e', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: 3, background: '#f87171', flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: 11, color: '#e8eaed', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>{actionRequiredCount} actions required</div>
+                      <div style={{ fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', marginTop: 2 }}>Needs your attention</div>
+                    </div>
+                  </div>
+                )}
+                {readyBuildsCount === 0 && actionRequiredCount === 0 && (
+                  <div style={{ padding: '20px 14px', textAlign: 'center' }}>
+                    <span style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>✓ All clear</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <TenantSelector />
           <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: isDesktop ? 'block' : 'none' }}>v2.4.1</span>
-          <div style={{ width: 30, height: 30, borderRadius: 4, background: 'rgba(52,211,153,0.06)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid rgba(52,211,153,0.15)`, fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>M</div>
+
+          <div ref={avatarRef} style={{ position: 'relative' }}>
+            <div onClick={() => { setAvatarDropdownOpen(!avatarDropdownOpen); setNotificationsOpen(false) }} className="header-btn" style={{ width: 30, height: 30, borderRadius: 4, background: 'rgba(52,211,153,0.06)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: '1px solid rgba(52,211,153,0.15)', fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer' }}>M</div>
+            {avatarDropdownOpen && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 180, background: '#0a0d10', border: '1px solid #1e2330', borderRadius: 8, boxShadow: '0 12px 32px rgba(0,0,0,0.6)', zIndex: 200, animation: 'dropdown-fade-in 0.2s ease', overflow: 'hidden' }}>
+                {[
+                  { label: 'Profile', icon: '⊙' },
+                  { label: 'Settings', icon: '⚙' },
+                  { label: 'Logout', icon: '⏻' },
+                ].map((item, i) => (
+                  <button key={item.label} className="nav-item-hover" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'transparent', border: 'none', borderBottom: i < 2 ? '1px solid #14181e' : 'none', cursor: 'pointer', color: item.label === 'Logout' ? '#f87171' : '#e8eaed', fontSize: 11, fontWeight: 500, fontFamily: '"JetBrains Mono", Menlo, monospace', textAlign: 'left' }}>
+                    <span style={{ fontSize: 13, opacity: 0.7 }}>{item.icon}</span>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* MOBILE NAV OVERLAY */}
       {!isDesktop && mobileNavOpen && (
-        <div onClick={() => setMobileNavOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 260, height: '100%', background: '#0a0d10', border: `1px solid #1e2330`, padding: 16, overflowY: 'auto' }}>
-            <div className="panel-header" style={{ color: '#9ca3af', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid #1e2330' }}>SYS://NAV</div>
-            {[
-              { label: 'Dashboard', view: 'dashboard' as const, path: '' },
-              { label: 'Chats', view: 'chats' as const, path: '' },
-              { label: 'Ideas', view: 'ideas' as const, path: '' },
-              { label: 'History', view: null, path: '' },
-              { label: 'Automations', view: null, path: '' },
-              { label: 'Marketing', view: null, path: '' },
-              { label: 'Skills', view: null, path: '' },
-              { label: 'APIs', view: null, path: '' },
-              { label: 'Web Scraper', view: null, path: '' },
-              { label: 'Inside MASSA', view: null, path: '' },
-              { label: 'Current Projects', view: null, path: '/completed' },
-              { label: 'Published', view: null, path: '/completed?tab=published' },
-            ].map(item => {
-              const active = item.view === activeView || (item.label === 'Dashboard' && activeView === 'dashboard')
-              return (
-              <div key={item.label}
-                onClick={() => {
-                  if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
-                  if (item.path) navigate(item.path)
-                  setMobileNavOpen(false)
-                }}
-                style={{ padding: '10px 10px', borderRadius: 0, cursor: 'pointer', color: active ? '#34d399' : '#9ca3af', fontSize: 12, fontWeight: active ? 600 : 500, borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', background: active ? 'rgba(52,211,153,0.04)' : 'transparent', marginBottom: 0, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330' }}>
-                {active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}
+        <div onClick={() => setMobileNavOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', zIndex: 50, transition: 'opacity 0.2s ease' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 280, height: '100%', background: '#0a0d10', border: '1px solid #1e2330', padding: 0, overflowY: 'auto', animation: 'mobile-slide-in 0.25s ease' }}>
+            <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid #1e2330' }}>
+              <div className="panel-header" style={{ color: '#9ca3af', marginBottom: 12 }}>SYS://NAV</div>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  value={navSearchQuery}
+                  onChange={e => setNavSearchQuery(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearchNavigate() } }}
+                  placeholder="Search..."
+                  style={{ width: '100%', height: 32, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(30,35,48,0.8)', borderRadius: 6, padding: '0 10px 0 30px', color: '#e8eaed', fontSize: 11, fontFamily: '"JetBrains Mono", Menlo, monospace' }}
+                />
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               </div>
-              )
-            })}
+            </div>
+            <div style={{ padding: '8px 0' }}>
+              {filteredNavItems.map(group => (
+                <div key={group.section}>
+                  <div
+                    className="nav-section-header"
+                    onClick={() => toggleNavSection(group.section)}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px 4px', color: '#6b7280', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', fontFamily: '"JetBrains Mono", Menlo, monospace', userSelect: 'none' }}
+                  >
+                    <span>{group.section}</span>
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: collapsedNavSections[group.section] ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', opacity: 0.6 }}>
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
+                  {!collapsedNavSections[group.section] && group.items.map(item => {
+                    const active = item.view === activeView || (item.label === 'Dashboard' && activeView === 'dashboard')
+                    return (
+                      <div key={item.label} className="nav-item-hover"
+                        onClick={() => {
+                          if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
+                          if (item.path) navigate(item.path)
+                          setMobileNavOpen(false)
+                        }}
+                        style={{ padding: '10px 16px', borderRadius: 0, cursor: 'pointer', color: active ? '#34d399' : '#9ca3af', fontSize: 12, fontWeight: active ? 600 : 500, background: active ? 'rgba(52,211,153,0.06)' : 'transparent', marginBottom: 0, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', position: 'relative', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {active && (
+                          <span style={{ position: 'absolute', left: 0, top: '15%', bottom: '15%', width: 2, background: '#34d399', borderRadius: 1, boxShadow: '0 0 6px rgba(52,211,153,0.4)', animation: 'active-slide-in 0.25s ease' }} />
+                        )}
+                        <span style={{ marginLeft: 4 }}>{item.label}</span>
+                        <span className="shortcut-hint" style={{ marginLeft: 'auto', fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', background: 'rgba(255,255,255,0.04)', padding: '1px 4px', borderRadius: 2, border: '1px solid rgba(255,255,255,0.06)' }}>{item.shortcut}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -1627,47 +1884,55 @@ export function Overview() {
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? (rightPanelCollapsed ? 'minmax(0, 1fr) 42px' : 'minmax(0, 1fr) 200px') : (`${leftNavCollapsed ? '42px' : '160px'} minmax(0, 1fr) ${rightPanelCollapsed ? '42px' : '200px'}`), gap: isMobile ? 12 : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease' }}>
 
         {/* LEFT SIDEBAR — hidden on mobile/tablet */}
-        {isDesktop && <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: leftNavCollapsed ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2, overflow: 'hidden', transition: 'padding 0.3s ease' }}>
+        {isDesktop && <div style={{ border: '1px solid #1e2330', background: '#0a0d10', padding: leftNavCollapsed ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 4, overflow: 'hidden', transition: 'padding 0.3s ease, width 0.3s ease' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: leftNavCollapsed ? 'center' : 'space-between', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid #1e2330' }}>
               {!leftNavCollapsed && <span className="panel-header" style={{ color: '#9ca3af' }}>SYS://NAV</span>}
               <button
                 onClick={() => setLeftNavCollapsed(!leftNavCollapsed)}
                 title={leftNavCollapsed ? 'Expand nav' : 'Collapse nav'}
-                style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
-                onMouseLeave={e => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
+                className="header-btn"
+                style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0 }}
               ><span style={{ display: 'inline-block', transform: leftNavCollapsed ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>«</span></button>
             </div>
-            {[
-              { label: 'Dashboard', icon: '⌂', view: 'dashboard' as const, path: '' },
-              { label: 'Chats', icon: '◈', view: 'chats' as const, path: '' },
-              { label: 'Ideas', icon: '◇', view: 'ideas' as const, path: '' },
-              { label: 'History', icon: '↻', view: null, path: '' },
-              { label: 'Automations', icon: '⚡', view: null, path: '' },
-              { label: 'Marketing', icon: '◎', view: null, path: '' },
-              { label: 'Skills', icon: '⬡', view: null, path: '' },
-              { label: 'APIs', icon: '⟡', view: null, path: '' },
-              { label: 'Web Scraper', icon: '⊘', view: null, path: '' },
-              { label: 'Inside MASSA', icon: '⊞', view: null, path: '' },
-              { label: 'Current Projects', icon: '☰', view: null, path: '/completed' },
-              { label: 'Published', icon: '◉', view: null, path: '/completed?tab=published' },
-            ].map(item => {
-              const active = item.view ? activeView === item.view : false
-              const clickable = item.view !== null || item.path !== ''
-              return (
-                <div key={item.label} onClick={() => {
-                  if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
-                  else if (item.path) { navigate(item.path) }
-                }} title={leftNavCollapsed ? item.label : undefined} style={{ padding: leftNavCollapsed ? '8px 0' : '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330', textAlign: leftNavCollapsed ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                  {leftNavCollapsed ? (
-                    <span style={{ fontSize: 14 }}>{item.icon}</span>
-                  ) : (
-                    <>{active && <span style={{ color: '#34d399', marginRight: 6, opacity: 0.7 }}>{'>'}</span>}{item.label}</>
-                  )}
-                </div>
-              )
-            })}
+            {filteredNavItems.map(group => (
+              <div key={group.section} style={{ marginBottom: leftNavCollapsed ? 4 : 0 }}>
+                {!leftNavCollapsed && (
+                  <div
+                    className="nav-section-header"
+                    onClick={() => toggleNavSection(group.section)}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px 4px', color: '#6b7280', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', fontFamily: '"JetBrains Mono", Menlo, monospace', userSelect: 'none' }}
+                  >
+                    <span>{group.section}</span>
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: collapsedNavSections[group.section] ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', opacity: 0.6 }}>
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
+                )}
+                {!collapsedNavSections[group.section] && group.items.map(item => {
+                  const active = item.view ? activeView === item.view : false
+                  const clickable = item.view !== null || item.path !== ''
+                  return (
+                    <div key={item.label} className="nav-item-hover" onClick={() => {
+                      if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
+                      else if (item.path) { navigate(item.path) }
+                    }} title={leftNavCollapsed ? item.label : undefined} style={{ padding: leftNavCollapsed ? '8px 0' : '8px 10px', borderRadius: leftNavCollapsed ? 0 : 4, marginBottom: 1, background: active ? 'rgba(52,211,153,0.06)' : 'transparent', color: active ? '#34d399' : '#9ca3af', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', textAlign: leftNavCollapsed ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {active && !leftNavCollapsed && (
+                        <span style={{ position: 'absolute', left: 0, top: '15%', bottom: '15%', width: 2, background: '#34d399', borderRadius: 1, boxShadow: '0 0 6px rgba(52,211,153,0.4)', animation: 'active-slide-in 0.25s ease' }} />
+                      )}
+                      {leftNavCollapsed ? (
+                        <span style={{ fontSize: 14 }}>{item.icon}</span>
+                      ) : (
+                        <>
+                          <span style={{ marginLeft: 6, flex: 1 }}>{item.label}</span>
+                          <span className="shortcut-hint" style={{ fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', background: 'rgba(255,255,255,0.04)', padding: '1px 4px', borderRadius: 2, border: '1px solid rgba(255,255,255,0.06)' }}>{item.shortcut}</span>
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
           </div>
         </div>}
 
