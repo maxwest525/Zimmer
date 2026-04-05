@@ -14,10 +14,6 @@ router.post("/ai/suggest", async (req, res) => {
     return res.json({ suggestions: [] });
   }
 
-  const modelContext = model
-    ? `The user is building with ${model}. Tailor suggestions to what works best with that tool — keep it practical, not theoretical.`
-    : "";
-
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -25,15 +21,15 @@ router.post("/ai/suggest", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You help people write better prompts for AI coding tools. Given a user's idea, suggest 2-3 clearer, more specific versions of what they typed. ${modelContext}
+          content: `You are a product strategist helping someone scope a software project. Given their initial idea, suggest 2-3 smart follow-up directions that would help refine and advance the project — NOT rephrased versions of what they already said.
 
 Rules:
-- Write like a human talking to an AI assistant, not like a technical spec
-- Focus on WHAT they want built and HOW it should work for the end user
-- Add useful details they might have forgotten (like "with mobile support" or "that saves to a database")
-- Do NOT mention architecture, frameworks, tech stacks, or implementation details
+- Each suggestion should explore a DIFFERENT dimension the user hasn't specified yet (e.g. communication channels, user roles, integrations, workflow steps, data handling, monetization)
+- Frame each as a specific decision or feature addition, like: "Add email + SMS notification channels for client updates" or "Include role-based access for sales reps vs managers"
+- Do NOT just reword or summarize what they typed — push the idea FORWARD
 - Keep each suggestion under 100 characters
-- Be conversational and clear — if a non-technical person reads it, they should understand it
+- Be practical and concrete — suggest things they'll actually need
+- Do NOT mention tech stacks, frameworks, or architecture
 
 Return ONLY a JSON array of strings, nothing else.`,
         },

@@ -1818,7 +1818,7 @@ export function Overview() {
                     <div style={{ width: 340, flexShrink: 0, background: '#0c0f14', border: '1px solid #252a35', borderRadius: 12, padding: '12px 14px', boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.05)', animation: 'suggestion-slide-in 0.25s ease both', alignSelf: 'flex-start' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <div className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>AI SUGGESTIONS</div>
+                          <div className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>NEXT STEPS</div>
                           <div style={{ position: 'relative', display: 'inline-flex' }}
                             onMouseEnter={() => setShowSuggestionsTooltip(true)}
                             onMouseLeave={() => setShowSuggestionsTooltip(false)}
