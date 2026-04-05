@@ -2264,7 +2264,7 @@ export function Overview() {
                           )
                         })()}
 
-                        <div style={{ display: 'flex', gap: 3, marginBottom: 5 }}>
+                        <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
                           {[
                             { label: 'Chat', onClick: (e: React.MouseEvent) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }, hk: project.id + '-chat' },
                             { label: 'Arch Map', onClick: (e: React.MouseEvent) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }, hk: project.id + '-arch' },
@@ -2274,16 +2274,16 @@ export function Overview() {
                               onClick={btn.onClick}
                               onMouseEnter={() => setHoveredArchBtn(btn.hk)}
                               onMouseLeave={() => setHoveredArchBtn(null)}
-                              style={{ flex: 1, padding: '4px 0', borderRadius: 3, background: hoveredArchBtn === btn.hk ? '#0f1215' : 'transparent', border: `1px solid ${c.border}`, color: hoveredArchBtn === btn.hk ? '#ccc' : '#666', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s' }}>
+                              style={{ flex: 1, padding: '6px 0', borderRadius: 4, background: hoveredArchBtn === btn.hk ? '#0f1215' : 'transparent', border: `1px solid ${c.border}`, color: hoveredArchBtn === btn.hk ? '#ccc' : '#666', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s' }}>
                               {btn.label}
                             </button>
                           ))}
                         </div>
 
-                        <div style={{ display: 'flex', gap: 3 }}>
+                        <div style={{ display: 'flex', gap: 5 }}>
                           {['+ Agent', '+ Task'].map(label => (
                             <div key={label}
-                              style={{ flex: 1, textAlign: 'center', padding: '4px 0', borderRadius: 3, border: `1px dashed ${c.border}`, fontSize: 9, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s' }}
+                              style={{ flex: 1, textAlign: 'center', padding: '6px 0', borderRadius: 4, border: `1px dashed ${c.border}`, fontSize: 10, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s' }}
                               onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
                               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                               {label}
