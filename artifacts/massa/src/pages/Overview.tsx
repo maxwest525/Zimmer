@@ -1974,7 +1974,6 @@ export function Overview() {
                 <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 16, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { paddingBottom: 6 }) }}>
                   {project.builds.map((build) => {
                     const sc = skillColor(build.stack)
-                    const ps = primarySkill(build.stack)
                     const isRunning = build.status === 'running'
                     const isFailed = build.status === 'failed'
                     const isComplete = build.status === 'complete'
@@ -1998,7 +1997,6 @@ export function Overview() {
                               <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                                   <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25 }}>{build.title}</div>
-                                  <ModelTooltip text={getModelReason(ps, build.buildContext)}><span style={{ fontSize: 9, color: '#ffffff', fontWeight: 700, flexShrink: 0, cursor: 'default' }}>{ps}</span></ModelTooltip>
                                 </div>
                                 <div style={{ fontSize: 10, color: isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
                               </div>
@@ -2023,14 +2021,6 @@ export function Overview() {
                             <div style={{ padding: '8px 10px 8px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
                                 <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{build.title}</div>
-                                <ModelTooltip text={getModelReason(ps, build.buildContext)}>
-                                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, color: '#fff', fontWeight: 700, flexShrink: 0, cursor: 'default', marginLeft: 6 }}>
-                                    <span style={{ width: 14, height: 14, borderRadius: 99, background: '#1e2330', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                                    </span>
-                                    {ps}
-                                  </span>
-                                </ModelTooltip>
                               </div>
                               <div style={{ height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden', marginBottom: 4 }}>
                                 <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
