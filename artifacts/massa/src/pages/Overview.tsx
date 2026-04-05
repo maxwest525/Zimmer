@@ -1136,7 +1136,7 @@ export function Overview() {
   useEffect(() => {
     setIgnoredAll(false)
     setDismissedSuggestions(new Set())
-    if (rawInput.trim().length < 5) {
+    if (rawInput.trim().length < 12) {
       setAiSuggestions([])
       return
     }
@@ -1153,7 +1153,7 @@ export function Overview() {
         .then(d => setAiSuggestions(d.suggestions || []))
         .catch(() => { if (!controller.signal.aborted) setAiSuggestions([]) })
         .finally(() => { if (!controller.signal.aborted) setSuggestionsLoading(false) })
-    }, 300)
+    }, 800)
     return () => { clearTimeout(timer); controller.abort(); setSuggestionsLoading(false) }
   }, [rawInput])
 
