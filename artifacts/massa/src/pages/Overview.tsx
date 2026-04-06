@@ -1279,7 +1279,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
   const categories: { name: string; desc: string; status: 'ACTIVE' | 'MONITORING' | 'READY'; integrations: { name: string; color: string; detail: string }[] }[] = [
     {
       name: 'AI & Language Models',
-      desc: 'The intelligence layer — plug in frontier models for code generation, reasoning, content creation, and agent orchestration.',
+      desc: 'The brain behind MASSA — frontier models that power its reasoning, code generation, content creation, and multi-agent orchestration. More models = deeper intelligence.',
       status: 'ACTIVE',
       integrations: [
         { name: 'OpenAI', color: '#10a37f', detail: 'GPT-4o, o1, and embeddings API' },
@@ -1291,7 +1291,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
     },
     {
       name: 'Cloud & Infrastructure',
-      desc: 'Where your applications live — deploy to any cloud, any region, with automated scaling and zero-downtime rollouts.',
+      desc: 'Gives MASSA the ability to deploy what it builds anywhere — any cloud, any region, with automated scaling and zero-downtime rollouts.',
       status: 'ACTIVE',
       integrations: [
         { name: 'AWS', color: '#ff9900', detail: 'EC2, Lambda, S3, and 200+ services' },
@@ -1303,7 +1303,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
     },
     {
       name: 'Database & Storage',
-      desc: 'Your data backbone — relational, document, key-value, and object storage with automatic backups and replication.',
+      desc: 'Expands MASSA\'s memory and storage — where it persists knowledge, project data, user uploads, and learned context across sessions.',
       status: 'ACTIVE',
       integrations: [
         { name: 'PostgreSQL', color: '#336791', detail: 'Advanced relational database' },
@@ -1315,7 +1315,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
     },
     {
       name: 'Authentication & Identity',
-      desc: 'Secure user management — SSO, MFA, social login, role-based access, and compliance-ready auth flows out of the box.',
+      desc: 'Teaches MASSA how to protect what it builds — adding login, SSO, MFA, and role-based access to any application automatically.',
       status: 'ACTIVE',
       integrations: [
         { name: 'Clerk', color: '#6c47ff', detail: 'Drop-in auth components' },
@@ -1327,7 +1327,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
     },
     {
       name: 'Version Control & CI/CD',
-      desc: 'Code lifecycle management — automatic builds, test pipelines, branch previews, and one-click production deploys.',
+      desc: 'Connects MASSA to your codebase — it reads, writes, versions, tests, and ships code through your existing dev pipelines.',
       status: 'ACTIVE',
       integrations: [
         { name: 'GitHub', color: '#f0f0f0', detail: 'Code hosting & Actions CI/CD' },
@@ -1339,7 +1339,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
     },
     {
       name: 'Monitoring & Observability',
-      desc: 'System health at a glance — error tracking, performance metrics, log aggregation, and intelligent alerting.',
+      desc: 'MASSA\'s self-awareness layer — it watches everything it deploys, catches errors before you do, and learns from failures to prevent them.',
       status: 'MONITORING',
       integrations: [
         { name: 'Datadog', color: '#632ca6', detail: 'Full-stack observability' },
@@ -1351,7 +1351,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
     },
     {
       name: 'Payment Processing',
-      desc: 'Commerce infrastructure — accept payments globally, manage subscriptions, handle invoicing, and automate revenue ops.',
+      desc: 'Enables MASSA to build commerce into any application — payments, subscriptions, invoicing, and revenue automation baked in from day one.',
       status: 'ACTIVE',
       integrations: [
         { name: 'Stripe', color: '#635bff', detail: 'Payments, billing, and connect' },
@@ -1363,7 +1363,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
     },
     {
       name: 'Communication & Notifications',
-      desc: 'Keep users informed — transactional email, SMS, push notifications, in-app messaging, and real-time chat.',
+      desc: 'Gives MASSA a voice — it can send emails, SMS, push notifications, and messages on your behalf across any channel.',
       status: 'ACTIVE',
       integrations: [
         { name: 'Twilio', color: '#f22f46', detail: 'SMS, voice, and WhatsApp APIs' },
@@ -1375,7 +1375,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
     },
     {
       name: 'CRM & Customer Data',
-      desc: 'Know your users — unified customer profiles, pipeline management, lead scoring, and lifecycle automation.',
+      desc: 'Feeds MASSA customer intelligence — it learns who your users are, tracks their journey, and uses that knowledge to build smarter.',
       status: 'READY',
       integrations: [
         { name: 'Salesforce', color: '#00a1e0', detail: 'Enterprise CRM platform' },
@@ -1387,7 +1387,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
     },
     {
       name: 'Project Management',
-      desc: 'Orchestrate work across teams — task tracking, sprint planning, roadmaps, wikis, and cross-tool automation.',
+      desc: 'Lets MASSA coordinate across your team\'s tools — syncing tasks, updating roadmaps, and automating project workflows as it builds.',
       status: 'READY',
       integrations: [
         { name: 'Linear', color: '#5e6ad2', detail: 'Issue tracking for builders' },
@@ -1426,8 +1426,8 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
           onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
         >←</button>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: mono }}>Platform Integrations</div>
-          <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>MASSA://sys/integrations</div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: mono }}>Integrations</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>MASSA://sys/integrations — programs that enhance MASSA</div>
         </div>
       </div>
 
@@ -1436,18 +1436,24 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
         <div style={{ color: '#ccc' }}></div>
         <div style={{ color: c.green }}>{'>'} SYSTEM BRIEF — Platform Integrations</div>
         <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: '#ccc' }}>Every application you build with MASSA is backed by best-in-class</div>
-        <div style={{ color: '#ccc' }}>infrastructure. Integrations extend what MASSA can do — connecting</div>
-        <div style={{ color: '#ccc' }}>AI models, cloud providers, databases, payment systems, monitoring</div>
-        <div style={{ color: '#ccc' }}>tools, and more. Each integration is pre-configured, secure, and</div>
-        <div style={{ color: '#ccc' }}>ready to plug into any project you build.</div>
+        <div style={{ color: '#ccc' }}>MASSA is a living system. It maintains a persistent <span style={{ color: '#60a5fa' }}>memory</span>,</div>
+        <div style={{ color: '#ccc' }}>a growing <span style={{ color: '#60a5fa' }}>knowledge base</span>, and an expanding <span style={{ color: '#60a5fa' }}>skill set</span> that compound</div>
+        <div style={{ color: '#ccc' }}>with every interaction. The more you use it, the sharper it gets —</div>
+        <div style={{ color: '#ccc' }}>learning your preferences, retaining context across sessions, and</div>
+        <div style={{ color: '#ccc' }}>building on its own expertise over time.</div>
         <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: '#ccc' }}>Think of it as giving MASSA superpowers — the more you connect,</div>
-        <div style={{ color: '#ccc' }}>the more capable your applications become.</div>
+        <div style={{ color: '#ccc' }}>You can also <span style={{ color: '#60a5fa' }}>upload your own source material</span> — documents, brand</div>
+        <div style={{ color: '#ccc' }}>guidelines, datasets, codebases — to give MASSA specialized</div>
+        <div style={{ color: '#ccc' }}>knowledge unique to your business.</div>
         <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: '#60a5fa' }}>  ┌──────────────────────────────────────────────────────────────┐</div>
-        <div style={{ color: '#60a5fa' }}>  │  10 capability modules · 50 integrations · plug and build   │</div>
-        <div style={{ color: '#60a5fa' }}>  └──────────────────────────────────────────────────────────────┘</div>
+        <div style={{ color: '#ccc' }}>The integrations below are <span style={{ color: c.green }}>programs that make MASSA smarter</span>.</div>
+        <div style={{ color: '#ccc' }}>Each one extends its capabilities — adding new intelligence,</div>
+        <div style={{ color: '#ccc' }}>infrastructure, data sources, and automation. The more you connect,</div>
+        <div style={{ color: '#ccc' }}>the more powerful MASSA becomes.</div>
+        <div style={{ color: '#ccc' }}></div>
+        <div style={{ color: '#60a5fa' }}>  ┌─────────────────────────────────────────────────────────────────────┐</div>
+        <div style={{ color: '#60a5fa' }}>  │  memory + knowledge + skills + integrations = compounding growth   │</div>
+        <div style={{ color: '#60a5fa' }}>  └─────────────────────────────────────────────────────────────────────┘</div>
       </div>
 
       <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 20, fontFamily: mono, fontSize: 11, marginBottom: 16, overflowX: 'auto' }}>
