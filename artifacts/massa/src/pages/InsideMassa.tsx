@@ -210,12 +210,12 @@ export function InsideMassa() {
 
           {/* HERO */}
           <div style={{ marginBottom: 36 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${c.border}`, background: c.soft, color: c.green, borderRadius: 999, padding: '4px 10px', fontSize: 11, fontWeight: 700, letterSpacing: 1, marginBottom: 12 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${c.border}`, background: c.soft, color: c.green, borderRadius: 999, padding: '4px 12px', fontSize: 11, fontWeight: 700, letterSpacing: 1, marginBottom: 14 }}>
               INSIDE MASSA
             </div>
-            <h1 style={{ margin: '0 0 8px', fontSize: 30, fontWeight: 800, lineHeight: 1.1 }}>Inside MASSA</h1>
-            <p style={{ margin: 0, color: c.muted, fontSize: 15, lineHeight: 1.5, maxWidth: 560 }}>
-              See how MASSA interprets your idea, strengthens it, and routes it through the right systems.
+            <h1 style={{ margin: '0 0 10px', fontSize: 32, fontWeight: 800, lineHeight: 1.15, background: 'linear-gradient(135deg, #f0f0f0 0%, #2d8a32 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>One click to install. Everything runs automatically.</h1>
+            <p style={{ margin: 0, color: c.muted, fontSize: 15, lineHeight: 1.6, maxWidth: 580 }}>
+              See how MASSA interprets your idea, strengthens it, and routes it through the right systems — all pushed to play with a single action.
             </p>
           </div>
 

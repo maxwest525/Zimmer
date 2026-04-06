@@ -37,6 +37,7 @@ export function CompanyLogo({ name, size = 28, style, accentColor }: CompanyLogo
   const info = getLogoInfo(name)
 
   if (!info || stage === 'text') {
+    const iconColor = accentColor ?? '#888'
     return (
       <span style={{
         display: 'inline-flex',
@@ -45,14 +46,14 @@ export function CompanyLogo({ name, size = 28, style, accentColor }: CompanyLogo
         width: size,
         height: size,
         borderRadius: 8,
-        fontSize: size * 0.42,
-        fontWeight: 700,
-        background: accentColor ? `${accentColor}22` : 'rgba(128,128,128,0.15)',
-        color: accentColor ?? '#888',
+        background: accentColor ? `${accentColor}15` : 'rgba(128,128,128,0.10)',
         flexShrink: 0,
         ...style,
       }}>
-        {name.charAt(0).toUpperCase()}
+        <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="1" width="14" height="14" rx="3" stroke={iconColor} strokeWidth="1.5" fill="none" />
+          <circle cx="8" cy="8" r="2.5" fill={iconColor} opacity="0.6" />
+        </svg>
       </span>
     )
   }

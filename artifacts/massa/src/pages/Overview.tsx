@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'wouter'
-import { InlineCompanyLogo } from '@/components/CompanyLogo'
+import { InlineCompanyLogo, CompanyLogo } from '@/components/CompanyLogo'
 import { NodeGraph } from '@/components/NodeGraph'
 import { TimelineSwimlane } from '@/components/TimelineSwimlane'
 import { ChatView } from '@/components/ChatView'
@@ -1028,15 +1028,14 @@ function AutomationsView({ onBack }: { onBack: () => void }) {
 }
 
 function MarketingView({ onBack }: { onBack: () => void }) {
-  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
-  const mono = '"JetBrains Mono", Menlo, monospace'
+  const c = { border: '#1e2530', muted: '#9ca3af', green: '#34d399' }
 
   const pipelineSteps = [
-    { label: 'ANALYZE', desc: 'Market research, keyword gaps, competitor mapping' },
-    { label: 'STRATEGIZE', desc: 'Channel mix, budget allocation, content calendar' },
-    { label: 'EXECUTE', desc: 'Launch campaigns, publish content, deploy ads' },
-    { label: 'OPTIMIZE', desc: 'A/B testing, bid tuning, audience refinement' },
-    { label: 'REPORT', desc: 'ROI dashboards, attribution, executive summaries' },
+    { label: 'Analyze', desc: 'Market research, keyword gaps, competitor mapping' },
+    { label: 'Strategize', desc: 'Channel mix, budget allocation, content calendar' },
+    { label: 'Execute', desc: 'Launch campaigns, publish content, deploy ads' },
+    { label: 'Optimize', desc: 'A/B testing, bid tuning, audience refinement' },
+    { label: 'Report', desc: 'ROI dashboards, attribution, executive summaries' },
   ]
 
   const categories: { name: string; desc: string; status: 'ACTIVE' | 'MONITORING' | 'READY'; integrations: { name: string; color: string; detail: string }[] }[] = [
@@ -1168,6 +1167,12 @@ function MarketingView({ onBack }: { onBack: () => void }) {
     READY: '#60a5fa',
   }
 
+  const statusLabels: Record<string, string> = {
+    ACTIVE: 'Active',
+    MONITORING: 'Monitoring',
+    READY: 'Ready',
+  }
+
   const categoryIcons: Record<string, string> = {
     'SEO & Content': '🔍',
     'PPC & Paid Ads': '📢',
@@ -1182,84 +1187,98 @@ function MarketingView({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
-          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
-        >←</button>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: mono }}>Marketing Command Center</div>
-          <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>MASSA://sys/marketing</div>
+    <div style={{ gridColumn: '2 / -1', background: '#0a0d10', padding: 0, overflow: 'auto', borderRadius: 12, minWidth: 0, border: `1px solid ${c.border}` }}>
+      <div style={{ padding: '24px 28px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
+          <button onClick={onBack} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${c.border}`, background: 'rgba(255,255,255,0.04)', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, padding: 0, transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.borderColor = '#3a4050' }}
+            onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
+          >←</button>
         </div>
-      </div>
 
-      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 20, fontFamily: mono, fontSize: 11, lineHeight: 1.8, marginBottom: 16 }}>
-        <div style={{ color: c.green, marginBottom: 4 }}>$ massa marketing --briefing</div>
-        <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: c.green }}>{'>'} MISSION BRIEFING — Marketing Operations</div>
-        <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: '#ccc' }}>MASSA assembles a complete, AI-powered marketing team that runs</div>
-        <div style={{ color: '#ccc' }}>your entire marketing operation — from SEO and paid ads to reputation</div>
-        <div style={{ color: '#ccc' }}>management and competitive intelligence. No specialists to hire,</div>
-        <div style={{ color: '#ccc' }}>no complex tools to learn. Every channel is automated, optimized,</div>
-        <div style={{ color: '#ccc' }}>and reporting back to you in real time.</div>
-        <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: '#60a5fa' }}>  ┌─────────────────────────────────────────────────────────────┐</div>
-        <div style={{ color: '#60a5fa' }}>  │  10 marketing modules · 50 integrations · fully automated  │</div>
-        <div style={{ color: '#60a5fa' }}>  └─────────────────────────────────────────────────────────────┘</div>
-      </div>
+        <div style={{ marginBottom: 36, maxWidth: 640 }}>
+          <h1 style={{ margin: '0 0 10px', fontSize: 32, fontWeight: 800, lineHeight: 1.15, fontFamily: 'Inter, system-ui, sans-serif', background: 'linear-gradient(135deg, #f0f0f0 0%, #34d399 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Marketing Command Center
+          </h1>
+          <p style={{ margin: '0 0 20px', color: '#ccc', fontSize: 16, lineHeight: 1.6, fontFamily: 'Inter, system-ui, sans-serif' }}>
+            One click to install. Everything runs automatically. MASSA assembles a complete, AI-powered marketing team — from SEO and paid ads to reputation management and competitive intelligence. No specialists to hire, no complex tools to learn.
+          </p>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            {[
+              { value: '10', label: 'Marketing Modules' },
+              { value: '50', label: 'Integrations' },
+              { value: '100%', label: 'Automated' },
+            ].map(stat => (
+              <div key={stat.label}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: c.green, fontFamily: 'Inter, system-ui, sans-serif' }}>{stat.value}</div>
+                <div style={{ fontSize: 12, color: c.muted, fontFamily: 'Inter, system-ui, sans-serif' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
 
-      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 20, fontFamily: mono, fontSize: 11, marginBottom: 16, overflowX: 'auto' }}>
-        <div style={{ color: c.green, marginBottom: 12 }}>$ massa marketing --pipeline</div>
-        <pre style={{ color: c.green, margin: 0, fontSize: 11, lineHeight: 1.5 }}>
-{`  ┌────────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐
-  │  ANALYZE   │────▶│ STRATEGIZE │────▶│  EXECUTE   │────▶│  OPTIMIZE  │────▶│   REPORT   │
-  └────────────┘     └────────────┘     └────────────┘     └────────────┘     └────────────┘`}
-        </pre>
-        <div style={{ display: 'flex', gap: 0, marginTop: 8, overflowX: 'auto' }}>
-          {pipelineSteps.map((step, i) => (
-            <div key={step.label} style={{ minWidth: 130, width: 130, textAlign: 'center', flexShrink: 0, marginRight: i < pipelineSteps.length - 1 ? 28 : 0 }}>
-              <div style={{ color: c.muted, fontSize: 9, lineHeight: 1.4, padding: '0 2px' }}>{step.desc}</div>
+        <div style={{ marginBottom: 36 }}>
+          <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 20, fontFamily: 'Inter, system-ui, sans-serif' }}>HOW IT WORKS</div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0, position: 'relative', overflowX: 'auto', paddingBottom: 8 }}>
+            {pipelineSteps.map((step, i) => (
+              <div key={step.label} style={{ flex: '1 0 120px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', minWidth: 120 }}>
+                {i < pipelineSteps.length - 1 && (
+                  <div style={{ position: 'absolute', top: 20, left: '50%', right: '-50%', height: 2, background: `linear-gradient(to right, ${c.green}60, ${c.green}20)`, zIndex: 0 }} />
+                )}
+                <div style={{
+                  width: 40, height: 40, borderRadius: '50%', background: '#0a0d10', border: `2px solid ${c.green}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800,
+                  color: c.green, position: 'relative', zIndex: 1, fontFamily: 'Inter, system-ui, sans-serif',
+                }}>
+                  {i + 1}
+                </div>
+                <div style={{ marginTop: 12, textAlign: 'center', padding: '0 4px' }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: '#f0f0f0', marginBottom: 4, fontFamily: 'Inter, system-ui, sans-serif' }}>{step.label}</div>
+                  <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.45, fontFamily: 'Inter, system-ui, sans-serif' }}>{step.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>MARKETING MODULES</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 14 }}>
+          {categories.map(cat => (
+            <div key={cat.name} style={{
+              background: 'rgba(255,255,255,0.02)', border: `1px solid ${c.border}`, borderRadius: 12, padding: 20,
+              transition: 'border-color 0.2s',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 20 }}>{categoryIcons[cat.name]}</span>
+                  <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: 14, fontFamily: 'Inter, system-ui, sans-serif' }}>{cat.name}</span>
+                </div>
+                <span style={{
+                  fontSize: 11, fontWeight: 600, color: statusColors[cat.status],
+                  background: `${statusColors[cat.status]}12`, padding: '4px 10px', borderRadius: 999,
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                }}>
+                  {statusLabels[cat.status]}
+                </span>
+              </div>
+              <div style={{ color: c.muted, fontSize: 13, lineHeight: 1.55, marginBottom: 14, fontFamily: 'Inter, system-ui, sans-serif' }}>{cat.desc}</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {cat.integrations.map(integ => (
+                  <div key={integ.name} title={integ.detail} style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: 'rgba(255,255,255,0.03)', border: `1px solid ${c.border}`,
+                    borderRadius: 8, padding: '5px 10px', cursor: 'default',
+                    transition: 'border-color 0.15s',
+                  }}>
+                    <CompanyLogo name={integ.name} size={16} accentColor={integ.color} />
+                    <span style={{ fontSize: 11, color: '#ccc', fontFamily: 'Inter, system-ui, sans-serif' }}>{integ.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 12 }}>
-        {categories.map(cat => (
-          <div key={cat.name} style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 16 }}>{categoryIcons[cat.name]}</span>
-                <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: 12 }}>{cat.name}</span>
-              </div>
-              <span style={{ fontSize: 9, fontWeight: 700, color: statusColors[cat.status], background: `${statusColors[cat.status]}15`, padding: '2px 8px', borderRadius: 3, border: `1px solid ${statusColors[cat.status]}30` }}>
-                {cat.status}
-              </span>
-            </div>
-            <div style={{ color: c.muted, fontSize: 10, lineHeight: 1.5, marginBottom: 12 }}>{cat.desc}</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {cat.integrations.map(integ => (
-                <div key={integ.name} title={integ.detail} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#0d1117', border: `1px solid ${c.border}`, borderRadius: 4, padding: '3px 8px', cursor: 'default' }}>
-                  <span style={{ width: 16, height: 16, borderRadius: 3, background: integ.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
-                    {integ.name.charAt(0).toUpperCase()}
-                  </span>
-                  <span style={{ fontSize: 9, color: '#ccc' }}>{integ.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono, fontSize: 11, marginTop: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: c.green }}>$</span>
-          <span style={{ width: 7, height: 14, background: c.green, display: 'inline-block', animation: 'blink 1s step-end infinite' }} />
-        </div>
-      </div>
-      <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
     </div>
   )
 }
