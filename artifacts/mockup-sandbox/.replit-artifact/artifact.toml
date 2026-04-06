@@ -10,7 +10,7 @@ name = "Component Preview Server"
 paths = ["/__mockup"]
 
 [services.env]
-PORT = "8081" on
+PORT = "8081"
 BASE_PATH = "/__mockup"
 
 [services.development]
