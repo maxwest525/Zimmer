@@ -1028,18 +1028,240 @@ function AutomationsView({ onBack }: { onBack: () => void }) {
 }
 
 function MarketingView({ onBack }: { onBack: () => void }) {
-  return <TerminalPageView onBack={onBack} title="Marketing" command="marketing" lines={[
-    '> Campaign dashboard loaded',
-    '',
-    '[campaign-01]  Product Hunt Launch    Status: SCHEDULED  Date: 2026-04-15',
-    '[campaign-02]  Twitter Thread Series  Status: ACTIVE     Impressions: 12.4K',
-    '[campaign-03]  Blog: "Why MASSA"      Status: DRAFT      Words: 2,847',
-    '[campaign-04]  Email Drip Sequence    Status: ACTIVE     Subscribers: 342',
-    '[campaign-05]  Landing Page A/B Test  Status: RUNNING    Variant B +18%',
-    '',
-    '> 2 active campaigns, 1 scheduled, 1 draft, 1 running test',
-    '! Action required: Review blog draft before 2026-04-10',
-  ]} />
+  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+  const mono = '"JetBrains Mono", Menlo, monospace'
+
+  const pipelineSteps = [
+    { label: 'ANALYZE', desc: 'Market research, keyword gaps, competitor mapping' },
+    { label: 'STRATEGIZE', desc: 'Channel mix, budget allocation, content calendar' },
+    { label: 'EXECUTE', desc: 'Launch campaigns, publish content, deploy ads' },
+    { label: 'OPTIMIZE', desc: 'A/B testing, bid tuning, audience refinement' },
+    { label: 'REPORT', desc: 'ROI dashboards, attribution, executive summaries' },
+  ]
+
+  const categories: { name: string; desc: string; status: 'ACTIVE' | 'MONITORING' | 'READY'; integrations: { name: string; color: string; detail: string }[] }[] = [
+    {
+      name: 'SEO & Content',
+      desc: 'Automated keyword research, on-page optimization, content briefs, rank tracking.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'Ahrefs', color: '#1a73e8', detail: 'Backlink & keyword explorer' },
+        { name: 'SEMrush', color: '#ff642d', detail: 'All-in-one SEO toolkit' },
+        { name: 'Surfer SEO', color: '#00c2a8', detail: 'On-page content optimizer' },
+        { name: 'Clearscope', color: '#6c63ff', detail: 'Content relevance grading' },
+        { name: 'Google Search Console', color: '#4285f4', detail: 'Search performance data' },
+      ],
+    },
+    {
+      name: 'PPC & Paid Ads',
+      desc: 'Campaign creation, bid management, audience targeting, budget optimization.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'Google Ads', color: '#4285f4', detail: 'Search & display campaigns' },
+        { name: 'Meta Ads', color: '#1877f2', detail: 'Facebook & Instagram ads' },
+        { name: 'Microsoft Ads', color: '#00a4ef', detail: 'Bing search advertising' },
+        { name: 'TikTok Ads', color: '#ff0050', detail: 'Short-form video ads' },
+        { name: 'LinkedIn Ads', color: '#0a66c2', detail: 'B2B professional targeting' },
+      ],
+    },
+    {
+      name: 'Ad Creative & Copy',
+      desc: 'AI-generated ad copy, image variants, A/B headline testing, landing page copy.',
+      status: 'READY',
+      integrations: [
+        { name: 'Canva', color: '#00c4cc', detail: 'Visual design platform' },
+        { name: 'Figma', color: '#a259ff', detail: 'Collaborative design tool' },
+        { name: 'Copy.ai', color: '#6c63ff', detail: 'AI copywriting assistant' },
+        { name: 'Jasper', color: '#f43f5e', detail: 'Long-form AI content' },
+        { name: 'AdCreative.ai', color: '#2563eb', detail: 'Ad creative generation' },
+      ],
+    },
+    {
+      name: 'Domain Authority & Link Building',
+      desc: 'Backlink prospecting, outreach automation, toxic link monitoring, DR/DA tracking.',
+      status: 'MONITORING',
+      integrations: [
+        { name: 'Ahrefs', color: '#1a73e8', detail: 'Backlink index & analysis' },
+        { name: 'Moz', color: '#1dbdff', detail: 'Domain authority scoring' },
+        { name: 'Majestic', color: '#ff0043', detail: 'Trust flow & link data' },
+        { name: 'Hunter.io', color: '#ff7a59', detail: 'Email finder for outreach' },
+        { name: 'Pitchbox', color: '#4caf50', detail: 'Outreach workflow automation' },
+      ],
+    },
+    {
+      name: 'Online Reputation & Reviews',
+      desc: 'Review monitoring, sentiment analysis, automated response drafts, rating aggregation.',
+      status: 'MONITORING',
+      integrations: [
+        { name: 'Google Business', color: '#4285f4', detail: 'Local listing & reviews' },
+        { name: 'Trustpilot', color: '#00b67a', detail: 'Consumer review platform' },
+        { name: 'G2', color: '#ff492c', detail: 'Software review marketplace' },
+        { name: 'Yelp', color: '#d32323', detail: 'Local business reviews' },
+        { name: 'Birdeye', color: '#2196f3', detail: 'Multi-channel reputation' },
+      ],
+    },
+    {
+      name: 'Competitive Intelligence',
+      desc: 'Competitor ad monitoring, traffic estimation, keyword gap analysis, pricing intelligence.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'SimilarWeb', color: '#1f4dff', detail: 'Traffic & engagement data' },
+        { name: 'SpyFu', color: '#3ec6ff', detail: 'Competitor keyword spy' },
+        { name: 'SEMrush', color: '#ff642d', detail: 'Competitive analysis suite' },
+        { name: 'Crayon', color: '#6366f1', detail: 'Market intelligence platform' },
+        { name: 'Klue', color: '#00c9a7', detail: 'Competitive enablement' },
+      ],
+    },
+    {
+      name: 'Email & Nurture',
+      desc: 'Drip campaigns, list segmentation, deliverability optimization, open/click analytics.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'Mailchimp', color: '#ffe01b', detail: 'Email marketing platform' },
+        { name: 'SendGrid', color: '#1a82e2', detail: 'Transactional email API' },
+        { name: 'Klaviyo', color: '#2bde73', detail: 'E-commerce email flows' },
+        { name: 'ActiveCampaign', color: '#356ae6', detail: 'Marketing automation CRM' },
+        { name: 'ConvertKit', color: '#fb6970', detail: 'Creator email marketing' },
+      ],
+    },
+    {
+      name: 'Social Media Management',
+      desc: 'Scheduling, engagement tracking, audience growth, content calendar.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'Hootsuite', color: '#143059', detail: 'Social media dashboard' },
+        { name: 'Buffer', color: '#168eea', detail: 'Post scheduling tool' },
+        { name: 'Sprout Social', color: '#59c564', detail: 'Social analytics & CRM' },
+        { name: 'Later', color: '#ff5c5c', detail: 'Visual content planner' },
+        { name: 'Brandwatch', color: '#e63946', detail: 'Social listening platform' },
+      ],
+    },
+    {
+      name: 'Analytics & Attribution',
+      desc: 'Cross-channel reporting, conversion tracking, ROI dashboards, funnel analysis.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'Google Analytics', color: '#e37400', detail: 'Web traffic analytics' },
+        { name: 'Mixpanel', color: '#7856ff', detail: 'Product event analytics' },
+        { name: 'HubSpot', color: '#ff7a59', detail: 'Inbound marketing hub' },
+        { name: 'Segment', color: '#52bd95', detail: 'Customer data platform' },
+        { name: 'Looker', color: '#4285f4', detail: 'BI & data exploration' },
+      ],
+    },
+    {
+      name: 'Conversion & UX Optimization',
+      desc: 'Heatmaps, A/B testing, form optimization, exit-intent strategies.',
+      status: 'READY',
+      integrations: [
+        { name: 'Hotjar', color: '#fd3a5c', detail: 'Heatmaps & session replay' },
+        { name: 'Optimizely', color: '#0037ff', detail: 'Experimentation platform' },
+        { name: 'VWO', color: '#3b82f6', detail: 'A/B testing & personalization' },
+        { name: 'Unbounce', color: '#2563eb', detail: 'Landing page builder' },
+        { name: 'Crazy Egg', color: '#f59e0b', detail: 'Click & scroll tracking' },
+      ],
+    },
+  ]
+
+  const statusColors: Record<string, string> = {
+    ACTIVE: '#34d399',
+    MONITORING: '#f59e0b',
+    READY: '#60a5fa',
+  }
+
+  const categoryIcons: Record<string, string> = {
+    'SEO & Content': '🔍',
+    'PPC & Paid Ads': '📢',
+    'Ad Creative & Copy': '🎨',
+    'Domain Authority & Link Building': '🔗',
+    'Online Reputation & Reviews': '⭐',
+    'Competitive Intelligence': '🕵️',
+    'Email & Nurture': '✉️',
+    'Social Media Management': '📱',
+    'Analytics & Attribution': '📊',
+    'Conversion & UX Optimization': '🧪',
+  }
+
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
+        >←</button>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: mono }}>Marketing Command Center</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>MASSA://sys/marketing</div>
+        </div>
+      </div>
+
+      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 20, fontFamily: mono, fontSize: 11, lineHeight: 1.8, marginBottom: 16 }}>
+        <div style={{ color: c.green, marginBottom: 4 }}>$ massa marketing --briefing</div>
+        <div style={{ color: '#ccc' }}></div>
+        <div style={{ color: c.green }}>{'>'} MISSION BRIEFING — Marketing Operations</div>
+        <div style={{ color: '#ccc' }}></div>
+        <div style={{ color: '#ccc' }}>MASSA assembles a complete, AI-powered marketing team that runs</div>
+        <div style={{ color: '#ccc' }}>your entire marketing operation — from SEO and paid ads to reputation</div>
+        <div style={{ color: '#ccc' }}>management and competitive intelligence. No specialists to hire,</div>
+        <div style={{ color: '#ccc' }}>no complex tools to learn. Every channel is automated, optimized,</div>
+        <div style={{ color: '#ccc' }}>and reporting back to you in real time.</div>
+        <div style={{ color: '#ccc' }}></div>
+        <div style={{ color: '#60a5fa' }}>  ┌─────────────────────────────────────────────────────────────┐</div>
+        <div style={{ color: '#60a5fa' }}>  │  10 marketing modules · 50 integrations · fully automated  │</div>
+        <div style={{ color: '#60a5fa' }}>  └─────────────────────────────────────────────────────────────┘</div>
+      </div>
+
+      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 20, fontFamily: mono, fontSize: 11, marginBottom: 16, overflowX: 'auto' }}>
+        <div style={{ color: c.green, marginBottom: 12 }}>$ massa marketing --pipeline</div>
+        <pre style={{ color: c.green, margin: 0, fontSize: 11, lineHeight: 1.5 }}>
+{`  ┌────────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐
+  │  ANALYZE   │────▶│ STRATEGIZE │────▶│  EXECUTE   │────▶│  OPTIMIZE  │────▶│   REPORT   │
+  └────────────┘     └────────────┘     └────────────┘     └────────────┘     └────────────┘`}
+        </pre>
+        <div style={{ display: 'flex', gap: 0, marginTop: 8, overflowX: 'auto' }}>
+          {pipelineSteps.map((step, i) => (
+            <div key={step.label} style={{ minWidth: 130, width: 130, textAlign: 'center', flexShrink: 0, marginRight: i < pipelineSteps.length - 1 ? 28 : 0 }}>
+              <div style={{ color: c.muted, fontSize: 9, lineHeight: 1.4, padding: '0 2px' }}>{step.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 12 }}>
+        {categories.map(cat => (
+          <div key={cat.name} style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 16 }}>{categoryIcons[cat.name]}</span>
+                <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: 12 }}>{cat.name}</span>
+              </div>
+              <span style={{ fontSize: 9, fontWeight: 700, color: statusColors[cat.status], background: `${statusColors[cat.status]}15`, padding: '2px 8px', borderRadius: 3, border: `1px solid ${statusColors[cat.status]}30` }}>
+                {cat.status}
+              </span>
+            </div>
+            <div style={{ color: c.muted, fontSize: 10, lineHeight: 1.5, marginBottom: 12 }}>{cat.desc}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {cat.integrations.map(integ => (
+                <div key={integ.name} title={integ.detail} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#0d1117', border: `1px solid ${c.border}`, borderRadius: 4, padding: '3px 8px', cursor: 'default' }}>
+                  <span style={{ width: 16, height: 16, borderRadius: 3, background: integ.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                    {integ.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span style={{ fontSize: 9, color: '#ccc' }}>{integ.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono, fontSize: 11, marginTop: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: c.green }}>$</span>
+          <span style={{ width: 7, height: 14, background: c.green, display: 'inline-block', animation: 'blink 1s step-end infinite' }} />
+        </div>
+      </div>
+      <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
+    </div>
+  )
 }
 
 function SkillsView({ onBack }: { onBack: () => void }) {
