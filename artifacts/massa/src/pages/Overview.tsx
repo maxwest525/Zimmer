@@ -2662,7 +2662,7 @@ export function Overview() {
                               {isCardExpanded && (() => {
                                 const ctx = (build.buildContext || 'backend') as string
                                 const snippets = CODE_SNIPPETS[ctx] || CODE_SNIPPETS.backend
-                                const buildSnippets = snippets.slice(0, 3)
+                                const snippet = snippets[0]
                                 return (
                                   <div style={{ marginTop: 8, borderTop: `1px solid ${c.border}`, paddingTop: 8 }}>
                                     <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Thinking</div>
@@ -2673,13 +2673,13 @@ export function Overview() {
                                     </div>
 
                                     <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Code</div>
-                                    {buildSnippets.map((s, si) => (
-                                      <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}`, marginBottom: 3, overflow: 'hidden' }}>
+                                    {snippet && (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}`, marginBottom: 3, overflow: 'hidden' }}>
                                         <span style={{ fontSize: 8, color: '#555', flexShrink: 0 }}>›</span>
-                                        <span style={{ fontSize: 8, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{s.file}</span>
-                                        <span style={{ fontSize: 8, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.code}</span>
+                                        <span style={{ fontSize: 8, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{snippet.file}</span>
+                                        <span style={{ fontSize: 8, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{snippet.code}</span>
                                       </div>
-                                    ))}
+                                    )}
 
                                     <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, marginTop: 6, textTransform: 'uppercase' }}>Build</div>
                                     <div style={{ padding: '4px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}` }}>
