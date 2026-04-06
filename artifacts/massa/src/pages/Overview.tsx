@@ -1286,156 +1286,140 @@ function MarketingView({ onBack }: { onBack: () => void }) {
 function IntegrationsView({ onBack }: { onBack: () => void }) {
   const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
   const mono = '"JetBrains Mono", Menlo, monospace'
+  const [activeCategory, setActiveCategory] = useState<string>('All')
 
-  const pipelineSteps = [
-    { label: 'CONNECT', desc: 'Link external services, APIs, and platforms to MASSA' },
-    { label: 'CONFIGURE', desc: 'Set permissions, map data fields, define triggers' },
-    { label: 'AUTOMATE', desc: 'Workflows fire automatically across connected tools' },
-    { label: 'SCALE', desc: 'Add capacity, regions, and redundancy as you grow' },
-    { label: 'MONITOR', desc: 'Health checks, usage dashboards, alert routing' },
-  ]
+  type IntegrationStatus = 'AVAILABLE' | 'CONNECTED' | 'BETA'
+  interface Integration { name: string; color: string; monogram: string; desc: string; status: IntegrationStatus }
+  interface Category { name: string; integrations: Integration[] }
 
-  const categories: { name: string; desc: string; status: 'ACTIVE' | 'MONITORING' | 'READY'; integrations: { name: string; color: string; detail: string }[] }[] = [
+  const categories: Category[] = [
     {
-      name: 'AI & Language Models',
-      desc: 'The brain behind MASSA — frontier models that power its reasoning, code generation, content creation, and multi-agent orchestration. More models = deeper intelligence.',
-      status: 'ACTIVE',
+      name: 'CRM',
       integrations: [
-        { name: 'OpenAI', color: '#10a37f', detail: 'GPT-4o, o1, and embeddings API' },
-        { name: 'Anthropic', color: '#d4a574', detail: 'Claude 3.5 Sonnet & Opus models' },
-        { name: 'Google Gemini', color: '#4285f4', detail: 'Gemini Pro & Ultra multimodal' },
-        { name: 'Mistral', color: '#ff7000', detail: 'Open-weight European LLMs' },
-        { name: 'Cohere', color: '#39594d', detail: 'Enterprise RAG & reranking' },
+        { name: 'Salesforce', color: '#00a1e0', monogram: 'SF', desc: 'Enterprise CRM platform', status: 'AVAILABLE' },
+        { name: 'HubSpot', color: '#ff7a59', monogram: 'H', desc: 'Inbound marketing & sales CRM', status: 'CONNECTED' },
+        { name: 'Pipedrive', color: '#21b978', monogram: 'P', desc: 'Sales pipeline management', status: 'AVAILABLE' },
+        { name: 'Zoho CRM', color: '#e42527', monogram: 'Z', desc: 'Multi-channel CRM suite', status: 'AVAILABLE' },
+        { name: 'Close', color: '#1a1a2e', monogram: 'C', desc: 'CRM built for inside sales', status: 'BETA' },
+      ],
+    },
+    {
+      name: 'Marketing & Email',
+      integrations: [
+        { name: 'Mailchimp', color: '#ffe01b', monogram: 'M', desc: 'Email campaigns & automations', status: 'CONNECTED' },
+        { name: 'SendGrid', color: '#1a82e2', monogram: 'SG', desc: 'Transactional & marketing email API', status: 'AVAILABLE' },
+        { name: 'Klaviyo', color: '#2eca7f', monogram: 'K', desc: 'E-commerce marketing automation', status: 'AVAILABLE' },
+        { name: 'ActiveCampaign', color: '#356ae6', monogram: 'AC', desc: 'Email, automation & CRM combo', status: 'BETA' },
+        { name: 'ConvertKit', color: '#fb6970', monogram: 'CK', desc: 'Creator-focused email platform', status: 'AVAILABLE' },
+      ],
+    },
+    {
+      name: 'Automation & Workflows',
+      integrations: [
+        { name: 'Zapier', color: '#ff4a00', monogram: 'Z', desc: 'Connect apps with automated workflows', status: 'CONNECTED' },
+        { name: 'Make', color: '#6d00cc', monogram: 'M', desc: 'Visual automation platform (Integromat)', status: 'AVAILABLE' },
+        { name: 'n8n', color: '#ea4b71', monogram: 'N', desc: 'Open-source workflow automation', status: 'AVAILABLE' },
+        { name: 'IFTTT', color: '#33ccff', monogram: 'IF', desc: 'Simple conditional automations', status: 'BETA' },
+      ],
+    },
+    {
+      name: 'Analytics',
+      integrations: [
+        { name: 'Google Analytics', color: '#e37400', monogram: 'GA', desc: 'Web & app analytics by Google', status: 'CONNECTED' },
+        { name: 'Mixpanel', color: '#7856ff', monogram: 'MP', desc: 'Product analytics & user tracking', status: 'AVAILABLE' },
+        { name: 'Amplitude', color: '#1d5cf5', monogram: 'A', desc: 'Digital analytics platform', status: 'AVAILABLE' },
+        { name: 'Segment', color: '#52bd95', monogram: 'S', desc: 'Customer data platform', status: 'CONNECTED' },
+        { name: 'PostHog', color: '#f9bd2b', monogram: 'PH', desc: 'Open-source product analytics', status: 'BETA' },
+      ],
+    },
+    {
+      name: 'Payments',
+      integrations: [
+        { name: 'Stripe', color: '#635bff', monogram: 'S', desc: 'Payments, billing & connect', status: 'CONNECTED' },
+        { name: 'PayPal', color: '#003087', monogram: 'PP', desc: 'Global payment processing', status: 'AVAILABLE' },
+        { name: 'Square', color: '#3e4348', monogram: 'Sq', desc: 'Commerce & POS platform', status: 'AVAILABLE' },
+        { name: 'Braintree', color: '#37475a', monogram: 'BT', desc: 'Full-stack payment platform', status: 'AVAILABLE' },
+        { name: 'LemonSqueezy', color: '#ffc233', monogram: 'LS', desc: 'Payments for digital products', status: 'BETA' },
+      ],
+    },
+    {
+      name: 'Communication',
+      integrations: [
+        { name: 'Slack', color: '#4a154b', monogram: 'S', desc: 'Workspace messaging & bots', status: 'CONNECTED' },
+        { name: 'Discord', color: '#5865f2', monogram: 'D', desc: 'Community server integration', status: 'AVAILABLE' },
+        { name: 'Twilio', color: '#f22f46', monogram: 'T', desc: 'SMS, voice & WhatsApp APIs', status: 'AVAILABLE' },
+        { name: 'Intercom', color: '#1f8ded', monogram: 'I', desc: 'Customer messaging platform', status: 'CONNECTED' },
+        { name: 'SendBird', color: '#6210cc', monogram: 'SB', desc: 'In-app chat & notifications', status: 'BETA' },
       ],
     },
     {
       name: 'Cloud & Infrastructure',
-      desc: 'Gives MASSA the ability to deploy what it builds anywhere — any cloud, any region, with automated scaling and zero-downtime rollouts.',
-      status: 'ACTIVE',
       integrations: [
-        { name: 'AWS', color: '#ff9900', detail: 'EC2, Lambda, S3, and 200+ services' },
-        { name: 'Google Cloud', color: '#4285f4', detail: 'Cloud Run, GKE, BigQuery' },
-        { name: 'Vercel', color: '#ffffff', detail: 'Edge-first frontend deployment' },
-        { name: 'Cloudflare', color: '#f38020', detail: 'CDN, Workers, R2 storage' },
-        { name: 'DigitalOcean', color: '#0080ff', detail: 'Simple cloud infrastructure' },
+        { name: 'AWS', color: '#ff9900', monogram: 'A', desc: 'EC2, Lambda, S3 & 200+ services', status: 'CONNECTED' },
+        { name: 'Google Cloud', color: '#4285f4', monogram: 'GC', desc: 'Cloud Run, GKE, BigQuery', status: 'AVAILABLE' },
+        { name: 'Vercel', color: '#f0f0f0', monogram: 'V', desc: 'Edge-first frontend deployment', status: 'CONNECTED' },
+        { name: 'Netlify', color: '#00c7b7', monogram: 'N', desc: 'Modern web deployment platform', status: 'AVAILABLE' },
+        { name: 'Cloudflare', color: '#f38020', monogram: 'CF', desc: 'CDN, Workers & R2 storage', status: 'AVAILABLE' },
       ],
     },
     {
-      name: 'Database & Storage',
-      desc: 'Expands MASSA\'s memory and storage — where it persists knowledge, project data, user uploads, and learned context across sessions.',
-      status: 'ACTIVE',
+      name: 'Database',
       integrations: [
-        { name: 'PostgreSQL', color: '#336791', detail: 'Advanced relational database' },
-        { name: 'MongoDB', color: '#47a248', detail: 'Document database at scale' },
-        { name: 'Redis', color: '#dc382d', detail: 'In-memory cache & message broker' },
-        { name: 'Supabase', color: '#3ecf8e', detail: 'Open-source Firebase alternative' },
-        { name: 'PlanetScale', color: '#f5a623', detail: 'Serverless MySQL platform' },
+        { name: 'MongoDB', color: '#47a248', monogram: 'M', desc: 'Document database at scale', status: 'AVAILABLE' },
+        { name: 'Firebase', color: '#ffca28', monogram: 'F', desc: 'Google app development platform', status: 'CONNECTED' },
+        { name: 'Supabase', color: '#3ecf8e', monogram: 'S', desc: 'Open-source Firebase alternative', status: 'AVAILABLE' },
+        { name: 'PlanetScale', color: '#f5a623', monogram: 'PS', desc: 'Serverless MySQL platform', status: 'BETA' },
+        { name: 'Neon', color: '#00e599', monogram: 'N', desc: 'Serverless Postgres with branching', status: 'BETA' },
       ],
     },
     {
-      name: 'Authentication & Identity',
-      desc: 'Teaches MASSA how to protect what it builds — adding login, SSO, MFA, and role-based access to any application automatically.',
-      status: 'ACTIVE',
+      name: 'E-commerce',
       integrations: [
-        { name: 'Clerk', color: '#6c47ff', detail: 'Drop-in auth components' },
-        { name: 'Auth0', color: '#eb5424', detail: 'Universal identity platform' },
-        { name: 'Firebase Auth', color: '#ffca28', detail: 'Google identity services' },
-        { name: 'Okta', color: '#007dc1', detail: 'Enterprise workforce identity' },
-        { name: 'Supabase Auth', color: '#3ecf8e', detail: 'Row-level security auth' },
+        { name: 'Shopify', color: '#96bf48', monogram: 'S', desc: 'All-in-one commerce platform', status: 'AVAILABLE' },
+        { name: 'WooCommerce', color: '#96588a', monogram: 'W', desc: 'WordPress e-commerce plugin', status: 'AVAILABLE' },
+        { name: 'BigCommerce', color: '#34313f', monogram: 'BC', desc: 'Enterprise e-commerce SaaS', status: 'AVAILABLE' },
+        { name: 'Gumroad', color: '#ff90e8', monogram: 'G', desc: 'Sell digital products easily', status: 'BETA' },
       ],
     },
     {
-      name: 'Version Control & CI/CD',
-      desc: 'Connects MASSA to your codebase — it reads, writes, versions, tests, and ships code through your existing dev pipelines.',
-      status: 'ACTIVE',
+      name: 'Social Media',
       integrations: [
-        { name: 'GitHub', color: '#f0f0f0', detail: 'Code hosting & Actions CI/CD' },
-        { name: 'GitLab', color: '#fc6d26', detail: 'DevOps platform with CI/CD' },
-        { name: 'Bitbucket', color: '#2684ff', detail: 'Atlassian Git solution' },
-        { name: 'CircleCI', color: '#343434', detail: 'Continuous integration pipelines' },
-        { name: 'Docker Hub', color: '#2496ed', detail: 'Container image registry' },
+        { name: 'X (Twitter)', color: '#f0f0f0', monogram: 'X', desc: 'Post, monitor & analyze tweets', status: 'AVAILABLE' },
+        { name: 'Instagram', color: '#e1306c', monogram: 'IG', desc: 'Photo & video social platform', status: 'AVAILABLE' },
+        { name: 'LinkedIn', color: '#0a66c2', monogram: 'LI', desc: 'Professional network integration', status: 'CONNECTED' },
+        { name: 'Facebook', color: '#1877f2', monogram: 'FB', desc: 'Social media & ads platform', status: 'AVAILABLE' },
+        { name: 'TikTok', color: '#ff0050', monogram: 'TT', desc: 'Short-form video platform API', status: 'BETA' },
       ],
     },
     {
-      name: 'Monitoring & Observability',
-      desc: 'MASSA\'s self-awareness layer — it watches everything it deploys, catches errors before you do, and learns from failures to prevent them.',
-      status: 'MONITORING',
+      name: 'Storage',
       integrations: [
-        { name: 'Datadog', color: '#632ca6', detail: 'Full-stack observability' },
-        { name: 'Sentry', color: '#362d59', detail: 'Error tracking & performance' },
-        { name: 'New Relic', color: '#008c99', detail: 'Application performance monitoring' },
-        { name: 'Grafana', color: '#f46800', detail: 'Metrics visualization dashboards' },
-        { name: 'PagerDuty', color: '#06ac38', detail: 'Incident response orchestration' },
+        { name: 'Dropbox', color: '#0061ff', monogram: 'D', desc: 'Cloud file storage & sharing', status: 'AVAILABLE' },
+        { name: 'Google Drive', color: '#4285f4', monogram: 'GD', desc: 'Cloud storage by Google', status: 'CONNECTED' },
+        { name: 'Box', color: '#0061d5', monogram: 'B', desc: 'Enterprise content management', status: 'AVAILABLE' },
+        { name: 'Cloudinary', color: '#3448c5', monogram: 'CL', desc: 'Image & video management API', status: 'AVAILABLE' },
       ],
     },
     {
-      name: 'Payment Processing',
-      desc: 'Enables MASSA to build commerce into any application — payments, subscriptions, invoicing, and revenue automation baked in from day one.',
-      status: 'ACTIVE',
+      name: 'Developer Tools',
       integrations: [
-        { name: 'Stripe', color: '#635bff', detail: 'Payments, billing, and connect' },
-        { name: 'PayPal', color: '#003087', detail: 'Global payment processing' },
-        { name: 'Square', color: '#3e4348', detail: 'Commerce & POS platform' },
-        { name: 'LemonSqueezy', color: '#ffc233', detail: 'Digital product payments' },
-        { name: 'Paddle', color: '#4bb4e6', detail: 'SaaS billing & tax compliance' },
-      ],
-    },
-    {
-      name: 'Communication & Notifications',
-      desc: 'Gives MASSA a voice — it can send emails, SMS, push notifications, and messages on your behalf across any channel.',
-      status: 'ACTIVE',
-      integrations: [
-        { name: 'Twilio', color: '#f22f46', detail: 'SMS, voice, and WhatsApp APIs' },
-        { name: 'Resend', color: '#ffffff', detail: 'Developer-first email API' },
-        { name: 'Slack', color: '#4a154b', detail: 'Workspace messaging & bots' },
-        { name: 'Discord', color: '#5865f2', detail: 'Community server integration' },
-        { name: 'Intercom', color: '#1f8ded', detail: 'Customer messaging platform' },
-      ],
-    },
-    {
-      name: 'CRM & Customer Data',
-      desc: 'Feeds MASSA customer intelligence — it learns who your users are, tracks their journey, and uses that knowledge to build smarter.',
-      status: 'READY',
-      integrations: [
-        { name: 'Salesforce', color: '#00a1e0', detail: 'Enterprise CRM platform' },
-        { name: 'HubSpot', color: '#ff7a59', detail: 'Inbound CRM & marketing hub' },
-        { name: 'Pipedrive', color: '#1b1b1b', detail: 'Sales pipeline management' },
-        { name: 'Zoho CRM', color: '#e42527', detail: 'Multi-channel CRM suite' },
-        { name: 'Segment', color: '#52bd95', detail: 'Customer data platform' },
-      ],
-    },
-    {
-      name: 'Project Management',
-      desc: 'Lets MASSA coordinate across your team\'s tools — syncing tasks, updating roadmaps, and automating project workflows as it builds.',
-      status: 'READY',
-      integrations: [
-        { name: 'Linear', color: '#5e6ad2', detail: 'Issue tracking for builders' },
-        { name: 'Jira', color: '#0052cc', detail: 'Enterprise project management' },
-        { name: 'Notion', color: '#ffffff', detail: 'Docs, wikis, and databases' },
-        { name: 'Asana', color: '#f06a6a', detail: 'Work management platform' },
-        { name: 'Monday.com', color: '#ff3d57', detail: 'Visual project workflows' },
+        { name: 'GitHub', color: '#f0f0f0', monogram: 'GH', desc: 'Code hosting & Actions CI/CD', status: 'CONNECTED' },
+        { name: 'GitLab', color: '#fc6d26', monogram: 'GL', desc: 'DevOps platform with CI/CD', status: 'AVAILABLE' },
+        { name: 'Jira', color: '#0052cc', monogram: 'J', desc: 'Enterprise project management', status: 'AVAILABLE' },
+        { name: 'Linear', color: '#5e6ad2', monogram: 'L', desc: 'Issue tracking for builders', status: 'CONNECTED' },
+        { name: 'Notion', color: '#f0f0f0', monogram: 'N', desc: 'Docs, wikis & databases', status: 'AVAILABLE' },
       ],
     },
   ]
 
-  const statusColors: Record<string, string> = {
-    ACTIVE: '#34d399',
-    MONITORING: '#f59e0b',
-    READY: '#60a5fa',
+  const statusColors: Record<IntegrationStatus, string> = {
+    AVAILABLE: '#60a5fa',
+    CONNECTED: '#34d399',
+    BETA: '#f59e0b',
   }
 
-  const categoryIcons: Record<string, string> = {
-    'AI & Language Models': '🧠',
-    'Cloud & Infrastructure': '☁️',
-    'Database & Storage': '🗄️',
-    'Authentication & Identity': '🔐',
-    'Version Control & CI/CD': '🔀',
-    'Monitoring & Observability': '📡',
-    'Payment Processing': '💳',
-    'Communication & Notifications': '📨',
-    'CRM & Customer Data': '👥',
-    'Project Management': '📋',
-  }
+  const categoryNames = ['All', ...categories.map(cat => cat.name)]
+  const filteredCategories = activeCategory === 'All' ? categories : categories.filter(cat => cat.name === activeCategory)
 
   return (
     <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
@@ -1446,71 +1430,45 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
         >←</button>
         <div>
           <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: mono }}>Integrations</div>
-          <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>MASSA://sys/integrations — programs that enhance MASSA</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>MASSA://sys/integrations</div>
         </div>
       </div>
 
-      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 20, fontFamily: mono, fontSize: 11, lineHeight: 1.8, marginBottom: 16 }}>
-        <div style={{ color: c.green, marginBottom: 4 }}>$ massa integrations --briefing</div>
-        <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: c.green }}>{'>'} SYSTEM BRIEF — Platform Integrations</div>
-        <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: '#ccc' }}>MASSA is a living system. It maintains a persistent <span style={{ color: '#60a5fa' }}>memory</span>,</div>
-        <div style={{ color: '#ccc' }}>a growing <span style={{ color: '#60a5fa' }}>knowledge base</span>, and an expanding <span style={{ color: '#60a5fa' }}>skill set</span> that compound</div>
-        <div style={{ color: '#ccc' }}>with every interaction. The more you use it, the sharper it gets —</div>
-        <div style={{ color: '#ccc' }}>learning your preferences, retaining context across sessions, and</div>
-        <div style={{ color: '#ccc' }}>building on its own expertise over time.</div>
-        <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: '#ccc' }}>You can also <span style={{ color: '#60a5fa' }}>upload your own source material</span> — documents, brand</div>
-        <div style={{ color: '#ccc' }}>guidelines, datasets, codebases — to give MASSA specialized</div>
-        <div style={{ color: '#ccc' }}>knowledge unique to your business.</div>
-        <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: '#ccc' }}>The integrations below are <span style={{ color: c.green }}>programs that make MASSA smarter</span>.</div>
-        <div style={{ color: '#ccc' }}>Each one extends its capabilities — adding new intelligence,</div>
-        <div style={{ color: '#ccc' }}>infrastructure, data sources, and automation. The more you connect,</div>
-        <div style={{ color: '#ccc' }}>the more powerful MASSA becomes.</div>
-        <div style={{ color: '#ccc' }}></div>
-        <div style={{ color: '#60a5fa' }}>  ┌─────────────────────────────────────────────────────────────────────┐</div>
-        <div style={{ color: '#60a5fa' }}>  │  memory + knowledge + skills + integrations = compounding growth   │</div>
-        <div style={{ color: '#60a5fa' }}>  └─────────────────────────────────────────────────────────────────────┘</div>
+      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono, fontSize: 11, lineHeight: 1.8, marginBottom: 16 }}>
+        <div style={{ color: c.green, marginBottom: 8 }}>$ massa integrations --list</div>
+        <div style={{ color: '#ccc' }}>{'>'} Loaded {categories.reduce((sum, cat) => sum + cat.integrations.length, 0)} integrations across {categories.length} categories</div>
+        <div style={{ color: '#ccc' }}>{'>'} {categories.reduce((sum, cat) => sum + cat.integrations.filter(i => i.status === 'CONNECTED').length, 0)} connected &middot; {categories.reduce((sum, cat) => sum + cat.integrations.filter(i => i.status === 'AVAILABLE').length, 0)} available &middot; {categories.reduce((sum, cat) => sum + cat.integrations.filter(i => i.status === 'BETA').length, 0)} in beta</div>
       </div>
 
-      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 20, fontFamily: mono, fontSize: 11, marginBottom: 16, overflowX: 'auto' }}>
-        <div style={{ color: c.green, marginBottom: 12 }}>$ massa integrations --pipeline</div>
-        <pre style={{ color: c.green, margin: 0, fontSize: 11, lineHeight: 1.5 }}>
-{`  ┌────────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐
-  │  CONNECT   │────▶│ CONFIGURE  │────▶│  AUTOMATE  │────▶│   SCALE    │────▶│  MONITOR   │
-  └────────────┘     └────────────┘     └────────────┘     └────────────┘     └────────────┘`}
-        </pre>
-        <div style={{ display: 'flex', gap: 0, marginTop: 8, overflowX: 'auto' }}>
-          {pipelineSteps.map((step, i) => (
-            <div key={step.label} style={{ minWidth: 130, width: 130, textAlign: 'center', flexShrink: 0, marginRight: i < pipelineSteps.length - 1 ? 28 : 0 }}>
-              <div style={{ color: c.muted, fontSize: 9, lineHeight: 1.4, padding: '0 2px' }}>{step.desc}</div>
-            </div>
-          ))}
-        </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 16, fontFamily: mono }}>
+        {categoryNames.map(name => {
+          const isActive = activeCategory === name
+          return (
+            <button key={name} onClick={() => setActiveCategory(name)} style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${isActive ? c.green : c.border}`, background: isActive ? `${c.green}15` : 'transparent', color: isActive ? c.green : c.muted, cursor: 'pointer', fontSize: 10, fontFamily: mono, fontWeight: isActive ? 700 : 500, transition: 'all 0.15s' }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.borderColor = '#4a5568' }}
+              onMouseLeave={e => { if (!isActive) e.currentTarget.style.borderColor = c.border }}
+            >{name}</button>
+          )
+        })}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 12 }}>
-        {categories.map(cat => (
+        {filteredCategories.map(cat => (
           <div key={cat.name} style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 16 }}>{categoryIcons[cat.name]}</span>
-                <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: 12 }}>{cat.name}</span>
-              </div>
-              <span style={{ fontSize: 9, fontWeight: 700, color: statusColors[cat.status], background: `${statusColors[cat.status]}15`, padding: '2px 8px', borderRadius: 3, border: `1px solid ${statusColors[cat.status]}30` }}>
-                {cat.status}
-              </span>
-            </div>
-            <div style={{ color: c.muted, fontSize: 10, lineHeight: 1.5, marginBottom: 12 }}>{cat.desc}</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            <div style={{ color: c.green, fontSize: 10, marginBottom: 10, fontWeight: 700 }}>[{cat.name.toUpperCase()}]</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {cat.integrations.map(integ => (
-                <div key={integ.name} title={integ.detail} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#0d1117', border: `1px solid ${c.border}`, borderRadius: 4, padding: '3px 8px', cursor: 'default' }}>
-                  <span style={{ width: 16, height: 16, borderRadius: 3, background: integ.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: integ.color === '#ffffff' || integ.color === '#f0f0f0' ? '#000' : '#fff', flexShrink: 0 }}>
-                    {integ.name.charAt(0).toUpperCase()}
+                <div key={integ.name} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#0d1117', border: `1px solid ${c.border}`, borderRadius: 4, padding: '8px 10px', cursor: 'default' }}>
+                  <span style={{ width: 28, height: 28, borderRadius: 5, background: integ.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: integ.color === '#ffffff' || integ.color === '#f0f0f0' || integ.color === '#ffe01b' || integ.color === '#ffca28' ? '#000' : '#fff', flexShrink: 0, letterSpacing: '-0.03em' }}>
+                    {integ.monogram}
                   </span>
-                  <span style={{ fontSize: 9, color: '#ccc' }}>{integ.name}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: '#f0f0f0', fontSize: 11, fontWeight: 600 }}>{integ.name}</div>
+                    <div style={{ color: c.muted, fontSize: 9, marginTop: 1 }}>{integ.desc}</div>
+                  </div>
+                  <span style={{ fontSize: 8, fontWeight: 700, color: statusColors[integ.status], background: `${statusColors[integ.status]}15`, padding: '2px 8px', borderRadius: 3, border: `1px solid ${statusColors[integ.status]}30`, flexShrink: 0, letterSpacing: '0.04em' }}>
+                    {integ.status}
+                  </span>
                 </div>
               ))}
             </div>
@@ -2257,8 +2215,8 @@ export function Overview() {
               { label: 'Skills', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>, view: 'skills' as const, path: '' },
               { label: 'APIs', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>, view: 'apis' as const, path: '' },
               { label: 'Web Scraper', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, view: 'webScraper' as const, path: '' },
-              { label: 'Integrations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>, view: 'integrations' as const, path: '' },
               { label: 'Inside MASSA', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, view: 'insideMassa' as const, path: '' },
+              { label: 'Integrations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>, view: 'integrations' as const, path: '' },
               { label: 'Current Projects', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, view: 'currentProjects' as const, path: '' },
               { label: 'Published', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>, view: 'published' as const, path: '' },
             ].map(item => {
