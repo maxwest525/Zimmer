@@ -1264,6 +1264,246 @@ function MarketingView({ onBack }: { onBack: () => void }) {
   )
 }
 
+function IntegrationsView({ onBack }: { onBack: () => void }) {
+  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+  const mono = '"JetBrains Mono", Menlo, monospace'
+
+  const pipelineSteps = [
+    { label: 'CONNECT', desc: 'Link external services, APIs, and platforms to MASSA' },
+    { label: 'CONFIGURE', desc: 'Set permissions, map data fields, define triggers' },
+    { label: 'AUTOMATE', desc: 'Workflows fire automatically across connected tools' },
+    { label: 'SCALE', desc: 'Add capacity, regions, and redundancy as you grow' },
+    { label: 'MONITOR', desc: 'Health checks, usage dashboards, alert routing' },
+  ]
+
+  const categories: { name: string; desc: string; status: 'ACTIVE' | 'MONITORING' | 'READY'; integrations: { name: string; color: string; detail: string }[] }[] = [
+    {
+      name: 'AI & Language Models',
+      desc: 'The intelligence layer — plug in frontier models for code generation, reasoning, content creation, and agent orchestration.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'OpenAI', color: '#10a37f', detail: 'GPT-4o, o1, and embeddings API' },
+        { name: 'Anthropic', color: '#d4a574', detail: 'Claude 3.5 Sonnet & Opus models' },
+        { name: 'Google Gemini', color: '#4285f4', detail: 'Gemini Pro & Ultra multimodal' },
+        { name: 'Mistral', color: '#ff7000', detail: 'Open-weight European LLMs' },
+        { name: 'Cohere', color: '#39594d', detail: 'Enterprise RAG & reranking' },
+      ],
+    },
+    {
+      name: 'Cloud & Infrastructure',
+      desc: 'Where your applications live — deploy to any cloud, any region, with automated scaling and zero-downtime rollouts.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'AWS', color: '#ff9900', detail: 'EC2, Lambda, S3, and 200+ services' },
+        { name: 'Google Cloud', color: '#4285f4', detail: 'Cloud Run, GKE, BigQuery' },
+        { name: 'Vercel', color: '#ffffff', detail: 'Edge-first frontend deployment' },
+        { name: 'Cloudflare', color: '#f38020', detail: 'CDN, Workers, R2 storage' },
+        { name: 'DigitalOcean', color: '#0080ff', detail: 'Simple cloud infrastructure' },
+      ],
+    },
+    {
+      name: 'Database & Storage',
+      desc: 'Your data backbone — relational, document, key-value, and object storage with automatic backups and replication.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'PostgreSQL', color: '#336791', detail: 'Advanced relational database' },
+        { name: 'MongoDB', color: '#47a248', detail: 'Document database at scale' },
+        { name: 'Redis', color: '#dc382d', detail: 'In-memory cache & message broker' },
+        { name: 'Supabase', color: '#3ecf8e', detail: 'Open-source Firebase alternative' },
+        { name: 'PlanetScale', color: '#f5a623', detail: 'Serverless MySQL platform' },
+      ],
+    },
+    {
+      name: 'Authentication & Identity',
+      desc: 'Secure user management — SSO, MFA, social login, role-based access, and compliance-ready auth flows out of the box.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'Clerk', color: '#6c47ff', detail: 'Drop-in auth components' },
+        { name: 'Auth0', color: '#eb5424', detail: 'Universal identity platform' },
+        { name: 'Firebase Auth', color: '#ffca28', detail: 'Google identity services' },
+        { name: 'Okta', color: '#007dc1', detail: 'Enterprise workforce identity' },
+        { name: 'Supabase Auth', color: '#3ecf8e', detail: 'Row-level security auth' },
+      ],
+    },
+    {
+      name: 'Version Control & CI/CD',
+      desc: 'Code lifecycle management — automatic builds, test pipelines, branch previews, and one-click production deploys.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'GitHub', color: '#f0f0f0', detail: 'Code hosting & Actions CI/CD' },
+        { name: 'GitLab', color: '#fc6d26', detail: 'DevOps platform with CI/CD' },
+        { name: 'Bitbucket', color: '#2684ff', detail: 'Atlassian Git solution' },
+        { name: 'CircleCI', color: '#343434', detail: 'Continuous integration pipelines' },
+        { name: 'Docker Hub', color: '#2496ed', detail: 'Container image registry' },
+      ],
+    },
+    {
+      name: 'Monitoring & Observability',
+      desc: 'System health at a glance — error tracking, performance metrics, log aggregation, and intelligent alerting.',
+      status: 'MONITORING',
+      integrations: [
+        { name: 'Datadog', color: '#632ca6', detail: 'Full-stack observability' },
+        { name: 'Sentry', color: '#362d59', detail: 'Error tracking & performance' },
+        { name: 'New Relic', color: '#008c99', detail: 'Application performance monitoring' },
+        { name: 'Grafana', color: '#f46800', detail: 'Metrics visualization dashboards' },
+        { name: 'PagerDuty', color: '#06ac38', detail: 'Incident response orchestration' },
+      ],
+    },
+    {
+      name: 'Payment Processing',
+      desc: 'Commerce infrastructure — accept payments globally, manage subscriptions, handle invoicing, and automate revenue ops.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'Stripe', color: '#635bff', detail: 'Payments, billing, and connect' },
+        { name: 'PayPal', color: '#003087', detail: 'Global payment processing' },
+        { name: 'Square', color: '#3e4348', detail: 'Commerce & POS platform' },
+        { name: 'LemonSqueezy', color: '#ffc233', detail: 'Digital product payments' },
+        { name: 'Paddle', color: '#4bb4e6', detail: 'SaaS billing & tax compliance' },
+      ],
+    },
+    {
+      name: 'Communication & Notifications',
+      desc: 'Keep users informed — transactional email, SMS, push notifications, in-app messaging, and real-time chat.',
+      status: 'ACTIVE',
+      integrations: [
+        { name: 'Twilio', color: '#f22f46', detail: 'SMS, voice, and WhatsApp APIs' },
+        { name: 'Resend', color: '#ffffff', detail: 'Developer-first email API' },
+        { name: 'Slack', color: '#4a154b', detail: 'Workspace messaging & bots' },
+        { name: 'Discord', color: '#5865f2', detail: 'Community server integration' },
+        { name: 'Intercom', color: '#1f8ded', detail: 'Customer messaging platform' },
+      ],
+    },
+    {
+      name: 'CRM & Customer Data',
+      desc: 'Know your users — unified customer profiles, pipeline management, lead scoring, and lifecycle automation.',
+      status: 'READY',
+      integrations: [
+        { name: 'Salesforce', color: '#00a1e0', detail: 'Enterprise CRM platform' },
+        { name: 'HubSpot', color: '#ff7a59', detail: 'Inbound CRM & marketing hub' },
+        { name: 'Pipedrive', color: '#1b1b1b', detail: 'Sales pipeline management' },
+        { name: 'Zoho CRM', color: '#e42527', detail: 'Multi-channel CRM suite' },
+        { name: 'Segment', color: '#52bd95', detail: 'Customer data platform' },
+      ],
+    },
+    {
+      name: 'Project Management',
+      desc: 'Orchestrate work across teams — task tracking, sprint planning, roadmaps, wikis, and cross-tool automation.',
+      status: 'READY',
+      integrations: [
+        { name: 'Linear', color: '#5e6ad2', detail: 'Issue tracking for builders' },
+        { name: 'Jira', color: '#0052cc', detail: 'Enterprise project management' },
+        { name: 'Notion', color: '#ffffff', detail: 'Docs, wikis, and databases' },
+        { name: 'Asana', color: '#f06a6a', detail: 'Work management platform' },
+        { name: 'Monday.com', color: '#ff3d57', detail: 'Visual project workflows' },
+      ],
+    },
+  ]
+
+  const statusColors: Record<string, string> = {
+    ACTIVE: '#34d399',
+    MONITORING: '#f59e0b',
+    READY: '#60a5fa',
+  }
+
+  const categoryIcons: Record<string, string> = {
+    'AI & Language Models': '🧠',
+    'Cloud & Infrastructure': '☁️',
+    'Database & Storage': '🗄️',
+    'Authentication & Identity': '🔐',
+    'Version Control & CI/CD': '🔀',
+    'Monitoring & Observability': '📡',
+    'Payment Processing': '💳',
+    'Communication & Notifications': '📨',
+    'CRM & Customer Data': '👥',
+    'Project Management': '📋',
+  }
+
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
+        >←</button>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: mono }}>Platform Integrations</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>MASSA://sys/integrations</div>
+        </div>
+      </div>
+
+      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 20, fontFamily: mono, fontSize: 11, lineHeight: 1.8, marginBottom: 16 }}>
+        <div style={{ color: c.green, marginBottom: 4 }}>$ massa integrations --briefing</div>
+        <div style={{ color: '#ccc' }}></div>
+        <div style={{ color: c.green }}>{'>'} SYSTEM BRIEF — Platform Integrations</div>
+        <div style={{ color: '#ccc' }}></div>
+        <div style={{ color: '#ccc' }}>Every application you build with MASSA is backed by best-in-class</div>
+        <div style={{ color: '#ccc' }}>infrastructure. Integrations extend what MASSA can do — connecting</div>
+        <div style={{ color: '#ccc' }}>AI models, cloud providers, databases, payment systems, monitoring</div>
+        <div style={{ color: '#ccc' }}>tools, and more. Each integration is pre-configured, secure, and</div>
+        <div style={{ color: '#ccc' }}>ready to plug into any project you build.</div>
+        <div style={{ color: '#ccc' }}></div>
+        <div style={{ color: '#ccc' }}>Think of it as giving MASSA superpowers — the more you connect,</div>
+        <div style={{ color: '#ccc' }}>the more capable your applications become.</div>
+        <div style={{ color: '#ccc' }}></div>
+        <div style={{ color: '#60a5fa' }}>  ┌──────────────────────────────────────────────────────────────┐</div>
+        <div style={{ color: '#60a5fa' }}>  │  10 capability modules · 50 integrations · plug and build   │</div>
+        <div style={{ color: '#60a5fa' }}>  └──────────────────────────────────────────────────────────────┘</div>
+      </div>
+
+      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 20, fontFamily: mono, fontSize: 11, marginBottom: 16, overflowX: 'auto' }}>
+        <div style={{ color: c.green, marginBottom: 12 }}>$ massa integrations --pipeline</div>
+        <pre style={{ color: c.green, margin: 0, fontSize: 11, lineHeight: 1.5 }}>
+{`  ┌────────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐     ┌────────────┐
+  │  CONNECT   │────▶│ CONFIGURE  │────▶│  AUTOMATE  │────▶│   SCALE    │────▶│  MONITOR   │
+  └────────────┘     └────────────┘     └────────────┘     └────────────┘     └────────────┘`}
+        </pre>
+        <div style={{ display: 'flex', gap: 0, marginTop: 8, overflowX: 'auto' }}>
+          {pipelineSteps.map((step, i) => (
+            <div key={step.label} style={{ minWidth: 130, width: 130, textAlign: 'center', flexShrink: 0, marginRight: i < pipelineSteps.length - 1 ? 28 : 0 }}>
+              <div style={{ color: c.muted, fontSize: 9, lineHeight: 1.4, padding: '0 2px' }}>{step.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 12 }}>
+        {categories.map(cat => (
+          <div key={cat.name} style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 16 }}>{categoryIcons[cat.name]}</span>
+                <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: 12 }}>{cat.name}</span>
+              </div>
+              <span style={{ fontSize: 9, fontWeight: 700, color: statusColors[cat.status], background: `${statusColors[cat.status]}15`, padding: '2px 8px', borderRadius: 3, border: `1px solid ${statusColors[cat.status]}30` }}>
+                {cat.status}
+              </span>
+            </div>
+            <div style={{ color: c.muted, fontSize: 10, lineHeight: 1.5, marginBottom: 12 }}>{cat.desc}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {cat.integrations.map(integ => (
+                <div key={integ.name} title={integ.detail} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#0d1117', border: `1px solid ${c.border}`, borderRadius: 4, padding: '3px 8px', cursor: 'default' }}>
+                  <span style={{ width: 16, height: 16, borderRadius: 3, background: integ.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: integ.color === '#ffffff' || integ.color === '#f0f0f0' ? '#000' : '#fff', flexShrink: 0 }}>
+                    {integ.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span style={{ fontSize: 9, color: '#ccc' }}>{integ.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono, fontSize: 11, marginTop: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: c.green }}>$</span>
+          <span style={{ width: 7, height: 14, background: c.green, display: 'inline-block', animation: 'blink 1s step-end infinite' }} />
+        </div>
+      </div>
+      <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
+    </div>
+  )
+}
+
 function SkillsView({ onBack }: { onBack: () => void }) {
   return <TerminalPageView onBack={onBack} title="Skills" command="skills" lines={[
     '> Installed agent skills: 12',
@@ -1491,7 +1731,7 @@ export function Overview() {
   const [clarifyDone, setClarifyDone] = useState(false)
   const [clarifySummary, setClarifySummary] = useState('')
   const [clarifyOtherText, setClarifyOtherText] = useState('')
-  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas' | 'currentProjects' | 'published' | 'history' | 'automations' | 'marketing' | 'skills' | 'apis' | 'webScraper' | 'insideMassa'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas' | 'currentProjects' | 'published' | 'history' | 'automations' | 'marketing' | 'skills' | 'apis' | 'webScraper' | 'insideMassa' | 'integrations'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [chatOriginBuildId, setChatOriginBuildId] = useState<string | null>(null)
   const [enhancingId, setEnhancingId] = useState<number | null>(null)
@@ -1992,6 +2232,7 @@ export function Overview() {
               { label: 'Skills', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>, view: 'skills' as const, path: '' },
               { label: 'APIs', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>, view: 'apis' as const, path: '' },
               { label: 'Web Scraper', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, view: 'webScraper' as const, path: '' },
+              { label: 'Integrations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>, view: 'integrations' as const, path: '' },
               { label: 'Inside MASSA', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, view: 'insideMassa' as const, path: '' },
               { label: 'Current Projects', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, view: 'currentProjects' as const, path: '' },
               { label: 'Published', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>, view: 'published' as const, path: '' },
@@ -2059,6 +2300,8 @@ export function Overview() {
           <ApisView onBack={() => setActiveView('dashboard')} />
         ) : activeView === 'webScraper' ? (
           <WebScraperView onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'integrations' ? (
+          <IntegrationsView onBack={() => setActiveView('dashboard')} />
         ) : activeView === 'insideMassa' ? (
           <InsideMassaView onBack={() => setActiveView('dashboard')} />
         ) : <>
