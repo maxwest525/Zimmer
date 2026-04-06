@@ -964,6 +964,160 @@ function CurrentProjectsView({ projects, setProjects, onBack }: { projects: Proj
   )
 }
 
+function TerminalPageView({ onBack, title, command, lines }: { onBack: () => void; title: string; command: string; lines: string[] }) {
+  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
+        >←</button>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{title}</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA://sys/{command}</div>
+        </div>
+      </div>
+      <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 11, lineHeight: 1.8 }}>
+        <div style={{ color: c.green, marginBottom: 8 }}>$ massa {command} --status</div>
+        {lines.map((line, i) => (
+          <div key={i} style={{ color: line.startsWith('>') ? c.green : line.startsWith('!') ? '#f59e0b' : line.startsWith('[') ? '#60a5fa' : line === '' ? 'transparent' : '#ccc', whiteSpace: 'pre-wrap' }}>
+            {line || '\u00A0'}
+          </div>
+        ))}
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: c.green }}>$</span>
+          <span style={{ width: 7, height: 14, background: c.green, display: 'inline-block', animation: 'blink 1s step-end infinite' }} />
+        </div>
+      </div>
+      <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
+    </div>
+  )
+}
+
+function HistoryView({ onBack }: { onBack: () => void }) {
+  return <TerminalPageView onBack={onBack} title="History" command="history" lines={[
+    '[2026-04-06 03:22:11] Build #847 completed — Trading Bot / Core Engine',
+    '[2026-04-06 03:18:45] Deploy #312 pushed — massa.ai (production)',
+    '[2026-04-06 03:14:02] Build #846 completed — Trading Bot / Risk Module',
+    '[2026-04-06 02:58:30] Agent assigned — UI Agent → Dashboard UI',
+    '[2026-04-06 02:45:19] Build #845 started — Trading Bot / Core Engine',
+    '[2026-04-06 02:30:00] Project created — Web Scraper',
+    '[2026-04-05 23:12:44] Build #844 completed — Massa Marketing Site / Homepage',
+    '[2026-04-05 22:58:11] Deploy #311 pushed — tradingbot.io (staging)',
+    '',
+    '> 847 events total — showing latest 8',
+    '> Use --all to view full history',
+  ]} />
+}
+
+function AutomationsView({ onBack }: { onBack: () => void }) {
+  return <TerminalPageView onBack={onBack} title="Automations" command="automations" lines={[
+    '> Registered automations: 6',
+    '',
+    '[auto-001]  on:build:complete    → notify:slack #builds        ACTIVE',
+    '[auto-002]  on:deploy:success    → run:healthcheck             ACTIVE',
+    '[auto-003]  on:error:critical    → notify:email ops@massa.ai   ACTIVE',
+    '[auto-004]  cron:0 */6 * * *     → run:scraper:refresh         ACTIVE',
+    '[auto-005]  on:pr:merged         → trigger:build:all           PAUSED',
+    '[auto-006]  on:metric:threshold  → scale:agents +1             ACTIVE',
+    '',
+    '> 5 active, 1 paused',
+    '> Last triggered: auto-001 at 03:22:11 UTC',
+  ]} />
+}
+
+function MarketingView({ onBack }: { onBack: () => void }) {
+  return <TerminalPageView onBack={onBack} title="Marketing" command="marketing" lines={[
+    '> Campaign dashboard loaded',
+    '',
+    '[campaign-01]  Product Hunt Launch    Status: SCHEDULED  Date: 2026-04-15',
+    '[campaign-02]  Twitter Thread Series  Status: ACTIVE     Impressions: 12.4K',
+    '[campaign-03]  Blog: "Why MASSA"      Status: DRAFT      Words: 2,847',
+    '[campaign-04]  Email Drip Sequence    Status: ACTIVE     Subscribers: 342',
+    '[campaign-05]  Landing Page A/B Test  Status: RUNNING    Variant B +18%',
+    '',
+    '> 2 active campaigns, 1 scheduled, 1 draft, 1 running test',
+    '! Action required: Review blog draft before 2026-04-10',
+  ]} />
+}
+
+function SkillsView({ onBack }: { onBack: () => void }) {
+  return <TerminalPageView onBack={onBack} title="Skills" command="skills" lines={[
+    '> Installed agent skills: 12',
+    '',
+    '[skill]  react-vite         v2.1.0   Frontend scaffolding + HMR',
+    '[skill]  express-api        v1.4.2   REST API generation',
+    '[skill]  drizzle-orm        v1.0.0   Database schema + migrations',
+    '[skill]  tailwind-ui        v3.2.1   Component library integration',
+    '[skill]  deployment         v1.1.0   Cloud Run auto-deploy',
+    '[skill]  code-review        v0.9.3   Architect analysis agent',
+    '[skill]  test-runner        v1.0.1   Automated test execution',
+    '[skill]  security-scan      v0.8.0   Dependency + SAST scanning',
+    '[skill]  web-scraper        v1.2.0   Headless browser automation',
+    '[skill]  n8n-workflows      v0.7.1   Workflow automation bridge',
+    '[skill]  resend-email       v1.0.0   Transactional email sending',
+    '[skill]  stripe-payments    v0.6.0   Payment integration',
+    '',
+    '> All skills operational — last updated 2026-04-06',
+  ]} />
+}
+
+function ApisView({ onBack }: { onBack: () => void }) {
+  return <TerminalPageView onBack={onBack} title="APIs" command="apis" lines={[
+    '> Connected API endpoints: 8',
+    '',
+    '[GET]     /api/healthz              200 OK     avg 12ms',
+    '[GET]     /api/projects             200 OK     avg 45ms',
+    '[POST]    /api/projects             201 Created avg 89ms',
+    '[GET]     /api/builds/:id           200 OK     avg 34ms',
+    '[POST]    /api/ai/enhance-prompt    200 OK     avg 1.2s',
+    '[POST]    /api/ai/clarify           200 OK     avg 980ms',
+    '[GET]     /api/agents               200 OK     avg 28ms',
+    '[POST]    /api/deploy               202 Accepted avg 3.4s',
+    '',
+    '> All endpoints healthy — 99.97% uptime (30d)',
+    '> Total requests today: 4,218',
+  ]} />
+}
+
+function WebScraperView({ onBack }: { onBack: () => void }) {
+  return <TerminalPageView onBack={onBack} title="Web Scraper" command="scraper" lines={[
+    '> Scraper engine v1.2.0 — Chromium headless',
+    '',
+    '[job-01]  target: competitor-pricing    Schedule: */6h    Last: 03:00 UTC  OK',
+    '[job-02]  target: tech-news-feeds       Schedule: */1h    Last: 03:30 UTC  OK',
+    '[job-03]  target: api-changelog-watch   Schedule: */12h   Last: 00:00 UTC  OK',
+    '[job-04]  target: social-mentions       Schedule: */30m   Last: 03:30 UTC  OK',
+    '',
+    '> 4 active jobs — 0 failures in last 24h',
+    '> Data stored: 2.4 GB across 14,207 records',
+    '> Next scheduled run: job-04 at 04:00 UTC',
+  ]} />
+}
+
+function InsideMassaView({ onBack }: { onBack: () => void }) {
+  return <TerminalPageView onBack={onBack} title="Inside MASSA" command="system --info" lines={[
+    '> MASSA AI Platform — v2.4.1',
+    '',
+    'System Status:        OPERATIONAL',
+    'Uptime:               99.98% (30d)',
+    'Active Agents:        4 / 8 slots',
+    'Build Queue:          5 queued, 3 running',
+    'Memory Usage:         2.1 GB / 8 GB',
+    'Storage:              14.8 GB / 50 GB',
+    'Database:             PostgreSQL 16 — connected',
+    'Cache:                Redis 7.2 — connected',
+    '',
+    '[module]  Core Engine        v3.1.0   LOADED',
+    '[module]  Agent Orchestrator  v2.4.1   LOADED',
+    '[module]  Build Pipeline      v1.8.0   LOADED',
+    '[module]  Deploy Manager      v1.3.2   LOADED',
+    '',
+    '> All systems nominal',
+  ]} />
+}
+
 function PublishedView({ onBack }: { onBack: () => void }) {
   const { completedProducts } = useProjects()
   const publishedProducts = useMemo(() => completedProducts.filter(p => p.publishStatus === 'live'), [completedProducts])
@@ -1115,7 +1269,7 @@ export function Overview() {
   const [clarifyDone, setClarifyDone] = useState(false)
   const [clarifySummary, setClarifySummary] = useState('')
   const [clarifyOtherText, setClarifyOtherText] = useState('')
-  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas' | 'currentProjects' | 'published'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas' | 'currentProjects' | 'published' | 'history' | 'automations' | 'marketing' | 'skills' | 'apis' | 'webScraper' | 'insideMassa'>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [chatOriginBuildId, setChatOriginBuildId] = useState<string | null>(null)
   const [enhancingId, setEnhancingId] = useState<number | null>(null)
@@ -1610,15 +1764,15 @@ export function Overview() {
               { label: 'Dashboard', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, view: 'dashboard' as const, path: '' },
               { label: 'Chats', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, view: 'chats' as const, path: '' },
               { label: 'Ideas', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>, view: 'ideas' as const, path: '' },
-              { label: 'History', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>, view: null, path: '' },
-              { label: 'Automations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, view: null, path: '' },
-              { label: 'Marketing', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>, view: null, path: '' },
-              { label: 'Skills', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>, view: null, path: '' },
-              { label: 'APIs', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>, view: null, path: '' },
-              { label: 'Web Scraper', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, view: null, path: '' },
-              { label: 'Inside MASSA', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, view: null, path: '' },
-              { label: 'Current Projects', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, view: null, path: '/completed' },
-              { label: 'Published', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>, view: null, path: '/completed?tab=published' },
+              { label: 'History', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>, view: 'history' as const, path: '' },
+              { label: 'Automations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, view: 'automations' as const, path: '' },
+              { label: 'Marketing', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>, view: 'marketing' as const, path: '' },
+              { label: 'Skills', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>, view: 'skills' as const, path: '' },
+              { label: 'APIs', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>, view: 'apis' as const, path: '' },
+              { label: 'Web Scraper', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, view: 'webScraper' as const, path: '' },
+              { label: 'Inside MASSA', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, view: 'insideMassa' as const, path: '' },
+              { label: 'Current Projects', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, view: 'currentProjects' as const, path: '' },
+              { label: 'Published', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>, view: 'published' as const, path: '' },
             ].map(item => {
               const active = item.view ? activeView === item.view : false
               const clickable = item.view !== null || item.path !== ''
@@ -1671,6 +1825,20 @@ export function Overview() {
           <CurrentProjectsView projects={projects} setProjects={setProjects} onBack={() => setActiveView('dashboard')} />
         ) : activeView === 'published' ? (
           <PublishedView onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'history' ? (
+          <HistoryView onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'automations' ? (
+          <AutomationsView onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'marketing' ? (
+          <MarketingView onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'skills' ? (
+          <SkillsView onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'apis' ? (
+          <ApisView onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'webScraper' ? (
+          <WebScraperView onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'insideMassa' ? (
+          <InsideMassaView onBack={() => setActiveView('dashboard')} />
         ) : <>
         {/* CENTER MAIN */}
         <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
