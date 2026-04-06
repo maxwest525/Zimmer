@@ -2016,10 +2016,10 @@ export function Overview() {
                                 ].map(btn => (
                                   <button key={btn.label} title={btn.label} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setBuildModalTab(btn.tab); setExpandedBuildId(build.id) }}
                                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.color = '#ccc' }}
-                                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#777' }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#333'; e.currentTarget.style.color = '#777' }}
                                     style={{
                                       flex: 1, height: 28, borderRadius: 4,
-                                      background: 'transparent', border: '1px solid #1e2330',
+                                      background: 'transparent', border: '1px solid #333',
                                       color: '#777', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                       padding: 0, transition: 'border-color 0.15s, color 0.15s', minWidth: 0,
                                     }}>{getTabIcon(btn.tab, 13)}</button>
