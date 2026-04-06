@@ -2006,10 +2006,7 @@ export function Overview() {
                               <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} />
                             </div>
                             <div style={{ padding: '8px 10px 8px' }}>
-                              <div style={{ height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden' }}>
-                                <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
-                              </div>
-                              <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
+                              <div style={{ display: 'flex', gap: 3 }}>
                                 {[
                                   { label: 'Chat', tab: 'chat' as const },
                                   { label: 'Code', tab: 'code' as const },
