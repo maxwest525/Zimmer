@@ -115,7 +115,7 @@ function getBuildType(stack: string[], title: string): 'ui' | 'backend' | 'datab
 function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId?: string; buildType: 'ui' | 'backend' | 'database' | 'automation'; sc: string; size?: 'normal' | 'mini' }) {
   const h = size === 'mini' ? 34 : 140
   const w = size === 'mini' ? 48 : '100%'
-  const base = { width: w, height: h, borderRadius: size === 'mini' ? 4 : '8px 8px 0 0', overflow: 'hidden' as const, position: 'relative' as const, flexShrink: 0, background: '#080808', border: '2px solid #1a1a1a' }
+  const base = { width: w, height: h, borderRadius: size === 'mini' ? 4 : '8px 8px 0 0', overflow: 'hidden' as const, position: 'relative' as const, flexShrink: 0, background: '#080808', border: '2px solid #333' }
   const m = size === 'mini'
   const f = (s: number) => m ? Math.max(1, Math.round(s * 0.45)) : s
 
