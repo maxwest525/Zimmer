@@ -2086,6 +2086,14 @@ export function Overview() {
       localStorage.setItem('massa_collapsedProjectGroups', JSON.stringify(Array.from(collapsedProjectGroups)))
     } catch {}
   }, [collapsedProjectGroups])
+  useEffect(() => {
+    const validNames = new Set(projects.map(p => p.name))
+    setCollapsedProjectGroups(prev => {
+      const pruned = new Set<string>([...prev].filter(name => validNames.has(name)))
+      if (pruned.size === prev.size) return prev
+      return pruned
+    })
+  }, [projects])
   const sectionHeader = (label: string, key: string, extra?: React.ReactNode) => (
     <div
       onClick={() => toggleSection(key)}
