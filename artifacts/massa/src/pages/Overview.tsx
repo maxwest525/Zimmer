@@ -2082,6 +2082,15 @@ export function Overview() {
     } catch {}
     return new Set<string>()
   })
+  const [pinnedActionOrder, setPinnedActionOrder] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('massa_pinnedActionOrder')
+      if (stored) return JSON.parse(stored)
+    } catch {}
+    return []
+  })
+  const draggedPinnedKey = useRef<string | null>(null)
+  const [dragOverPinnedKey, setDragOverPinnedKey] = useState<string | null>(null)
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
   useEffect(() => {
     try {
@@ -2098,6 +2107,11 @@ export function Overview() {
       localStorage.setItem('massa_pinnedActionKeys', JSON.stringify(Array.from(pinnedActionKeys)))
     } catch {}
   }, [pinnedActionKeys])
+  useEffect(() => {
+    try {
+      localStorage.setItem('massa_pinnedActionOrder', JSON.stringify(pinnedActionOrder))
+    } catch {}
+  }, [pinnedActionOrder])
   const actionRequiredProjectNames = useMemo(() => {
     const names = new Set<string>()
     for (const p of filteredProjects) {
@@ -3251,9 +3265,23 @@ export function Overview() {
                 else next.add(key)
                 return next
               })
+              setPinnedActionOrder(prev => {
+                if (prev.includes(key)) return prev.filter(k => k !== key)
+                return [...prev, key]
+              })
             }
 
-            const pinnedItems = visibleSorted.filter(item => pinnedActionKeys.has(`${item.id}:${item.action.type}`))
+            const pinnedItemsRaw = visibleSorted.filter(item => pinnedActionKeys.has(`${item.id}:${item.action.type}`))
+            const pinnedItems = [...pinnedItemsRaw].sort((a, b) => {
+              const ka = `${a.id}:${a.action.type}`
+              const kb = `${b.id}:${b.action.type}`
+              const ia = pinnedActionOrder.indexOf(ka)
+              const ib = pinnedActionOrder.indexOf(kb)
+              if (ia === -1 && ib === -1) return 0
+              if (ia === -1) return 1
+              if (ib === -1) return -1
+              return ia - ib
+            })
             const unpinnedItems = visibleSorted.filter(item => !pinnedActionKeys.has(`${item.id}:${item.action.type}`))
 
             const projectOrder: string[] = []
@@ -3267,25 +3295,88 @@ export function Overview() {
             }
             const groupedByProject = projectOrder.map(name => ({ projectName: name, items: projectMap[name] }))
 
-            const renderActionItemRow = (item: typeof visibleSorted[number], borderTop = '1px solid #14181e') => {
+            const renderActionItemRow = (item: typeof visibleSorted[number], borderTop = '1px solid #14181e', draggable = false) => {
               const key = `${item.id}:${item.action.type}`
               const isPinned = pinnedActionKeys.has(key)
+              const isDragOver = dragOverPinnedKey === key
               return (
                 <div
                   key={item.id}
                   data-action-item
                   data-action-key={key}
+                  draggable={draggable}
+                  onDragStart={draggable ? (e) => {
+                    draggedPinnedKey.current = key
+                    e.dataTransfer.effectAllowed = 'move'
+                  } : undefined}
+                  onDragOver={draggable ? (e) => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                    if (dragOverPinnedKey !== key) setDragOverPinnedKey(key)
+                  } : undefined}
+                  onDragLeave={draggable ? () => {
+                    setDragOverPinnedKey(prev => prev === key ? null : prev)
+                  } : undefined}
+                  onDrop={draggable ? (e) => {
+                    e.preventDefault()
+                    const fromKey = draggedPinnedKey.current
+                    setDragOverPinnedKey(null)
+                    draggedPinnedKey.current = null
+                    if (!fromKey || fromKey === key) return
+                    setPinnedActionOrder(prev => {
+                      const ordered = pinnedItems.map(i => `${i.id}:${i.action.type}`)
+                      const fromIdx = ordered.indexOf(fromKey)
+                      const toIdx = ordered.indexOf(key)
+                      if (fromIdx === -1 || toIdx === -1) return prev
+                      const next = [...ordered]
+                      next.splice(fromIdx, 1)
+                      next.splice(toIdx, 0, fromKey)
+                      const rest = prev.filter(k => !next.includes(k))
+                      return [...next, ...rest]
+                    })
+                  } : undefined}
+                  onDragEnd={draggable ? () => {
+                    draggedPinnedKey.current = null
+                    setDragOverPinnedKey(null)
+                  } : undefined}
                   style={{
                     padding: '8px 12px',
                     borderTop,
-                    transition: 'all 0.25s ease',
+                    transition: 'background 0.15s ease, all 0.25s ease',
                     overflow: 'hidden',
                     maxHeight: 80,
                     opacity: 1,
-                    background: isPinned ? 'rgba(245,158,11,0.04)' : 'transparent',
+                    background: isDragOver ? 'rgba(245,158,11,0.12)' : isPinned ? 'rgba(245,158,11,0.04)' : 'transparent',
+                    cursor: draggable ? 'default' : 'default',
+                    outline: isDragOver ? '1px solid rgba(245,158,11,0.3)' : 'none',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                    {draggable && (
+                      <div
+                        title="Drag to reorder"
+                        style={{
+                          cursor: 'grab',
+                          color: '#374151',
+                          fontSize: 10,
+                          lineHeight: 1,
+                          flexShrink: 0,
+                          marginTop: 2,
+                          userSelect: 'none',
+                          letterSpacing: -1,
+                          opacity: 0.5,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1,
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                        onMouseLeave={e => (e.currentTarget.style.opacity = '0.5')}
+                        onMouseDown={e => e.currentTarget.style.cursor = 'grabbing'}
+                        onMouseUp={e => e.currentTarget.style.cursor = 'grab'}
+                      >
+                        <span style={{ display: 'block', lineHeight: 1 }}>⠿</span>
+                      </div>
+                    )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 10, fontWeight: 700, color: item.action.color, fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 4 }}>
                         <span style={{ display: 'inline-flex', flexShrink: 0 }}>{getActionIcon(item.action.type, 10)}</span>
@@ -3409,7 +3500,7 @@ export function Overview() {
                     <>
                       {pinnedItems.length > 0 && (
                         <div>
-                          {pinnedItems.map((item, idx) => renderActionItemRow(item, idx === 0 ? 'none' : '1px solid #1e2735'))}
+                          {pinnedItems.map((item, idx) => renderActionItemRow(item, idx === 0 ? 'none' : '1px solid #1e2735', true))}
                           {unpinnedItems.length > 0 && (
                             <div style={{ borderTop: '1px solid #1e3a2a', display: 'flex', alignItems: 'center', gap: 6, padding: '3px 12px' }}>
                               <span style={{ flex: 1, height: 0, borderTop: '1px dashed #1e3020' }} />
