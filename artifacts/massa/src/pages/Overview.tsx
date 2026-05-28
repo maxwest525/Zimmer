@@ -2068,6 +2068,7 @@ export function Overview() {
     } catch {}
     return new Set<string>()
   })
+  const [collapsedProjectGroups, setCollapsedProjectGroups] = useState<Set<string>>(new Set())
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
   useEffect(() => {
     try {
@@ -3221,11 +3222,27 @@ export function Overview() {
                       <div className="panel-header" style={{ color: '#9ca3af', fontSize: 8, marginTop: 4 }}>NO ACTIONS PENDING</div>
                     </div>
                   ) : (
-                    groupedByProject.map(({ projectName, items }, groupIdx) => (
+                    groupedByProject.map(({ projectName, items }, groupIdx) => {
+                      const isCollapsed = collapsedProjectGroups.has(projectName)
+                      const toggleGroup = () => setCollapsedProjectGroups(prev => {
+                        const next = new Set(prev)
+                        if (next.has(projectName)) next.delete(projectName)
+                        else next.add(projectName)
+                        return next
+                      })
+                      return (
                       <div key={projectName}>
-                        <div style={{ padding: '6px 12px 4px', background: '#0a0d12', borderTop: groupIdx > 0 ? '1px solid #1e2330' : 'none' }}>
-                          <span style={{ fontSize: 8, letterSpacing: 1, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textTransform: 'uppercase' as const }}>{projectName}</span>
+                        <div
+                          onClick={toggleGroup}
+                          style={{ padding: '6px 12px 4px', background: '#0a0d12', borderTop: groupIdx > 0 ? '1px solid #1e2330' : 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none' }}
+                        >
+                          <span style={{ fontSize: 8, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1, transition: 'transform 0.2s', display: 'inline-block', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
+                          <span style={{ fontSize: 8, letterSpacing: 1, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textTransform: 'uppercase' as const, flex: 1 }}>{projectName}</span>
+                          {isCollapsed && (
+                            <span style={{ fontSize: 8, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, background: '#1c1a1a', borderRadius: 3, padding: '1px 5px' }}>{items.length}</span>
+                          )}
                         </div>
+                        <div style={{ overflow: 'hidden', maxHeight: isCollapsed ? 0 : 2000, transition: 'max-height 0.25s ease' }}>
                         {items.map((item) => (
                           <div
                             key={item.id}
@@ -3296,8 +3313,10 @@ export function Overview() {
                             </div>
                           </div>
                         ))}
+                        </div>
                       </div>
-                    ))
+                      )
+                    })
                   )}
                 </div>
               </div>
