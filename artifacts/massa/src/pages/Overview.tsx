@@ -1689,7 +1689,8 @@ export function Overview() {
   const [selectedProjectId, setSelectedProjectId] = useState('p1')
   const [draggedBuild, setDraggedBuild] = useState<{ buildId: string; projectId: string } | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'row' | 'card'>('row')
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'tree' | 'arch' | 'graph' | 'timeline'>('list')
+  const [viewDropdownOpen, setViewDropdownOpen] = useState(false)
   const [hoveredArchBtn, setHoveredArchBtn] = useState<string | null>(null)
   const [pendingDropdown, setPendingDropdown] = useState<string | null>(null)
   const [addPromptModal, setAddPromptModal] = useState<{ type: 'agent' | 'task'; projectId: string } | null>(null)
@@ -2511,33 +2512,47 @@ export function Overview() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <div className="panel-header" style={{ color: '#9ca3af' }}>PROJECTS</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              {/* View mode toggles */}
-              <div style={{ display: 'flex', border: `1px solid ${c.border}`, borderRadius: 0, overflow: 'hidden' }}>
+              {/* View mode dropdown */}
+              <div style={{ position: 'relative' }}>
                 <button
-                  onClick={() => setViewMode('row')}
-                  title="Row view"
-                  aria-label="Row view"
-                  aria-pressed={viewMode === 'row'}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'row' ? 'rgba(52,211,153,0.04)' : 'transparent', color: viewMode === 'row' ? c.green : '#9ca3af', borderRight: `1px solid ${c.border}`, transition: 'background 0.12s, color 0.12s', borderBottom: viewMode === 'row' ? '1px solid #34d399' : '1px solid transparent' }}>
-                  <svg width="13" height="11" viewBox="0 0 13 11" fill="none">
-                    <rect x="0" y="0" width="13" height="3" rx="0" fill="currentColor" />
-                    <rect x="0" y="4" width="13" height="3" rx="0" fill="currentColor" />
-                    <rect x="0" y="8" width="13" height="3" rx="0" fill="currentColor" />
-                  </svg>
+                  onClick={() => setViewDropdownOpen(o => !o)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, height: 26, padding: '0 10px', border: `1px solid ${c.border}`, borderRadius: 6, background: viewDropdownOpen ? '#1a1a1a' : 'transparent', color: '#9ca3af', cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.12s, color 0.12s', whiteSpace: 'nowrap' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.borderColor = '#555' }}
+                  onMouseLeave={e => { if (!viewDropdownOpen) { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = c.border } }}
+                >
+                  {viewMode === 'list' && <svg width="12" height="10" viewBox="0 0 12 10" fill="currentColor"><rect x="0" y="0" width="12" height="2"/><rect x="0" y="4" width="12" height="2"/><rect x="0" y="8" width="12" height="2"/></svg>}
+                  {viewMode === 'grid' && <svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><rect x="0" y="0" width="5" height="5"/><rect x="6" y="0" width="5" height="5"/><rect x="0" y="6" width="5" height="5"/><rect x="6" y="6" width="5" height="5"/></svg>}
+                  {viewMode === 'tree' && <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="2" cy="2" r="1.5"/><circle cx="10" cy="6" r="1.5"/><circle cx="10" cy="10" r="1.5"/><line x1="2" y1="2" x2="10" y2="6"/><line x1="2" y1="2" x2="10" y2="10"/></svg>}
+                  {viewMode === 'arch' && <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="1" width="4" height="3" rx="1"/><rect x="7" y="1" width="4" height="3" rx="1"/><rect x="4" y="8" width="4" height="3" rx="1"/><line x1="3" y1="4" x2="6" y2="8"/><line x1="9" y1="4" x2="6" y2="8"/></svg>}
+                  {viewMode === 'graph' && <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="2" cy="6" r="1.5"/><circle cx="10" cy="2" r="1.5"/><circle cx="10" cy="10" r="1.5"/><line x1="3.5" y1="5" x2="8.5" y2="3"/><line x1="3.5" y1="7" x2="8.5" y2="9"/><line x1="10" y1="3.5" x2="10" y2="8.5"/></svg>}
+                  {viewMode === 'timeline' && <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="1" y1="3" x2="11" y2="3"/><line x1="1" y1="6" x2="11" y2="6"/><line x1="1" y1="9" x2="11" y2="9"/><circle cx="4" cy="3" r="1.5" fill="currentColor" stroke="none"/><circle cx="7" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="5" cy="9" r="1.5" fill="currentColor" stroke="none"/></svg>}
+                  {viewMode.charAt(0).toUpperCase() + viewMode.slice(1)}
+                  <svg width="8" height="5" viewBox="0 0 8 5" fill="currentColor" style={{ opacity: 0.6, transform: viewDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><path d="M0 0l4 5 4-5z"/></svg>
                 </button>
-                <button
-                  onClick={() => setViewMode('card')}
-                  title="Card view"
-                  aria-label="Card view"
-                  aria-pressed={viewMode === 'card'}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 26, border: 'none', cursor: 'pointer', background: viewMode === 'card' ? 'rgba(52,211,153,0.04)' : 'transparent', color: viewMode === 'card' ? c.green : '#9ca3af', transition: 'background 0.12s, color 0.12s', borderBottom: viewMode === 'card' ? '1px solid #34d399' : '1px solid transparent' }}>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <rect x="0" y="0" width="5" height="5" rx="0" fill="currentColor" />
-                    <rect x="7" y="0" width="5" height="5" rx="0" fill="currentColor" />
-                    <rect x="0" y="7" width="5" height="5" rx="0" fill="currentColor" />
-                    <rect x="7" y="7" width="5" height="5" rx="0" fill="currentColor" />
-                  </svg>
-                </button>
+                {viewDropdownOpen && (
+                  <div style={{ position: 'absolute', top: 30, right: 0, background: '#111', border: `1px solid ${c.border}`, borderRadius: 8, padding: '4px 0', zIndex: 50, minWidth: 130, boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
+                    {([
+                      { key: 'list', icon: <svg width="12" height="10" viewBox="0 0 12 10" fill="currentColor"><rect x="0" y="0" width="12" height="2"/><rect x="0" y="4" width="12" height="2"/><rect x="0" y="8" width="12" height="2"/></svg>, label: 'List' },
+                      { key: 'grid', icon: <svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><rect x="0" y="0" width="5" height="5"/><rect x="6" y="0" width="5" height="5"/><rect x="0" y="6" width="5" height="5"/><rect x="6" y="6" width="5" height="5"/></svg>, label: 'Grid' },
+                      { key: 'tree', icon: <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="2" cy="2" r="1.5"/><circle cx="10" cy="6" r="1.5"/><circle cx="10" cy="10" r="1.5"/><line x1="2" y1="2" x2="10" y2="6"/><line x1="2" y1="2" x2="10" y2="10"/></svg>, label: 'Tree' },
+                      { key: 'arch', icon: <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="1" width="4" height="3" rx="1"/><rect x="7" y="1" width="4" height="3" rx="1"/><rect x="4" y="8" width="4" height="3" rx="1"/><line x1="3" y1="4" x2="6" y2="8"/><line x1="9" y1="4" x2="6" y2="8"/></svg>, label: 'Arch' },
+                      { key: 'graph', icon: <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="2" cy="6" r="1.5"/><circle cx="10" cy="2" r="1.5"/><circle cx="10" cy="10" r="1.5"/><line x1="3.5" y1="5" x2="8.5" y2="3"/><line x1="3.5" y1="7" x2="8.5" y2="9"/><line x1="10" y1="3.5" x2="10" y2="8.5"/></svg>, label: 'Graph' },
+                      { key: 'timeline', icon: <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="1" y1="3" x2="11" y2="3"/><line x1="1" y1="6" x2="11" y2="6"/><line x1="1" y1="9" x2="11" y2="9"/><circle cx="4" cy="3" r="1.5" fill="currentColor" stroke="none"/><circle cx="7" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="5" cy="9" r="1.5" fill="currentColor" stroke="none"/></svg>, label: 'Timeline' },
+                    ] as { key: typeof viewMode; icon: React.ReactNode; label: string }[]).map(opt => (
+                      <div
+                        key={opt.key}
+                        onClick={() => { setViewMode(opt.key); setViewDropdownOpen(false) }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#1e1e1e'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 14px', cursor: 'pointer', fontSize: 12, fontWeight: viewMode === opt.key ? 700 : 500, color: viewMode === opt.key ? c.green : '#ccc', background: 'transparent', transition: 'background 0.12s' }}
+                      >
+                        <span style={{ color: viewMode === opt.key ? c.green : '#666', display: 'flex', alignItems: 'center' }}>{opt.icon}</span>
+                        {opt.label}
+                        {viewMode === opt.key && <span style={{ marginLeft: 'auto', color: c.green, fontSize: 10 }}>✓</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -2713,8 +2728,8 @@ export function Overview() {
 
               return (
                 <div key={project.id}>
-                  {viewMode === 'row' ? (
-                    /* ── ROW VIEW — left info + right builds ── */
+                  {viewMode === 'list' ? (
+                    /* ── LIST VIEW — left info + right builds ── */
                     <div
                       style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '260px minmax(0, 1fr)', gap: 14, alignItems: 'start', position: 'relative', border: `1px solid ${c.border}`, borderRadius: 12, padding: isMobile ? 10 : 14, background: c.alt }}>
 
@@ -2918,8 +2933,8 @@ export function Overview() {
                         </ScrollableBuildStrip>
                       </div>
                     </div>
-                  ) : (
-                    /* ── CARD VIEW ── */
+                  ) : viewMode === 'grid' ? (
+                    /* ── GRID VIEW ── */
                     <div onClick={() => setSelectedProjectId(project.id)}
                       style={{ border: `1px solid ${isSel ? c.green : c.border}`, borderRadius: 12, padding: 16, cursor: 'pointer', background: isSel ? c.blackGreen : c.alt, position: 'relative' }}>
                       <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: isSel ? c.green : 'transparent', borderRadius: '12px 0 0 12px' }} />
@@ -2991,7 +3006,48 @@ export function Overview() {
                       </div>
                       {buildCards(false, true)}
                     </div>
-                  )}
+                  ) : (() => {
+                    const treeLines: Record<string, string[]> = {
+                      'p1': ['├── Backend','│   ├── Core Engine','│   ├── Risk Module','│   └── Exchange / API Logic','├── Interface','│   └── Dashboard UI','└── Operations','    ├── Alerts','    ├── Backtester','    └── Monitoring'],
+                      'p2': ['├── Pages','│   ├── Homepage','│   ├── Pricing','│   └── Documentation','└── Infrastructure','    ├── API Settings','    └── Auth Flow'],
+                      'p3': ['├── Pipeline','│   ├── Crawler','│   ├── Parser','│   └── Data Store','└── Operations','    ├── Scheduler','    └── Email Export'],
+                    }
+                    const lines = treeLines[project.id] || project.builds.map((b, i, a) => `${i === a.length - 1 ? '└' : '├'}── ${b.title}`)
+                    return (
+                      <div style={{ border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, background: c.alt }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{project.name}</div>
+                        <div style={{ fontSize: 13, color: c.muted, lineHeight: 1.8, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                          {viewMode === 'tree' && lines.map((line, i) => (
+                            <div key={i} style={{ color: line.startsWith('│') || line.startsWith('    ') ? '#6b7280' : '#a0c8a0' }}>{line}</div>
+                          ))}
+                          {viewMode === 'arch' && (
+                            <NodeGraph
+                              builds={project.builds}
+                              isDark={isDark}
+                              colors={c}
+                              onBuildClick={(id) => { setExpandedBuildId(id) }}
+                            />
+                          )}
+                          {viewMode === 'graph' && (
+                            <NodeGraph
+                              builds={project.builds}
+                              isDark={isDark}
+                              colors={c}
+                              onBuildClick={(id) => { setExpandedBuildId(id) }}
+                            />
+                          )}
+                          {viewMode === 'timeline' && (
+                            <TimelineSwimlane
+                              builds={project.builds}
+                              isDark={isDark}
+                              colors={c}
+                              onBuildClick={(id) => { setExpandedBuildId(id) }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               )
             })}
