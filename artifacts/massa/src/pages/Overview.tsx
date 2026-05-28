@@ -2086,14 +2086,28 @@ export function Overview() {
       localStorage.setItem('massa_collapsedProjectGroups', JSON.stringify(Array.from(collapsedProjectGroups)))
     } catch {}
   }, [collapsedProjectGroups])
+  const actionRequiredProjectNames = useMemo(() => {
+    const names = new Set<string>()
+    for (const p of filteredProjects) {
+      for (const b of p.builds) {
+        const hasAction = b.status === 'failed' || b.status === 'queued' || b.status === 'running' || (() => {
+          if (b.status !== 'complete') return false
+          const msgs = chatMessages[b.id]
+          const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1] : null
+          return lastMsg?.role === 'agent'
+        })()
+        if (hasAction) { names.add(p.name); break }
+      }
+    }
+    return names
+  }, [filteredProjects, chatMessages])
   useEffect(() => {
-    const validNames = new Set(projects.map(p => p.name))
     setCollapsedProjectGroups(prev => {
-      const pruned = new Set<string>([...prev].filter(name => validNames.has(name)))
+      const pruned = new Set<string>([...prev].filter(name => actionRequiredProjectNames.has(name)))
       if (pruned.size === prev.size) return prev
       return pruned
     })
-  }, [projects])
+  }, [actionRequiredProjectNames])
   const sectionHeader = (label: string, key: string, extra?: React.ReactNode) => (
     <div
       onClick={() => toggleSection(key)}
