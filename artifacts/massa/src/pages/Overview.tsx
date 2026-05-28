@@ -2594,7 +2594,7 @@ export function Overview() {
                                 <span style={{ fontSize: 10, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
                               </div>
                               <button
-                                onClick={(e) => { e.stopPropagation(); setSelectedChatBuildId(build.id); setChatOriginBuildId(null); setActiveView('chats') }}
+                                onClick={(e) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(build.id) }}
                                 title="Open chat"
                                 style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
                                 onMouseEnter={e => { e.currentTarget.style.color = c.green; e.currentTarget.style.borderColor = c.green }}
