@@ -2075,6 +2075,13 @@ export function Overview() {
     } catch {}
     return new Set<string>()
   })
+  const [pinnedActionKeys, setPinnedActionKeys] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('massa_pinnedActionKeys')
+      if (stored) return new Set<string>(JSON.parse(stored))
+    } catch {}
+    return new Set<string>()
+  })
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
   useEffect(() => {
     try {
@@ -2086,6 +2093,11 @@ export function Overview() {
       localStorage.setItem('massa_collapsedProjectGroups', JSON.stringify(Array.from(collapsedProjectGroups)))
     } catch {}
   }, [collapsedProjectGroups])
+  useEffect(() => {
+    try {
+      localStorage.setItem('massa_pinnedActionKeys', JSON.stringify(Array.from(pinnedActionKeys)))
+    } catch {}
+  }, [pinnedActionKeys])
   const actionRequiredProjectNames = useMemo(() => {
     const names = new Set<string>()
     for (const p of filteredProjects) {
@@ -3223,15 +3235,30 @@ export function Overview() {
                 el.style.borderColor = 'transparent'
                 setTimeout(() => {
                   setDismissedActionKeys(prev => new Set(prev).add(`${itemId}:${actionType}`))
+                  setPinnedActionKeys(prev => { const next = new Set(prev); next.delete(`${itemId}:${actionType}`); return next })
                 }, 280)
               } else {
                 setDismissedActionKeys(prev => new Set(prev).add(`${itemId}:${actionType}`))
+                setPinnedActionKeys(prev => { const next = new Set(prev); next.delete(`${itemId}:${actionType}`); return next })
               }
             }
 
+            const togglePin = (itemId: string, actionType: string) => {
+              const key = `${itemId}:${actionType}`
+              setPinnedActionKeys(prev => {
+                const next = new Set(prev)
+                if (next.has(key)) next.delete(key)
+                else next.add(key)
+                return next
+              })
+            }
+
+            const pinnedItems = visibleSorted.filter(item => pinnedActionKeys.has(`${item.id}:${item.action.type}`))
+            const unpinnedItems = visibleSorted.filter(item => !pinnedActionKeys.has(`${item.id}:${item.action.type}`))
+
             const projectOrder: string[] = []
-            const projectMap: Record<string, typeof visibleSorted> = {}
-            for (const item of visibleSorted) {
+            const projectMap: Record<string, typeof unpinnedItems> = {}
+            for (const item of unpinnedItems) {
               if (!projectMap[item.projectName]) {
                 projectMap[item.projectName] = []
                 projectOrder.push(item.projectName)
@@ -3240,12 +3267,108 @@ export function Overview() {
             }
             const groupedByProject = projectOrder.map(name => ({ projectName: name, items: projectMap[name] }))
 
+            const renderActionItemRow = (item: typeof visibleSorted[number], borderTop = '1px solid #14181e') => {
+              const key = `${item.id}:${item.action.type}`
+              const isPinned = pinnedActionKeys.has(key)
+              return (
+                <div
+                  key={item.id}
+                  data-action-item
+                  data-action-key={key}
+                  style={{
+                    padding: '8px 12px',
+                    borderTop,
+                    transition: 'all 0.25s ease',
+                    overflow: 'hidden',
+                    maxHeight: 80,
+                    opacity: 1,
+                    background: isPinned ? 'rgba(245,158,11,0.04)' : 'transparent',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: item.action.color, fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ display: 'inline-flex', flexShrink: 0 }}>{getActionIcon(item.action.type, 10)}</span>
+                        {item.action.label}
+                      </div>
+                      <div style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{item.title}</div>
+                    </div>
+                    <button
+                      onClick={() => togglePin(item.id, item.action.type)}
+                      onMouseEnter={e => { e.currentTarget.style.color = isPinned ? '#fcd34d' : '#9ca3af'; e.currentTarget.style.opacity = '1' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = isPinned ? '#f59e0b' : '#374151'; e.currentTarget.style.opacity = isPinned ? '1' : '0.6' }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: isPinned ? '#f59e0b' : '#374151',
+                        cursor: 'pointer',
+                        fontSize: 11,
+                        padding: '0 2px',
+                        lineHeight: 1,
+                        transition: 'color 0.15s, opacity 0.15s',
+                        flexShrink: 0,
+                        opacity: isPinned ? 1 : 0.6,
+                        marginTop: 1,
+                      }}
+                      title={isPinned ? 'Unpin' : 'Pin to top'}
+                    >⊙</button>
+                    <button
+                      onClick={() => {
+                        const el = document.querySelector(`[data-action-item][data-action-key="${key}"]`) as HTMLElement
+                        setBuildModalTab(item.action.tab)
+                        setExpandedBuildId(item.id)
+                        dismissItem(item.id, item.action.type, el)
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#e8eaed' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = '#4b5563' }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#4b5563',
+                        cursor: 'pointer',
+                        fontSize: 16,
+                        fontFamily: '"JetBrains Mono", Menlo, monospace',
+                        padding: '0 2px',
+                        lineHeight: 1,
+                        transition: 'color 0.15s',
+                        flexShrink: 0,
+                        marginTop: 1,
+                      }}
+                      title={item.action.label}
+                    >›</button>
+                    <button
+                      onClick={(e) => {
+                        const el = e.currentTarget.closest('[data-action-item]') as HTMLElement
+                        dismissItem(item.id, item.action.type, el)
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#e8eaed')}
+                      onMouseLeave={e => (e.currentTarget.style.color = '#4b5563')}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#4b5563',
+                        cursor: 'pointer',
+                        fontSize: 11,
+                        fontFamily: '"JetBrains Mono", Menlo, monospace',
+                        padding: '0 2px',
+                        lineHeight: 1,
+                        transition: 'color 0.15s',
+                        flexShrink: 0,
+                      }}
+                      title="Dismiss"
+                    >✕</button>
+                  </div>
+                </div>
+              )
+            }
+
             return (
               <div style={{ border: '1px solid #1e2330', borderRadius: 4, background: '#080a0e', overflow: 'hidden' }}>
                 <div style={{ padding: '8px 12px', borderBottom: '1px solid #1e2330', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span className="panel-header" style={{ fontSize: 9, letterSpacing: 1.2 }}>ACTION REQUIRED</span>
                     {visibleSorted.length > 0 && <span style={{ fontSize: 9, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{visibleSorted.length}</span>}
+                    {pinnedItems.length > 0 && <span style={{ fontSize: 8, color: '#f59e0b', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, opacity: 0.8 }}>⊙ {pinnedItems.length}</span>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     {groupedByProject.length > 1 && (() => {
@@ -3283,101 +3406,49 @@ export function Overview() {
                       <div className="panel-header" style={{ color: '#9ca3af', fontSize: 8, marginTop: 4 }}>NO ACTIONS PENDING</div>
                     </div>
                   ) : (
-                    groupedByProject.map(({ projectName, items }, groupIdx) => {
-                      const isCollapsed = collapsedProjectGroups.has(projectName)
-                      const toggleGroup = () => setCollapsedProjectGroups(prev => {
-                        const next = new Set(prev)
-                        if (next.has(projectName)) next.delete(projectName)
-                        else next.add(projectName)
-                        return next
-                      })
-                      return (
-                      <div key={projectName}>
-                        <div
-                          onClick={toggleGroup}
-                          style={{ padding: '6px 12px 4px', background: '#0a0d12', borderTop: groupIdx > 0 ? '1px solid #1e2330' : 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none' }}
-                        >
-                          <span style={{ fontSize: 8, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1, transition: 'transform 0.2s', display: 'inline-block', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
-                          <span style={{ fontSize: 8, letterSpacing: 1, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textTransform: 'uppercase' as const, flex: 1 }}>{projectName}</span>
-                          {isCollapsed && (
-                            <span style={{ fontSize: 8, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, background: '#1c1a1a', borderRadius: 3, padding: '1px 5px' }}>{items.length}</span>
+                    <>
+                      {pinnedItems.length > 0 && (
+                        <div>
+                          {pinnedItems.map((item, idx) => renderActionItemRow(item, idx === 0 ? 'none' : '1px solid #1e2735'))}
+                          {unpinnedItems.length > 0 && (
+                            <div style={{ borderTop: '1px solid #1e3a2a', display: 'flex', alignItems: 'center', gap: 6, padding: '3px 12px' }}>
+                              <span style={{ flex: 1, height: 0, borderTop: '1px dashed #1e3020' }} />
+                              <span style={{ fontSize: 7, color: '#374151', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.8, whiteSpace: 'nowrap' }}>PINNED ABOVE</span>
+                              <span style={{ flex: 1, height: 0, borderTop: '1px dashed #1e3020' }} />
+                            </div>
                           )}
                         </div>
-                        <div style={{ overflow: 'hidden', maxHeight: isCollapsed ? 0 : 2000, transition: 'max-height 0.25s ease' }}>
-                        {items.map((item) => (
-                          <div
-                            key={item.id}
-                            data-action-item
-                            data-action-key={`${item.id}:${item.action.type}`}
-                            style={{
-                              padding: '8px 12px',
-                              borderTop: '1px solid #14181e',
-                              transition: 'all 0.25s ease',
-                              overflow: 'hidden',
-                              maxHeight: 80,
-                              opacity: 1,
-                            }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: item.action.color, fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  <span style={{ display: 'inline-flex', flexShrink: 0 }}>{getActionIcon(item.action.type, 10)}</span>
-                                  {item.action.label}
-                                </div>
-                                <div style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{item.title}</div>
-                              </div>
-                              <button
-                                onClick={() => {
-                                  const el = document.querySelector(`[data-action-item][data-action-key="${item.id}:${item.action.type}"]`) as HTMLElement
-                                  setBuildModalTab(item.action.tab)
-                                  setExpandedBuildId(item.id)
-                                  dismissItem(item.id, item.action.type, el)
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.color = '#e8eaed' }}
-                                onMouseLeave={e => { e.currentTarget.style.color = '#4b5563' }}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  color: '#4b5563',
-                                  cursor: 'pointer',
-                                  fontSize: 16,
-                                  fontFamily: '"JetBrains Mono", Menlo, monospace',
-                                  padding: '0 2px',
-                                  lineHeight: 1,
-                                  transition: 'color 0.15s',
-                                  flexShrink: 0,
-                                  marginTop: 1,
-                                }}
-                                title={item.action.label}
-                              >›</button>
-                              <button
-                                onClick={(e) => {
-                                  const el = e.currentTarget.closest('[data-action-item]') as HTMLElement
-                                  dismissItem(item.id, item.action.type, el)
-                                }}
-                                onMouseEnter={e => (e.currentTarget.style.color = '#e8eaed')}
-                                onMouseLeave={e => (e.currentTarget.style.color = '#4b5563')}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  color: '#4b5563',
-                                  cursor: 'pointer',
-                                  fontSize: 11,
-                                  fontFamily: '"JetBrains Mono", Menlo, monospace',
-                                  padding: '0 2px',
-                                  lineHeight: 1,
-                                  transition: 'color 0.15s',
-                                  flexShrink: 0,
-                                }}
-                                title="Dismiss"
-                              >✕</button>
+                      )}
+                      {groupedByProject.map(({ projectName, items }, groupIdx) => {
+                        const isCollapsed = collapsedProjectGroups.has(projectName)
+                        const toggleGroup = () => setCollapsedProjectGroups(prev => {
+                          const next = new Set(prev)
+                          if (next.has(projectName)) next.delete(projectName)
+                          else next.add(projectName)
+                          return next
+                        })
+                        const showGroupHeader = groupedByProject.length > 1 || pinnedItems.length > 0
+                        return (
+                        <div key={projectName}>
+                          {showGroupHeader && (
+                            <div
+                              onClick={toggleGroup}
+                              style={{ padding: '6px 12px 4px', background: '#0a0d12', borderTop: (groupIdx > 0 || pinnedItems.length > 0) ? '1px solid #1e2330' : 'none', cursor: groupedByProject.length > 1 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none' }}
+                            >
+                              {groupedByProject.length > 1 && <span style={{ fontSize: 8, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1, transition: 'transform 0.2s', display: 'inline-block', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>}
+                              <span style={{ fontSize: 8, letterSpacing: 1, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textTransform: 'uppercase' as const, flex: 1 }}>{projectName}</span>
+                              {isCollapsed && (
+                                <span style={{ fontSize: 8, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, background: '#1c1a1a', borderRadius: 3, padding: '1px 5px' }}>{items.length}</span>
+                              )}
                             </div>
+                          )}
+                          <div style={{ overflow: 'hidden', maxHeight: isCollapsed ? 0 : 2000, transition: 'max-height 0.25s ease' }}>
+                          {items.map((item) => renderActionItemRow(item))}
                           </div>
-                        ))}
                         </div>
-                      </div>
-                      )
-                    })
+                        )
+                      })}
+                    </>
                   )}
                 </div>
               </div>
