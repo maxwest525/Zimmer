@@ -3214,19 +3214,34 @@ export function Overview() {
                     <span className="panel-header" style={{ fontSize: 9, letterSpacing: 1.2 }}>ACTION REQUIRED</span>
                     {visibleSorted.length > 0 && <span style={{ fontSize: 9, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{visibleSorted.length}</span>}
                   </div>
-                  {groupedByProject.length > 1 && (() => {
-                    const allCollapsed = groupedByProject.every(g => collapsedProjectGroups.has(g.projectName))
-                    return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {groupedByProject.length > 1 && (() => {
+                      const allCollapsed = groupedByProject.every(g => collapsedProjectGroups.has(g.projectName))
+                      return (
+                        <button
+                          onClick={() => setCollapsedProjectGroups(allCollapsed ? new Set() : new Set(groupedByProject.map(g => g.projectName)))}
+                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600, padding: 0, letterSpacing: 0.5, transition: 'color 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.color = '#9ca3af'}
+                          onMouseLeave={e => e.currentTarget.style.color = '#4b5563'}
+                        >
+                          {allCollapsed ? 'EXPAND ALL' : 'COLLAPSE ALL'}
+                        </button>
+                      )
+                    })()}
+                    {dismissedActionKeys.size > 0 && (
                       <button
-                        onClick={() => setCollapsedProjectGroups(allCollapsed ? new Set() : new Set(groupedByProject.map(g => g.projectName)))}
-                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600, padding: 0, letterSpacing: 0.5, transition: 'color 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.color = '#9ca3af'}
-                        onMouseLeave={e => e.currentTarget.style.color = '#4b5563'}
+                        onClick={() => {
+                          setDismissedActionKeys(new Set())
+                          localStorage.removeItem('massa_dismissedActionKeys')
+                        }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, padding: 0, textDecoration: 'underline' }}
+                        onMouseEnter={e => (e.currentTarget.style.color = '#9ca3af')}
+                        onMouseLeave={e => (e.currentTarget.style.color = '#6b7280')}
                       >
-                        {allCollapsed ? 'EXPAND ALL' : 'COLLAPSE ALL'}
+                        SHOW ALL
                       </button>
-                    )
-                  })()}
+                    )}
+                  </div>
                 </div>
                 <div style={{ maxHeight: 360, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#1e293b #080a0e' }}>
                   {visibleSorted.length === 0 ? (
