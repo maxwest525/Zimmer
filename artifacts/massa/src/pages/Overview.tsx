@@ -2061,8 +2061,19 @@ export function Overview() {
   // Code stream
   type CodeLine = { id: number; kind: 'code' | 'qa'; content: string; file?: string; lineNo?: number; qa?: 'pass' | 'warn'; projectId?: string }
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
-  const [dismissedActionKeys, setDismissedActionKeys] = useState<Set<string>>(new Set())
+  const [dismissedActionKeys, setDismissedActionKeys] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('massa_dismissedActionKeys')
+      if (stored) return new Set<string>(JSON.parse(stored))
+    } catch {}
+    return new Set<string>()
+  })
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
+  useEffect(() => {
+    try {
+      localStorage.setItem('massa_dismissedActionKeys', JSON.stringify(Array.from(dismissedActionKeys)))
+    } catch {}
+  }, [dismissedActionKeys])
   const sectionHeader = (label: string, key: string, extra?: React.ReactNode) => (
     <div
       onClick={() => toggleSection(key)}
