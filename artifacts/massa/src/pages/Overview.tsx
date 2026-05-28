@@ -2068,13 +2068,24 @@ export function Overview() {
     } catch {}
     return new Set<string>()
   })
-  const [collapsedProjectGroups, setCollapsedProjectGroups] = useState<Set<string>>(new Set())
+  const [collapsedProjectGroups, setCollapsedProjectGroups] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('massa_collapsedProjectGroups')
+      if (stored) return new Set<string>(JSON.parse(stored))
+    } catch {}
+    return new Set<string>()
+  })
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
   useEffect(() => {
     try {
       localStorage.setItem('massa_dismissedActionKeys', JSON.stringify(Array.from(dismissedActionKeys)))
     } catch {}
   }, [dismissedActionKeys])
+  useEffect(() => {
+    try {
+      localStorage.setItem('massa_collapsedProjectGroups', JSON.stringify(Array.from(collapsedProjectGroups)))
+    } catch {}
+  }, [collapsedProjectGroups])
   const sectionHeader = (label: string, key: string, extra?: React.ReactNode) => (
     <div
       onClick={() => toggleSection(key)}
