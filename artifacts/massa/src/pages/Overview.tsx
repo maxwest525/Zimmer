@@ -2786,7 +2786,6 @@ export function Overview() {
                         <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
                           {[
                             { label: 'Chat', onClick: (e: React.MouseEvent) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }, hk: project.id + '-chat' },
-                            { label: 'Arch Map', onClick: (e: React.MouseEvent) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }, hk: project.id + '-arch' },
                             { label: 'Preview', onClick: (e: React.MouseEvent) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }, hk: project.id + '-preview' },
                           ].map(btn => (
                             <button key={btn.label}
