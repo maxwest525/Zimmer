@@ -3300,12 +3300,11 @@ export function Overview() {
                 return [...prev, key]
               })
               if (isCurrentlyPinned) {
-                setPinnedNotes(prev => { const next = { ...prev }; delete next[key]; return next })
                 setEditingPinNoteKey(null)
                 setEditingPinNoteText('')
               } else {
                 setEditingPinNoteKey(key)
-                setEditingPinNoteText('')
+                setEditingPinNoteText(pinnedNotes[key] ?? '')
               }
             }
 
