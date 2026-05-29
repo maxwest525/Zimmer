@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db, mcpServersTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
-import { connectAndListTools } from "../lib/mcpClient";
+import { connectAndListTools, callTool } from "../lib/mcpClient";
 
 const router = Router();
 
@@ -109,6 +109,55 @@ router.post("/mcp/:id/connect", async (req, res) => {
   } catch (err) {
     console.error("Failed to connect MCP server:", err);
     res.status(500).json({ error: "Failed to connect MCP server" });
+  }
+});
+
+router.post("/mcp/:id/call", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid server ID" });
+      return;
+    }
+    const { tool, args } = req.body ?? {};
+    if (!tool || typeof tool !== "string" || tool.trim().length === 0) {
+      res.status(400).json({ error: "Tool name is required" });
+      return;
+    }
+    let toolArgs: Record<string, unknown> = {};
+    if (args !== undefined && args !== null) {
+      if (typeof args !== "object" || Array.isArray(args)) {
+        res.status(400).json({ error: "Arguments must be a JSON object" });
+        return;
+      }
+      toolArgs = args as Record<string, unknown>;
+    }
+
+    const [server] = await db
+      .select()
+      .from(mcpServersTable)
+      .where(eq(mcpServersTable.id, id));
+    if (!server) {
+      res.status(404).json({ error: "Server not found" });
+      return;
+    }
+    const toolName = tool.trim();
+    const hasTool = (server.tools ?? []).some((t) => t.name === toolName);
+    if (!hasTool) {
+      res.status(400).json({ error: "Server does not expose that tool" });
+      return;
+    }
+
+    try {
+      const result = await callTool(server.endpoint, toolName, toolArgs);
+      res.json(result);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Tool call failed";
+      res.status(502).json({ error: message });
+    }
+  } catch (err) {
+    console.error("Failed to call MCP tool:", err);
+    res.status(500).json({ error: "Failed to call MCP tool" });
   }
 });
 

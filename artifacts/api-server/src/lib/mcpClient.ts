@@ -185,12 +185,17 @@ async function readJsonRpcResponse(
   }
 }
 
+interface McpSession {
+  endpoint: string;
+  headers: Record<string, string>;
+}
+
 /**
- * Connects to a remote MCP server over the Streamable HTTP transport,
- * performs the initialize handshake, and returns its advertised tools.
- * Throws an Error with a human-readable message on any failure.
+ * Validates the endpoint, performs the initialize + notifications/initialized
+ * handshake, and returns a reusable session (endpoint + headers carrying any
+ * mcp-session-id). Throws an Error with a human-readable message on failure.
  */
-export async function connectAndListTools(endpoint: string): Promise<McpTool[]> {
+async function openSession(endpoint: string): Promise<McpSession> {
   let url: URL;
   try {
     url = new URL(endpoint);
@@ -243,13 +248,13 @@ export async function connectAndListTools(endpoint: string): Promise<McpTool[]> 
     throw new Error(`Initialize failed: ${initMsg.error.message}`);
   }
 
-  const sessionHeaders: Record<string, string> = { ...baseHeaders };
-  if (sessionId) sessionHeaders["mcp-session-id"] = sessionId;
+  const headers: Record<string, string> = { ...baseHeaders };
+  if (sessionId) headers["mcp-session-id"] = sessionId;
 
   try {
     await safeFetch(endpoint, {
       method: "POST",
-      headers: sessionHeaders,
+      headers,
       body: JSON.stringify({
         jsonrpc: "2.0",
         method: "notifications/initialized",
@@ -259,11 +264,22 @@ export async function connectAndListTools(endpoint: string): Promise<McpTool[]> 
     // Some servers respond with 202/empty; ignore notification errors.
   }
 
+  return { endpoint, headers };
+}
+
+/**
+ * Connects to a remote MCP server over the Streamable HTTP transport,
+ * performs the initialize handshake, and returns its advertised tools.
+ * Throws an Error with a human-readable message on any failure.
+ */
+export async function connectAndListTools(endpoint: string): Promise<McpTool[]> {
+  const session = await openSession(endpoint);
+
   let toolsRes: Response;
   try {
-    toolsRes = await safeFetch(endpoint, {
+    toolsRes = await safeFetch(session.endpoint, {
       method: "POST",
-      headers: sessionHeaders,
+      headers: session.headers,
       body: JSON.stringify({
         jsonrpc: "2.0",
         id: 2,
@@ -300,4 +316,66 @@ export async function connectAndListTools(endpoint: string): Promise<McpTool[]> 
       description:
         typeof t.description === "string" ? t.description : undefined,
     }));
+}
+
+export interface McpContentBlock {
+  type: string;
+  text?: string;
+  [key: string]: unknown;
+}
+
+export interface McpToolResult {
+  content: McpContentBlock[];
+  isError: boolean;
+}
+
+/**
+ * Calls a tool on a remote MCP server (tools/call) and returns the structured
+ * content blocks of the result. Throws an Error with a human-readable message
+ * on transport/protocol failure; a tool that reports a failure is returned with
+ * isError set so the caller can still display the content.
+ */
+export async function callTool(
+  endpoint: string,
+  toolName: string,
+  args: Record<string, unknown>,
+): Promise<McpToolResult> {
+  const session = await openSession(endpoint);
+
+  let callRes: Response;
+  try {
+    callRes = await safeFetch(session.endpoint, {
+      method: "POST",
+      headers: session.headers,
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 3,
+        method: "tools/call",
+        params: { name: toolName, arguments: args },
+      }),
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("Tool call timed out");
+    }
+    throw new Error(
+      `Failed to call tool: ${err instanceof Error ? err.message : "unknown error"}`,
+    );
+  }
+
+  if (!callRes.ok) {
+    throw new Error(`Server rejected tools/call (HTTP ${callRes.status})`);
+  }
+
+  const callMsg = await readJsonRpcResponse(callRes, 3);
+  if (callMsg.error) {
+    throw new Error(`tools/call failed: ${callMsg.error.message}`);
+  }
+
+  const result = callMsg.result ?? {};
+  const content: McpContentBlock[] = Array.isArray(result.content)
+    ? result.content.filter((b: any) => b && typeof b.type === "string")
+    : [];
+
+  return { content, isError: result.isError === true };
 }

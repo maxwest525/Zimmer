@@ -30,6 +30,24 @@ const STATUS_CONFIG: Record<
 
 const apiBase = "/api";
 
+interface McpContentBlock {
+  type: string;
+  text?: string;
+  [key: string]: unknown;
+}
+
+interface ToolRunState {
+  args: string;
+  running: boolean;
+  error: string | null;
+  result: { content: McpContentBlock[]; isError: boolean } | null;
+}
+
+function blockToText(block: McpContentBlock): string {
+  if (typeof block.text === "string") return block.text;
+  return JSON.stringify(block, null, 2);
+}
+
 export function McpPanel() {
   const [servers, setServers] = useState<McpServer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +58,61 @@ export function McpPanel() {
   const [formError, setFormError] = useState<string | null>(null);
   const [connectingId, setConnectingId] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [openTool, setOpenTool] = useState<string | null>(null);
+  const [toolRuns, setToolRuns] = useState<Record<string, ToolRunState>>({});
+
+  const toolKey = (serverId: number, toolName: string) => `${serverId}:${toolName}`;
+
+  const updateRun = (key: string, patch: Partial<ToolRunState>) => {
+    setToolRuns((prev) => ({
+      ...prev,
+      [key]: {
+        args: prev[key]?.args ?? "{}",
+        running: prev[key]?.running ?? false,
+        error: prev[key]?.error ?? null,
+        result: prev[key]?.result ?? null,
+        ...patch,
+      },
+    }));
+  };
+
+  const handleRunTool = async (serverId: number, toolName: string) => {
+    const key = toolKey(serverId, toolName);
+    const raw = (toolRuns[key]?.args ?? "{}").trim();
+    let parsedArgs: unknown = {};
+    if (raw.length > 0) {
+      try {
+        parsedArgs = JSON.parse(raw);
+      } catch {
+        updateRun(key, { error: "Arguments must be valid JSON", result: null });
+        return;
+      }
+      if (
+        typeof parsedArgs !== "object" ||
+        parsedArgs === null ||
+        Array.isArray(parsedArgs)
+      ) {
+        updateRun(key, { error: "Arguments must be a JSON object", result: null });
+        return;
+      }
+    }
+    updateRun(key, { running: true, error: null, result: null });
+    try {
+      const res = await fetch(`${apiBase}/mcp/${serverId}/call`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tool: toolName, args: parsedArgs }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        updateRun(key, { running: false, error: data?.error || "Tool call failed" });
+        return;
+      }
+      updateRun(key, { running: false, error: null, result: data });
+    } catch {
+      updateRun(key, { running: false, error: "Network error calling tool" });
+    }
+  };
 
   const fetchServers = useCallback(async () => {
     try {
@@ -252,18 +325,88 @@ export function McpPanel() {
 
                 {isExpanded && canExpand && (
                   <div className="px-3 pb-3 pt-1 flex flex-col gap-1.5 border-t border-[#1a1f2b]">
-                    {tools.map((tool) => (
-                      <div key={tool.name} className="flex flex-col gap-0.5 pt-1.5">
-                        <p className="text-[11px] font-mono text-emerald-400/90">
-                          {tool.name}
-                        </p>
-                        {tool.description && (
-                          <p className="text-[10px] font-mono text-[#7a8294] leading-relaxed">
-                            {tool.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                    {tools.map((tool) => {
+                      const key = toolKey(server.id, tool.name);
+                      const isOpen = openTool === key;
+                      const run = toolRuns[key];
+                      return (
+                        <div key={tool.name} className="flex flex-col gap-0.5 pt-1.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                              <p className="text-[11px] font-mono text-emerald-400/90 truncate">
+                                {tool.name}
+                              </p>
+                              {tool.description && (
+                                <p className="text-[10px] font-mono text-[#7a8294] leading-relaxed">
+                                  {tool.description}
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => setOpenTool(isOpen ? null : key)}
+                              className="shrink-0 px-2 py-1 text-[10px] font-mono rounded border border-[#252a35] text-[#a0a8b8] hover:border-emerald-400/50 hover:text-emerald-400 transition-colors"
+                            >
+                              {isOpen ? "Close" : "Run"}
+                            </button>
+                          </div>
+
+                          {isOpen && (
+                            <div className="flex flex-col gap-2 mt-1.5 rounded-md border border-[#1a1f2b] bg-[#0a0d10] p-2.5">
+                              <label className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest">
+                                Arguments (JSON)
+                              </label>
+                              <textarea
+                                value={run?.args ?? "{}"}
+                                onChange={(e) => updateRun(key, { args: e.target.value })}
+                                spellCheck={false}
+                                rows={3}
+                                className="px-2 py-1.5 text-[11px] font-mono rounded bg-[#0d1117] border border-[#1a1f2b] text-[#c0c5cf] focus:border-emerald-400/50 focus:outline-none transition-colors resize-y"
+                              />
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleRunTool(server.id, tool.name)}
+                                  disabled={run?.running}
+                                  className="px-3 py-1.5 text-[10px] font-mono font-medium uppercase tracking-wide rounded-md bg-emerald-400 text-[#0a0d10] hover:bg-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  {run?.running ? "Running…" : "Call tool"}
+                                </button>
+                              </div>
+                              {run?.error && (
+                                <p className="text-[10px] font-mono text-red-400">
+                                  {run.error}
+                                </p>
+                              )}
+                              {run?.result && (
+                                <div className="flex flex-col gap-1.5">
+                                  <p
+                                    className={cn(
+                                      "text-[10px] font-mono uppercase tracking-widest",
+                                      run.result.isError ? "text-red-400" : "text-emerald-400/80",
+                                    )}
+                                  >
+                                    {run.result.isError ? "Tool returned an error" : "Result"}
+                                  </p>
+                                  {run.result.content.length === 0 ? (
+                                    <p className="text-[10px] font-mono text-[#7a8294]">
+                                      (empty result)
+                                    </p>
+                                  ) : (
+                                    run.result.content.map((block, i) => (
+                                      <pre
+                                        key={i}
+                                        className="text-[10px] font-mono text-[#c0c5cf] whitespace-pre-wrap break-words bg-[#0d1117] border border-[#1a1f2b] rounded p-2 max-h-48 overflow-auto"
+                                      >
+                                        {blockToText(block)}
+                                      </pre>
+                                    ))
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
