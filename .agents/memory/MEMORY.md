@@ -1,0 +1,1 @@
+- [DB schema project references](db-schema-project-refs.md) — after editing lib/db schema, rebuild its .d.ts or api-server typecheck wrongly reports "no exported member".

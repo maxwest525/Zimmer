@@ -4,6 +4,7 @@ import aiRouter from "./ai";
 import ideasRouter from "./ideas";
 import videoRouter from "./video";
 import skillsRouter from "./skills";
+import mcpRouter from "./mcp";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(aiRouter);
 router.use(ideasRouter);
 router.use(videoRouter);
 router.use(skillsRouter);
+router.use(mcpRouter);
 
 export default router;

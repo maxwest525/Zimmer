@@ -15,6 +15,13 @@
       "when": 1775327572819,
       "tag": "0001_gigantic_thaddeus_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780025223073,
+      "tag": "0002_left_wallop",
+      "breakpoints": true
     }
   ]
 }
