@@ -5,6 +5,7 @@ import { NodeGraph } from '@/components/NodeGraph'
 import { TimelineSwimlane } from '@/components/TimelineSwimlane'
 import { ChatView } from '@/components/ChatView'
 import { IdeasView } from '@/components/IdeasView'
+import { SkillsView } from '@/components/SkillsView'
 import { ModelTooltip } from '@/components/ModelTooltip'
 import { MODEL_COLORS, getModelReason } from '@/data/modelRegistry'
 import { TenantSelector } from '@/components/TenantSelector'
@@ -1485,27 +1486,6 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
       <style>{`@keyframes blink { 50% { opacity: 0; } }`}</style>
     </div>
   )
-}
-
-function SkillsView({ onBack }: { onBack: () => void }) {
-  return <TerminalPageView onBack={onBack} title="Skills" command="skills" lines={[
-    '> Installed agent skills: 12',
-    '',
-    '[skill]  react-vite         v2.1.0   Frontend scaffolding + HMR',
-    '[skill]  express-api        v1.4.2   REST API generation',
-    '[skill]  drizzle-orm        v1.0.0   Database schema + migrations',
-    '[skill]  tailwind-ui        v3.2.1   Component library integration',
-    '[skill]  deployment         v1.1.0   Cloud Run auto-deploy',
-    '[skill]  code-review        v0.9.3   Architect analysis agent',
-    '[skill]  test-runner        v1.0.1   Automated test execution',
-    '[skill]  security-scan      v0.8.0   Dependency + SAST scanning',
-    '[skill]  web-scraper        v1.2.0   Headless browser automation',
-    '[skill]  n8n-workflows      v0.7.1   Workflow automation bridge',
-    '[skill]  resend-email       v1.0.0   Transactional email sending',
-    '[skill]  stripe-payments    v0.6.0   Payment integration',
-    '',
-    '> All skills operational — last updated 2026-04-06',
-  ]} />
 }
 
 function ApisView({ onBack }: { onBack: () => void }) {
