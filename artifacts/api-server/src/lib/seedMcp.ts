@@ -3,8 +3,13 @@ import { eq } from "drizzle-orm";
 import { connectAndListTools } from "./mcpClient";
 import { logger } from "./logger";
 
-const HYPERFX_ENDPOINT = "https://www.hyperfx.ai/mcp";
+const DEFAULT_HYPERFX_ENDPOINT = "https://www.hyperfx.ai/mcp";
 const HYPERFX_NAME = "HyperFX Marketing";
+
+function resolveEndpoint(): string {
+  const override = process.env["HYPERFX_MCP_URL"]?.trim();
+  return override && override.length > 0 ? override : DEFAULT_HYPERFX_ENDPOINT;
+}
 
 /**
  * Auto-registers the HyperFX Marketing MCP server as a connection whenever a
@@ -18,19 +23,21 @@ export async function seedHyperFxMcp(): Promise<void> {
   const key = process.env["HYPERFX_API_KEY"]?.trim();
   if (!key) return;
 
+  const endpoint = resolveEndpoint();
+
   let serverId: number;
   try {
     const existing = await db
       .select()
       .from(mcpServersTable)
-      .where(eq(mcpServersTable.endpoint, HYPERFX_ENDPOINT));
+      .where(eq(mcpServersTable.endpoint, endpoint));
 
     if (existing.length === 0) {
       const [created] = await db
         .insert(mcpServersTable)
         .values({
           name: HYPERFX_NAME,
-          endpoint: HYPERFX_ENDPOINT,
+          endpoint,
           authToken: key,
           status: "disconnected",
         })
@@ -53,7 +60,7 @@ export async function seedHyperFxMcp(): Promise<void> {
   }
 
   try {
-    const tools = await connectAndListTools(HYPERFX_ENDPOINT, key);
+    const tools = await connectAndListTools(endpoint, key);
     await db
       .update(mcpServersTable)
       .set({
