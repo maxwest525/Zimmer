@@ -1669,6 +1669,7 @@ export function Overview() {
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [chatOriginBuildId, setChatOriginBuildId] = useState<string | null>(null)
   const [enhancingId, setEnhancingId] = useState<number | null>(null)
+  const [enhancingInput, setEnhancingInput] = useState(false)
   const [, navigate] = useLocation()
   const [typedPlaceholder, setTypedPlaceholder] = useState('')
   const [showSuggestionsTooltip, setShowSuggestionsTooltip] = useState(false)
@@ -2375,6 +2376,27 @@ export function Overview() {
                       onClick={() => { if (rawInput.trim().length > 0) { if (vagueMode) openClarifyWizard(); else setRawInput('') } }}
                       style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
                       <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>EXECUTE
+                    </button>
+                    <button
+                      disabled={enhancingInput || rawInput.trim().length < 3}
+                      onMouseEnter={() => setHoveredArchBtn('arch-enhance')}
+                      onMouseLeave={() => setHoveredArchBtn(null)}
+                      onClick={async () => {
+                        if (enhancingInput || rawInput.trim().length < 3) return
+                        const original = rawInput
+                        setEnhancingInput(true)
+                        try {
+                          const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: original }) })
+                          const data = await res.json()
+                          setRawInput(data.prompt || original)
+                        } catch {
+                          setRawInput(original)
+                        } finally {
+                          setEnhancingInput(false)
+                        }
+                      }}
+                      style={{ background: hoveredArchBtn === 'arch-enhance' ? '#16131f' : '#0c0a12', color: '#a78bfa', border: `1px solid ${hoveredArchBtn === 'arch-enhance' ? 'rgba(167,139,250,0.4)' : 'rgba(167,139,250,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: (enhancingInput || rawInput.trim().length < 3) ? 'default' : 'pointer', opacity: (rawInput.trim().length < 3) ? 0.4 : 1, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
+                      <span style={{ marginRight: 5, opacity: 0.7 }}>✦</span>{enhancingInput ? 'ENHANCING…' : 'ENHANCE'}
                     </button>
                     <div style={{ position: 'relative', display: 'inline-block' }}
                       onMouseEnter={() => setHoveredArchBtn('claude-rec')}
