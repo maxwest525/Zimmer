@@ -1591,19 +1591,226 @@ function ApisView({ onBack }: { onBack: () => void }) {
   ]} />
 }
 
-function WebScraperView({ onBack }: { onBack: () => void }) {
-  return <TerminalPageView onBack={onBack} title="Web Scraper" command="scraper" lines={[
-    '> Scraper engine v1.2.0 — Chromium headless',
-    '',
-    '[job-01]  target: competitor-pricing    Schedule: */6h    Last: 03:00 UTC  OK',
-    '[job-02]  target: tech-news-feeds       Schedule: */1h    Last: 03:30 UTC  OK',
-    '[job-03]  target: api-changelog-watch   Schedule: */12h   Last: 00:00 UTC  OK',
-    '[job-04]  target: social-mentions       Schedule: */30m   Last: 03:30 UTC  OK',
-    '',
-    '> 4 active jobs — 0 failures in last 24h',
-    '> Data stored: 2.4 GB across 14,207 records',
-    '> Next scheduled run: job-04 at 04:00 UTC',
-  ]} />
+type ScrapedFile = {
+  id: string
+  name: string
+  sourceUrl: string
+  type: 'text' | 'markdown' | 'json' | 'html'
+  size: string
+  scrapedAt: string
+  content: string
+}
+
+const SCRAPED_FILES: ScrapedFile[] = [
+  {
+    id: 'sf-01',
+    name: 'competitor-pricing.json',
+    sourceUrl: 'https://competitor.example.com/pricing',
+    type: 'json',
+    size: '3.1 KB',
+    scrapedAt: '2026-05-29 03:00 UTC',
+    content: `{
+  "plans": [
+    { "name": "Starter", "monthly": 19, "annual": 190, "seats": 1 },
+    { "name": "Team", "monthly": 49, "annual": 490, "seats": 5 },
+    { "name": "Business", "monthly": 99, "annual": 990, "seats": 20 },
+    { "name": "Enterprise", "monthly": null, "annual": null, "seats": "custom" }
+  ],
+  "currency": "USD",
+  "captured_at": "2026-05-29T03:00:00Z"
+}`,
+  },
+  {
+    id: 'sf-02',
+    name: 'tech-news-feed.md',
+    sourceUrl: 'https://news.example.com/feed',
+    type: 'markdown',
+    size: '5.8 KB',
+    scrapedAt: '2026-05-29 03:30 UTC',
+    content: `# Tech News — Daily Digest
+
+## Top Stories
+- AI agents go mainstream — enterprises report 3x faster prototyping cycles.
+- New open model released — 70B params, permissive license.
+- Edge inference — sub-50ms latency on consumer hardware.
+
+## Funding
+- Vector DB startup raises $40M Series B.
+- Dev-tools company acquires observability vendor.
+
+Source: news.example.com — captured 2026-05-29 03:30 UTC`,
+  },
+  {
+    id: 'sf-03',
+    name: 'api-changelog.md',
+    sourceUrl: 'https://api.example.com/changelog',
+    type: 'markdown',
+    size: '2.2 KB',
+    scrapedAt: '2026-05-29 00:00 UTC',
+    content: `# API Changelog
+
+## v3.4.0 — 2026-05-28
+- Added cursor-based pagination to /v3/events.
+- Deprecated offset param (sunset 2026-09-01).
+
+## v3.3.1 — 2026-05-20
+- Fixed rate-limit headers on 429 responses.
+- Reduced p99 latency on /v3/search by 18%.`,
+  },
+  {
+    id: 'sf-04',
+    name: 'social-mentions.json',
+    sourceUrl: 'https://social.example.com/search?q=massa',
+    type: 'json',
+    size: '4.6 KB',
+    scrapedAt: '2026-05-29 03:30 UTC',
+    content: `{
+  "query": "massa",
+  "window": "24h",
+  "total": 128,
+  "sentiment": { "positive": 86, "neutral": 31, "negative": 11 },
+  "top_mentions": [
+    { "author": "@devlead", "likes": 240, "text": "MASSA shipped our MVP in a weekend." },
+    { "author": "@founderx", "likes": 188, "text": "The build pipeline is genuinely fast." }
+  ]
+}`,
+  },
+  {
+    id: 'sf-05',
+    name: 'robots.txt',
+    sourceUrl: 'https://competitor.example.com/robots.txt',
+    type: 'text',
+    size: '0.4 KB',
+    scrapedAt: '2026-05-28 21:00 UTC',
+    content: `User-agent: *
+Disallow: /admin
+Disallow: /internal
+Allow: /
+Sitemap: https://competitor.example.com/sitemap.xml`,
+  },
+  {
+    id: 'sf-06',
+    name: 'landing-page.html',
+    sourceUrl: 'https://competitor.example.com/',
+    type: 'html',
+    size: '8.9 KB',
+    scrapedAt: '2026-05-28 21:00 UTC',
+    content: `<!doctype html>
+<html>
+  <head><title>FlowForge — Build faster</title></head>
+  <body>
+    <header><h1>Build faster with FlowForge</h1></header>
+    <section class="hero">
+      <p>Ship production apps in hours, not weeks.</p>
+      <a class="cta" href="/signup">Start free</a>
+    </section>
+  </body>
+</html>`,
+  },
+]
+
+function WebScraperView({ onBack, files, referencedIds, onToggleReference }: { onBack: () => void; files: ScrapedFile[]; referencedIds: Set<string>; onToggleReference: (f: ScrapedFile) => void }) {
+  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399', text: '#e8eaed', bg: '#0a0d10', panel: '#080808' }
+  const [selectedId, setSelectedId] = useState<string | null>(files[0]?.id ?? null)
+  const selected = files.find(f => f.id === selectedId) ?? null
+  const typeColor = (t: ScrapedFile['type']) => t === 'json' ? '#fbbf24' : t === 'markdown' ? '#60a5fa' : t === 'html' ? '#f472b6' : '#9ca3af'
+
+  const download = (f: ScrapedFile) => {
+    const mime = f.type === 'json' ? 'application/json' : f.type === 'html' ? 'text/html' : f.type === 'markdown' ? 'text/markdown' : 'text/plain'
+    const blob = new Blob([f.content], { type: mime })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = f.name
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
+        >←</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Web Scraper</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA://sys/scraper · {files.length} file{files.length === 1 ? '' : 's'}</div>
+        </div>
+      </div>
+
+      {files.length === 0 ? (
+        <div style={{ border: `1px dashed ${c.border}`, borderRadius: 8, padding: '48px 24px', textAlign: 'center', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+          <div style={{ color: c.green, fontSize: 13, marginBottom: 6 }}>$ massa scraper --list</div>
+          <div style={{ color: c.muted, fontSize: 12 }}>No scraped files yet. Scraped pages and data will appear here.</div>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 280px) minmax(0, 1fr)', gap: 12, alignItems: 'start' }}>
+          {/* Sidebar list */}
+          <div style={{ border: `1px solid ${c.border}`, borderRadius: 6, overflow: 'hidden' }}>
+            <div style={{ padding: '8px 12px', borderBottom: `1px solid ${c.border}`, background: '#0c0f14' }}>
+              <span className="panel-header" style={{ color: c.muted, fontSize: 9 }}>SCRAPED FILES</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {files.map(f => {
+                const active = f.id === selectedId
+                const refd = referencedIds.has(f.id)
+                return (
+                  <div key={f.id} onClick={() => setSelectedId(f.id)}
+                    style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: `1px solid ${c.border}`, borderLeft: active ? `2px solid ${c.green}` : '2px solid transparent', background: active ? 'rgba(52,211,153,0.04)' : 'transparent', display: 'flex', flexDirection: 'column', gap: 4 }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#101419' }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 12, color: active ? c.text : '#cbd5e1', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                      {refd && <span title="Referenced in command" style={{ marginLeft: 'auto', color: c.green, display: 'flex', flexShrink: 0 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></span>}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 9, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                      <span style={{ color: typeColor(f.type), textTransform: 'uppercase' }}>{f.type}</span>
+                      <span>·</span><span>{f.size}</span>
+                    </div>
+                    <div style={{ fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.sourceUrl}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Viewer */}
+          <div style={{ border: `1px solid ${c.border}`, borderRadius: 6, overflow: 'hidden', minWidth: 0 }}>
+            {selected ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: `1px solid ${c.border}`, background: '#0c0f14', flexWrap: 'wrap' }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 12, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selected.name}</div>
+                    <div style={{ fontSize: 9, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>scraped {selected.scrapedAt} · <span style={{ color: typeColor(selected.type), textTransform: 'uppercase' }}>{selected.type}</span> · {selected.size}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button onClick={() => onToggleReference(selected)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 4, border: `1px solid ${referencedIds.has(selected.id) ? 'rgba(52,211,153,0.4)' : c.border}`, background: referencedIds.has(selected.id) ? 'rgba(52,211,153,0.08)' : 'transparent', color: referencedIds.has(selected.id) ? c.green : c.muted, fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                      {referencedIds.has(selected.id) ? 'REFERENCED' : 'REFERENCE'}
+                    </button>
+                    <button onClick={() => download(selected)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: '"JetBrains Mono", Menlo, monospace' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = c.text; e.currentTarget.style.borderColor = '#3a4150' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      DOWNLOAD
+                    </button>
+                  </div>
+                </div>
+                <pre style={{ margin: 0, padding: 14, background: c.panel, color: '#d1d5db', fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 11, lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 460, overflow: 'auto' }}>{selected.content}</pre>
+              </>
+            ) : (
+              <div style={{ padding: 24, color: c.muted, fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Select a file to view its contents.</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function InsideMassaView({ onBack }: { onBack: () => void }) {
@@ -1721,6 +1928,24 @@ export function Overview() {
   const panelWasCollapsedBeforeSuggestions = useRef(false)
   const suggestionsAutoCollapsed = useRef(false)
   const [rawInput, setRawInput] = useState('')
+  const [referencedFiles, setReferencedFiles] = useState<ScrapedFile[]>([])
+  const toggleReference = useCallback((f: ScrapedFile) => {
+    const wasReferenced = referencedFiles.some(p => p.id === f.id)
+    const token = '@' + f.name
+    setReferencedFiles(prev => wasReferenced ? prev.filter(p => p.id !== f.id) : (prev.some(p => p.id === f.id) ? prev : [...prev, f]))
+    setRawInput(prev => {
+      if (wasReferenced) {
+        const esc = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return prev
+          .replace(new RegExp(`(^|\\s)${esc}(?=\\s|$)`, 'g'), '$1')
+          .replace(/[ \t]{2,}/g, ' ')
+          .replace(/[ \t]+$/g, '')
+          .replace(/^[ \t]+/, '')
+      }
+      if (prev.includes(token)) return prev
+      return prev.replace(/[ \t]+$/g, '') + (prev.trim() ? ' ' : '') + token + ' '
+    })
+  }, [referencedFiles])
   const [promptMode, setPromptMode] = useState<'manual' | 'auto' | 'nebulous' | 'mvp'>('manual')
   const [modeMenuOpen, setModeMenuOpen] = useState(false)
   const [modeMenuRect, setModeMenuRect] = useState<{ left: number; bottom: number } | null>(null)
@@ -1832,7 +2057,7 @@ export function Overview() {
     fetch('/api/ai/clarify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, previousAnswers: history, model: selectedModel }),
+      body: JSON.stringify({ prompt, previousAnswers: history, model: selectedModel, referencedFiles: referencedFiles.map(f => ({ name: f.name, sourceUrl: f.sourceUrl, type: f.type, content: f.content })) }),
     })
       .then(r => r.json())
       .then(d => {
@@ -1849,7 +2074,7 @@ export function Overview() {
         setClarifyOptions(['Web app', 'Mobile app', 'API / Backend', 'Full-stack platform', 'Other'])
       })
       .finally(() => setClarifyLoading(false))
-  }, [selectedModel])
+  }, [selectedModel, referencedFiles])
 
   const openClarifyWizard = useCallback((promptOverride?: string) => {
     const prompt = promptOverride || rawInput
@@ -1868,7 +2093,7 @@ export function Overview() {
     const original = rawInput
     setEnhancingInput(true)
     try {
-      const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: original, mode, model: selectedModel }) })
+      const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: original, mode, model: selectedModel, referencedFiles: referencedFiles.map(f => ({ name: f.name, sourceUrl: f.sourceUrl, type: f.type, content: f.content })) }) })
       const data = await res.json()
       setRawInput(data.prompt || original)
     } catch {
@@ -1876,7 +2101,7 @@ export function Overview() {
     } finally {
       setEnhancingInput(false)
     }
-  }, [enhancingInput, rawInput, selectedModel])
+  }, [enhancingInput, rawInput, selectedModel, referencedFiles])
 
   useEffect(() => {
     let aborted = false
@@ -1892,6 +2117,7 @@ export function Overview() {
     if (promptMode === 'nebulous') { openClarifyWizard(); return }
     if (promptMode === 'mvp') { enhanceRawInput('mvp'); return }
     setRawInput('')
+    setReferencedFiles([])
   }, [rawInput, promptMode, openClarifyWizard, enhanceRawInput])
 
   const handleClarifyAnswer = useCallback((answer: string) => {
@@ -2463,7 +2689,7 @@ export function Overview() {
         ) : activeView === 'apis' ? (
           <ApisView onBack={() => setActiveView('dashboard')} />
         ) : activeView === 'webScraper' ? (
-          <WebScraperView onBack={() => setActiveView('dashboard')} />
+          <WebScraperView onBack={() => setActiveView('dashboard')} files={SCRAPED_FILES} referencedIds={new Set(referencedFiles.map(f => f.id))} onToggleReference={toggleReference} />
         ) : activeView === 'integrations' ? (
           <IntegrationsView onBack={() => setActiveView('dashboard')} />
         ) : activeView === 'insideMassa' ? (
@@ -2505,6 +2731,19 @@ export function Overview() {
                     />
                   </div>
                 </div>
+                {referencedFiles.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 14px 10px 32px' }}>
+                    {referencedFiles.map(f => (
+                      <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)', color: '#34d399', borderRadius: 999, padding: '3px 6px 3px 10px', fontSize: 11, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                        @{f.name}
+                        <button onClick={() => toggleReference(f)} title="Remove reference" style={{ background: 'transparent', border: 'none', color: '#34d399', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', opacity: 0.7 }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
                 {/* QuickType predictive bar (auto enhance mode) */}
                 {promptMode === 'auto' && (quickTypeLoading || quickType.length > 0) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 14px 8px', flexWrap: 'wrap' }}>
@@ -2662,6 +2901,24 @@ export function Overview() {
                             {item.label}
                           </div>
                         ))}
+                        <div style={{ borderTop: '1px solid #1e2330', padding: '6px 14px 4px' }}>
+                          <span className="panel-header" style={{ color: '#6b7280', fontSize: 8 }}>SCRAPED FILES</span>
+                        </div>
+                        {SCRAPED_FILES.map(f => {
+                          const refd = referencedFiles.some(r => r.id === f.id)
+                          return (
+                            <div key={f.id} onClick={() => { toggleReference(f); setShowAttachMenu(null) }}
+                              onMouseEnter={e => e.currentTarget.style.background = '#1a1f28'}
+                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 14px', cursor: 'pointer', color: refd ? '#34d399' : '#9ca3af', fontSize: 11, fontWeight: 500, transition: 'background 0.15s', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                              <span style={{ color: refd ? '#34d399' : '#6b7280', display: 'flex' }}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                              </span>
+                              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                              {refd && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                            </div>
+                          )
+                        })}
                       </div>
                     )}
                   </div>
