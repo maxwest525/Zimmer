@@ -1,0 +1,79 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://hyperfx.ai/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Connect to Claude
+
+> Step-by-step walkthrough for connecting Hyper MCP to Claude. Works the same way for ChatGPT, OpenCode, and other MCP clients.
+
+<iframe width="100%" height="410" src="https://www.youtube.com/embed/NZLAdOL9fP8?start=87" title="Hyper MCP — Connecting to Claude" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
+
+This guide walks through connecting your Hyper MCP server to Claude. The flow is nearly identical for ChatGPT, OpenCode, and any other MCP-compatible client — only the menu names change.
+
+<Info>
+  Before you start, make sure you've [set up your Hyper MCP server](/mcp/setup) and copied the endpoint URL from your MCP page in Hyper.
+</Info>
+
+## Add the connector in Claude
+
+<Steps>
+  <Step title="Open the connector menu">
+    In Claude, click the **+** icon in the message composer and select **Connectors → Manage connectors**.
+  </Step>
+
+  <Step title="Add a custom connector">
+    Click **Add connector** and choose **Add custom connector**.
+  </Step>
+
+  <Step title="Name the connector and paste your endpoint">
+    Name it `Hyper` (or whatever you like). In **Remote MCP server URL**, paste the endpoint URL from your Hyper MCP page.
+  </Step>
+
+  <Step title="Click Add">
+    Claude will prompt that it needs to connect to Hyper.
+  </Step>
+
+  <Step title="Authorize Hyper">
+    Click **Connect**. You'll see Hyper's authorized MCP client form — click **Continue** to grant access.
+  </Step>
+
+  <Step title="Confirm tools are available">
+    Claude will show the total number of tools available from your Hyper MCP server. A fully-configured workspace typically exposes several hundred tools.
+  </Step>
+</Steps>
+
+You're connected. Hyper is now available as a tool source in any Claude conversation.
+
+## Try it out
+
+Two example prompts that show the range:
+
+### Use a Hyper built-in tool
+
+```
+Use the Hyper MCP Twitter scraper to scrape posts and replies about
+AI marketing agents in the last 7 days, and prioritize by engagement.
+```
+
+Claude will route this through your Hyper MCP server, run the Twitter scraper, and return the top posts ranked by engagement — all without you having to set up a separate Twitter scraper MCP or manage API keys.
+
+### Drive the Hyper platform from Claude
+
+```
+Build me a marketing agent on Hyper. Call it "Claude Video Test."
+Give it any relevant tools, assign it several tasks, and equip it
+with the skills it needs to own the function.
+```
+
+Claude will use Hyper MCP to look up available toolkits, triggers, and skills, then create the agent and configure it inside your Hyper workspace. When it's done, the agent shows up on your [Agents page](https://app.hyperfx.ai) with the right tools, tasks, and skills already attached.
+
+## Connecting other AI clients
+
+The setup is the same shape in every MCP client — find the "add custom MCP server" option in settings, paste your Hyper MCP endpoint, and authorize:
+
+* **ChatGPT** — Settings → Connectors → Add custom connector
+* **OpenCode** — `mcp` config block, point at your Hyper endpoint
+* **Cursor** — `~/.cursor/mcp.json` with your Hyper endpoint as a remote server
+* **Codex / Codex CLI** — same custom MCP server pattern
+
+The guardrails and per-action permissions you set on your Hyper MCP server apply across every connected client — set the rules once and they hold everywhere.

@@ -1,0 +1,60 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://hyperfx.ai/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Hyper MCP
+
+> Bring Hyper's integrations, built-in tools, skills, and platform into Claude, ChatGPT, OpenCode, and any AI app that supports MCP.
+
+<iframe width="100%" height="410" src="https://www.youtube.com/embed/NZLAdOL9fP8" title="Hyper MCP" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
+
+The Hyper MCP server brings everything you can do on Hyper — your app integrations, built-in tools, skills, and native platform features — into any AI app that supports the [Model Context Protocol](https://modelcontextprotocol.io). One endpoint, one auth, hundreds of tools.
+
+That includes:
+
+* **Your app integrations** — Gmail, Shopify, HubSpot, Slack, Notion, Google Drive, and the rest of the [56+ integrations](/integrations/overview) you've connected to Hyper
+* **Ad platforms** — Meta, Google Ads, TikTok, LinkedIn, Pinterest, and others
+* **Hyper's built-in scrapers and generators** — Meta Ads Library, Reddit, Twitter, Instagram, TikTok scrapers; image generation; video generation
+* **Hyper's native platform** — create and manage agents, tasks, skills, files, knowledge bases, and tables from anywhere
+
+Instead of stitching together dozens of custom MCP servers and managing 40+ API keys, point your AI app at one endpoint and you've got the whole Hyper toolbox.
+
+## Why use Hyper MCP
+
+<CardGroup cols={2}>
+  <Card title="One endpoint, hundreds of tools" icon="plug">
+    Connect once and get every integration, scraper, generator, and platform tool you've enabled on Hyper.
+  </Card>
+
+  <Card title="Bring your existing setup" icon="arrow-right-arrow-left">
+    Your connections, agents, tasks, and skills carry over. The work you've done on Hyper isn't trapped on Hyper.
+  </Card>
+
+  <Card title="Per-tool guardrails" icon="shield-check">
+    Enable, disable, and require approval on individual actions across every tool — agents can't quietly delete a campaign without your sign-off.
+  </Card>
+
+  <Card title="Use Hyper from anywhere" icon="grid-2">
+    Works with Claude, ChatGPT, OpenCode, Cursor, Codex, and any other MCP-compatible AI client.
+  </Card>
+</CardGroup>
+
+## What you can do
+
+Two things, end to end:
+
+**1. Use Hyper's tools inside another AI app.** Run scrapers, query your integrations, generate images, browse the web — without leaving Claude, ChatGPT, or wherever you work.
+
+**2. Drive the Hyper platform from another AI app.** Create agents, assign tasks, attach skills, build tables, and manage files in your Hyper workspace by chatting with Claude or ChatGPT. The agents and tasks you build show up in Hyper, ready to run on schedule or in response to webhooks.
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Set up your MCP server" icon="gear" href="/mcp/setup">
+    Configure your default server, choose which tools to expose, and set guardrails per integration.
+  </Card>
+
+  <Card title="Connect to Claude" icon="link" href="/mcp/connect-claude">
+    Step-by-step walkthrough for connecting Hyper MCP to Claude (works the same for ChatGPT and other clients).
+  </Card>
+</CardGroup>

@@ -1,0 +1,176 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://hyperfx.ai/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Custom MCPs
+
+> Connect any MCP server to extend your agent's capabilities
+
+# Connecting Custom MCP Servers
+
+MCP (Model Context Protocol) is an open standard that allows AI agents to interact with external tools and data sources. Hyper supports connecting to any MCP-compatible server, giving your agents access to a wide range of capabilities.
+
+## What You'll Need
+
+Before you start, make sure you have:
+
+* The **URL** of the MCP server you want to connect to (e.g., `https://mcp.linear.app/sse`)
+* The **transport type** — either HTTP or SSE (Server-Sent Events). Most MCP servers use one or the other; check the server's documentation if you're unsure.
+* **Authentication details** (if required) — this could be a bearer token, custom headers, or no authentication at all
+
+## Step-by-Step: Adding a Custom MCP Server
+
+### Step 1: Open the Apps & Connectors Page
+
+Navigate to **Apps** in the left sidebar. This takes you to the Apps & Connectors page where you manage all your integrations.
+
+### Step 2: Switch to the MCP Tab
+
+At the top of the page, you'll see two tabs: **Apps** and **MCP**. Click on the **MCP** tab to view your custom MCP connections.
+
+### Step 3: Click "Add MCP"
+
+Click the **Add MCP** button in the top-right corner. A dialog will open with the connection form.
+
+### Step 4: Fill In the Connection Details
+
+Fill in the following fields:
+
+<Steps>
+  <Step title="Server Name">
+    Give your MCP server a friendly name so you can easily identify it later. For example: `Linear`, `My Internal Tools`, or `Sentry MCP`.
+  </Step>
+
+  <Step title="Transport Type">
+    Choose the communication protocol:
+
+    * **HTTP** — Standard HTTP requests (most common, and the default)
+    * **SSE** (Server-Sent Events) — For servers that use streaming connections
+
+    If you're unsure, start with HTTP. You can always change this later.
+  </Step>
+
+  <Step title="Server URL">
+    Enter the full URL of the MCP server endpoint. For example:
+
+    * `https://mcp.linear.app/sse`
+    * `https://mcp.yourcompany.com/mcp`
+    * `https://your-internal-server.com/api/mcp`
+  </Step>
+
+  <Step title="Authentication">
+    Choose how to authenticate with the MCP server:
+
+    * **None** — No authentication required. Use this for public or internally-networked servers.
+    * **Bearer Token** — Provide an API token that will be sent in the `Authorization` header. This is the most common auth method for third-party MCP servers.
+    * **Custom Headers** — Add one or more custom header key-value pairs. Use this when the server requires specific headers like `X-API-Key` or multiple authentication headers.
+  </Step>
+
+  <Step title="Note (Optional)">
+    Add any helpful context about this MCP server. This is especially useful for guiding your agents on **when and how to use this connection**. For example:
+
+    *"Use this MCP for managing Linear issues. Can create, update, and search issues. Use it when the user asks about project management or task tracking."*
+
+    Think of this as instructions you'd give a teammate about when to use this tool.
+  </Step>
+</Steps>
+
+### Step 5: Save
+
+Click **Save** to create the connection. Your MCP server will now appear in the list.
+
+### Step 6: Test the Connection
+
+After saving, click the **three-dot menu** (⋮) on the connection card and select **Test Connection**. This will:
+
+* Verify the server is reachable
+* Check that authentication is working
+* Discover all available tools the server provides
+* Show you the connection latency
+
+You'll see a detailed view with:
+
+* **Overview** — Connection status, auth details, transport info
+* **Tools** — A searchable list of all tools discovered on the server, with descriptions and parameter details
+
+<Tip>
+  Always test your connection after adding it. If the test fails, double-check your URL and authentication details.
+</Tip>
+
+## Managing Your MCP Connections
+
+Once added, you can manage each connection from the MCP tab:
+
+* **Test Connection** — Re-test at any time to verify the server is still healthy
+* **Edit** — Update the server name, URL, transport type, authentication, or notes
+* **Delete** — Remove the connection permanently
+
+Each connection card shows:
+
+* The server name and URL
+* A badge for the transport type (HTTP or SSE)
+* A badge for the auth type (Bearer or Headers) if configured
+
+## Authentication Options Explained
+
+### No Authentication
+
+Best for:
+
+* Internal MCP servers on your private network
+* Public MCP servers that don't require auth
+* Development and testing
+
+### Bearer Token
+
+Best for:
+
+* Third-party MCP services (Linear, Sentry, etc.)
+* Servers that use API keys or JWT tokens
+* Most production MCP servers
+
+Your token is stored securely and sent automatically as: `Authorization: Bearer <your-token>`
+
+### Custom Headers
+
+Best for:
+
+* Servers that use non-standard authentication headers
+* Services requiring multiple auth-related headers
+* Custom enterprise authentication schemes
+
+You can add as many header key-value pairs as needed. Header values are stored securely.
+
+## Tips & Best Practices
+
+<AccordionGroup>
+  <Accordion title="Write clear notes for your agents">
+    The Note field is one of the most valuable parts of the connection. Use it to tell your agents exactly when and how to use this MCP server. The more context you provide, the better your agents will know when to reach for these tools.
+  </Accordion>
+
+  <Accordion title="Use descriptive server names">
+    Instead of "Server 1", use something like "Linear Project Management" or "Internal CRM API". This makes it easier for both you and your agents to identify connections.
+  </Accordion>
+
+  <Accordion title="Test after any server-side changes">
+    If the MCP server's URL, authentication, or available tools change, re-test the connection to make sure everything still works.
+  </Accordion>
+
+  <Accordion title="Check the server's docs for transport type">
+    If you're not sure whether to use HTTP or SSE, check the MCP server's documentation. Some servers support both, but most have a preferred transport. SSE is common for servers that stream responses.
+  </Accordion>
+</AccordionGroup>
+
+## Example: Connecting to Linear MCP
+
+Here's a quick walkthrough of connecting to Linear's MCP server:
+
+1. Go to **Apps** → **MCP** tab → **Add MCP**
+2. **Server Name:** `Linear`
+3. **Transport Type:** `SSE`
+4. **Server URL:** `https://mcp.linear.app/sse`
+5. **Authentication:** `Bearer Token` → paste your Linear API key
+6. **Note:** `Use for managing Linear issues and projects. Can create issues, update status, search, and manage project workflows.`
+7. Click **Save**, then **Test Connection** to verify
+
+That's it — your agents can now interact with Linear.

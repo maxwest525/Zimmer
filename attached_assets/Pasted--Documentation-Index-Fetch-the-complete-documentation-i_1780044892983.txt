@@ -1,0 +1,107 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://hyperfx.ai/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Custom APIs
+
+> Connect to any REST API with custom authentication and endpoints
+
+# Connecting Custom REST APIs
+
+In addition to MCP servers, Hyper allows you to connect to any REST API. This means if a service has an API — whether it's your own internal API, a third-party service, or any HTTP-based endpoint — you can make it available to your agents as a tool.
+
+## What You'll Need
+
+Before connecting a custom API, have the following ready:
+
+* The **base URL** of the API (e.g., `https://api.yourservice.com/v1`)
+* **Authentication details** — API key, bearer token, or other credentials
+* Optionally, an **OpenAPI/Swagger specification** URL or file for automatic endpoint discovery
+
+## How Custom APIs Work
+
+When you connect a custom API to Hyper:
+
+1. You provide the API endpoint details and authentication
+2. Hyper registers the API as a callable tool for your agents
+3. When an agent needs to use the API, Hyper handles authentication and makes the request on the agent's behalf
+4. The response is returned to the agent for processing
+
+## Step-by-Step: Adding a Custom API
+
+### Step 1: Open the Tool Selector
+
+When configuring an agent, open the **Tool Selector** dialog. You'll see three tabs at the top: **Apps**, **Custom API**, and **Custom MCP**.
+
+### Step 2: Switch to the Custom API Tab
+
+Click on the **Custom API** tab. You'll see an option to add a new API connection.
+
+### Step 3: Click "Add API"
+
+Click the **Add API** button to open the configuration form.
+
+### Step 4: Configure Your API
+
+<Steps>
+  <Step title="API Name">
+    Give your API a descriptive name that helps identify what it does. For example: `Internal CRM API`, `Weather Service`, or `Payment Gateway`.
+  </Step>
+
+  <Step title="Base URL">
+    Enter the base URL for the API. All endpoint paths will be relative to this URL.
+
+    Example: `https://api.example.com/v1`
+  </Step>
+
+  <Step title="Authentication">
+    Configure how to authenticate with the API:
+
+    * **API Key** — Provide a key that will be sent as a header (e.g., `X-API-Key: your-key`)
+    * **Bearer Token** — A token sent in the `Authorization: Bearer` header
+    * **Custom Headers** — Add any custom headers the API requires
+    * **None** — For APIs that don't require authentication
+  </Step>
+
+  <Step title="Endpoints (Optional)">
+    If you provide an OpenAPI specification URL, Hyper will automatically discover all available endpoints. Otherwise, you can manually define the endpoints your agent should have access to.
+  </Step>
+</Steps>
+
+### Step 5: Save and Test
+
+Save the configuration and test the connection to make sure your agent can reach the API successfully.
+
+## Tips & Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use OpenAPI specs when available">
+    If the API you're connecting to has an OpenAPI (Swagger) specification, use it. This lets Hyper automatically discover all endpoints, parameters, and response types, making the integration much smoother.
+  </Accordion>
+
+  <Accordion title="Start with read-only endpoints">
+    When first connecting a custom API, consider starting with read-only (GET) endpoints. Once you're confident the integration is working correctly, you can add write operations.
+  </Accordion>
+
+  <Accordion title="Provide context for your agents">
+    Just like with MCPs, adding descriptive names and notes helps your agents understand when and how to use each API connection effectively.
+  </Accordion>
+
+  <Accordion title="Keep credentials secure">
+    API keys and tokens are stored securely in Hyper. Never share them in agent instructions or notes. Hyper handles credential injection automatically.
+  </Accordion>
+</AccordionGroup>
+
+## Custom APIs vs. MCPs — Which Should I Use?
+
+|                    | Custom MCP                                    | Custom API                                  |
+| ------------------ | --------------------------------------------- | ------------------------------------------- |
+| **Best for**       | Services that offer an MCP endpoint           | Any REST API                                |
+| **Setup**          | Just provide the MCP URL and auth             | Provide base URL, auth, and endpoint config |
+| **Tool discovery** | Automatic — MCP servers advertise their tools | Automatic with OpenAPI spec, or manual      |
+| **Protocol**       | Model Context Protocol (structured)           | HTTP REST                                   |
+| **When to choose** | The service has an MCP server                 | The service only has a REST API             |
+
+<Tip>
+  If a service offers both an MCP endpoint and a REST API, the MCP option is usually easier to set up since tools are discovered automatically.
+</Tip>

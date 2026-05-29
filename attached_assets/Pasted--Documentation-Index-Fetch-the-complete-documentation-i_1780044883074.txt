@@ -1,0 +1,53 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://hyperfx.ai/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Custom MCPs & APIs
+
+> Connect any MCP server or REST API to supercharge your agents
+
+# Connect Any MCP or API to Hyper
+
+Hyper gives you the flexibility to connect your agents to virtually anything. Whether it's an MCP (Model Context Protocol) server or a custom REST API, you can plug it in and your agents will be able to use it right away.
+
+## Why Custom Connections?
+
+Out of the box, Hyper comes with a growing library of built-in integrations like Google, Slack, GitHub, and more. But sometimes you need to connect to:
+
+* **Your own internal tools** — Connect proprietary MCP servers your team has built
+* **Third-party MCP servers** — Use any MCP-compatible service, like Linear, Notion, or Sentry
+* **Custom REST APIs** — Connect to any API endpoint with custom authentication
+* **Niche or specialized services** — If it has an API or MCP interface, your agents can use it
+
+## Two Ways to Extend Your Agents
+
+<CardGroup cols={2}>
+  <Card title="Custom MCPs" icon="terminal" href="/custom-connections/custom-mcps">
+    Connect to any MCP (Model Context Protocol) server. MCP is an open standard that lets AI agents interact with external tools and services in a structured way. If a service offers an MCP endpoint, you can connect it to Hyper in under a minute.
+  </Card>
+
+  <Card title="Custom APIs" icon="globe" href="/custom-connections/custom-apis">
+    Connect to any REST API with custom authentication and endpoints. Point your agent at an OpenAPI spec or manually configure endpoints, and your agent will be able to call them as tools.
+  </Card>
+</CardGroup>
+
+## Where to Find Custom Connections
+
+You can manage your custom connections from two places in Hyper:
+
+1. **Apps & Connectors page** — Navigate to **Apps** in the sidebar, then switch to the **MCP** tab to manage your MCP connections at the workspace level.
+
+2. **Agent Tool Selector** — When configuring tools for a specific agent, open the tool selector and you'll see tabs for **Custom API** and **Custom MCP** alongside the built-in apps.
+
+<Note>
+  Custom MCP connections you add are available to all agents in your workspace. You can add instructions via the optional Note field to guide agents on when and how to use each connection.
+</Note>
+
+## How It Works
+
+When you connect a custom MCP or API, Hyper:
+
+1. **Validates the connection** — Tests that the server is reachable and authentication works
+2. **Discovers available tools** — Automatically finds what capabilities the server offers
+3. **Makes tools available to agents** — Your agents can now use these tools in conversations and workflows
+4. **Handles authentication** — Credentials are stored securely and passed automatically with each request
