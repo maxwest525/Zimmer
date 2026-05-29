@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { connectAndListTools } from "./mcpClient";
 import { logger } from "./logger";
 
-const DEFAULT_HYPERFX_ENDPOINT = "https://www.hyperfx.ai/mcp";
+const DEFAULT_HYPERFX_ENDPOINT = "https://backend.hyperfx.ai/mcp/";
 const HYPERFX_NAME = "HyperFX Marketing";
 
 function resolveEndpoint(): string {
@@ -27,10 +27,13 @@ export async function seedHyperFxMcp(): Promise<void> {
 
   let serverId: number;
   try {
+    // Match by the canonical vendor name (not endpoint) so a changed
+    // HYPERFX_MCP_URL or a rotated key updates the single HyperFX row in place
+    // rather than leaving stale duplicate connections behind.
     const existing = await db
       .select()
       .from(mcpServersTable)
-      .where(eq(mcpServersTable.endpoint, endpoint));
+      .where(eq(mcpServersTable.name, HYPERFX_NAME));
 
     if (existing.length === 0) {
       const [created] = await db
@@ -46,12 +49,12 @@ export async function seedHyperFxMcp(): Promise<void> {
       logger.info("Seeded HyperFX MCP connection");
     } else {
       serverId = existing[0].id;
-      if (existing[0].authToken !== key) {
+      if (existing[0].endpoint !== endpoint || existing[0].authToken !== key) {
         await db
           .update(mcpServersTable)
-          .set({ authToken: key, updatedAt: new Date() })
+          .set({ endpoint, authToken: key, updatedAt: new Date() })
           .where(eq(mcpServersTable.id, serverId));
-        logger.info("Updated HyperFX MCP API key");
+        logger.info("Updated HyperFX MCP connection settings");
       }
     }
   } catch (err) {

@@ -31,3 +31,8 @@ channel = "stable-25_05"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-912a51f7-edf2-45f2-9100-46108da9a586"
+
+[userenv]
+
+[userenv.shared]
+HYPERFX_MCP_URL = "https://backend.hyperfx.ai/mcp/"
