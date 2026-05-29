@@ -1634,6 +1634,8 @@ export function Overview() {
   const [rawInput, setRawInput] = useState('')
   const [promptMode, setPromptMode] = useState<'manual' | 'auto' | 'nebulous' | 'mvp'>('manual')
   const [modeMenuOpen, setModeMenuOpen] = useState(false)
+  const [modeMenuRect, setModeMenuRect] = useState<{ left: number; bottom: number } | null>(null)
+  const modeBtnRef = useRef<HTMLButtonElement | null>(null)
   const [showClarifyModal, setShowClarifyModal] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [suggestionsLoading, setSuggestionsLoading] = useState(false)
@@ -2413,17 +2415,27 @@ export function Overview() {
                         return (
                           <div style={{ position: 'relative', display: 'inline-block' }}>
                             <button
-                              onClick={() => setModeMenuOpen(o => !o)}
+                              ref={modeBtnRef}
+                              onClick={() => {
+                                setModeMenuOpen(o => {
+                                  const next = !o
+                                  if (next && modeBtnRef.current) {
+                                    const r = modeBtnRef.current.getBoundingClientRect()
+                                    setModeMenuRect({ left: r.left, bottom: window.innerHeight - r.top + 6 })
+                                  }
+                                  return next
+                                })
+                              }}
                               onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(52,211,153,0.3)' }}
                               onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2330' }}
                               style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 10px', borderRadius: 4, border: '1px solid #1e2330', background: '#0c0f14', color: '#34d399', fontWeight: 700, fontSize: 10, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'nowrap', minWidth: 116, justifyContent: 'space-between' }}>
                               <span>{current.label}</span>
                               <span style={{ color: '#6b7280', fontSize: 8, transform: modeMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}>▼</span>
                             </button>
-                            {modeMenuOpen && (
+                            {modeMenuOpen && modeMenuRect && (
                               <>
-                                <div onClick={() => setModeMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 9 }} />
-                                <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 6, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: 4, width: 280, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                                <div onClick={() => setModeMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 9999 }} />
+                                <div style={{ position: 'fixed', bottom: modeMenuRect.bottom, left: modeMenuRect.left, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: 4, width: 280, maxWidth: 'calc(100vw - 24px)', boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10000, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                                   {MODES.map(m => {
                                     const active = promptMode === m.key
                                     return (
