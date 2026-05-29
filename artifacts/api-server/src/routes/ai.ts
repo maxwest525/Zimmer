@@ -53,9 +53,20 @@ router.post("/ai/clarify", async (req, res) => {
     return res.status(400).json({ error: "prompt required" });
   }
 
-  const answersContext = previousAnswers && Array.isArray(previousAnswers) && previousAnswers.length > 0
-    ? `\n\nPrevious answers:\n${previousAnswers.map((a: { question: string; answer: string }) => `Q: ${a.question}\nA: ${a.answer}`).join("\n\n")}`
+  const answers = Array.isArray(previousAnswers) ? previousAnswers : [];
+  const answersContext = answers.length > 0
+    ? `\n\nPrevious answers:\n${answers.map((a: { question: string; answer: string }) => `Q: ${a.question}\nA: ${a.answer}`).join("\n\n")}`
     : "";
+
+  // Hard cap: after 2 answers we always wrap up
+  if (answers.length >= 2) {
+    return res.json({
+      question: "",
+      options: [],
+      done: true,
+      summary: `Building: ${prompt.trim()}`,
+    });
+  }
 
   try {
     const completion = await openai.chat.completions.create({
@@ -64,7 +75,7 @@ router.post("/ai/clarify", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You are MASSA AI, a build orchestration system. The user submitted a vague project prompt. Ask ONE clarifying question to better understand what they want to build. Provide 3-4 multiple choice options plus an "Other" option. The question should be the most important thing you don't yet know.
+          content: `You are MASSA AI, a build orchestration system. The user submitted a project prompt. Ask ONE clarifying question — the single most important thing you still need to know. Provide 3-4 multiple choice options. Be concise.
 
 Return ONLY valid JSON in this format:
 {
@@ -73,7 +84,7 @@ Return ONLY valid JSON in this format:
   "done": false
 }
 
-If you have enough information from the prompt and previous answers to build confidently, return:
+If the prompt is already specific enough, return:
 {
   "question": "",
   "options": [],
@@ -81,7 +92,7 @@ If you have enough information from the prompt and previous answers to build con
   "summary": "Brief 1-sentence summary of what will be built"
 }
 
-Ask about things like: target platform, primary user, core feature priority, data storage needs, integration requirements, scale expectations. Don't repeat questions already answered.`,
+You may ask at most 1 question total (the caller enforces a hard cap of 2). Focus on the most critical unknown: target platform, primary user, or core feature priority. Don't repeat questions already answered.`,
         },
         {
           role: "user",
