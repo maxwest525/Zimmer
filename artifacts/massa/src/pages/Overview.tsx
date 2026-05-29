@@ -1031,6 +1031,44 @@ function AutomationsView({ onBack }: { onBack: () => void }) {
 function MarketingView({ onBack }: { onBack: () => void }) {
   const c = { border: '#1e2530', muted: '#9ca3af', green: '#34d399' }
 
+  const loopInputRef = useRef<HTMLInputElement | null>(null)
+  const docInputRef = useRef<HTMLInputElement | null>(null)
+  const [loopImage, setLoopImage] = useState<string | null>(null)
+  const [documents, setDocuments] = useState<{ name: string; size: string }[]>([])
+  const [integrationsOpen, setIntegrationsOpen] = useState(false)
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  const handleLoopUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setLoopImage(typeof reader.result === 'string' ? reader.result : null)
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const handleDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
+    setDocuments(prev => [...prev, ...files.map(f => ({ name: f.name, size: formatSize(f.size) }))])
+    e.target.value = ''
+  }
+
+  const engines: { name: string; tagline: string; status: 'ACTIVE' | 'SETUP' }[] = [
+    { name: 'Autonomous Loop', tagline: 'Self-running marketing loop. Upload your loop diagram below to build it into an automated workflow.', status: 'SETUP' },
+    { name: 'Scout', tagline: 'Specification pending — add the engine document below to configure.', status: 'SETUP' },
+    { name: 'Killshot', tagline: 'Specification pending — add the engine document below to configure.', status: 'SETUP' },
+    { name: 'Tree', tagline: 'Specification pending — add the engine document below to configure.', status: 'SETUP' },
+  ]
+
+  const engineStatusColors: Record<string, string> = { ACTIVE: '#34d399', SETUP: '#60a5fa' }
+  const engineStatusLabels: Record<string, string> = { ACTIVE: 'Active', SETUP: 'Setup' }
+
   const pipelineSteps = [
     { label: 'Analyze', desc: 'Market research, keyword gaps, competitor mapping' },
     { label: 'Strategize', desc: 'Channel mix, budget allocation, content calendar' },
@@ -1197,18 +1235,18 @@ function MarketingView({ onBack }: { onBack: () => void }) {
           >←</button>
         </div>
 
-        <div style={{ marginBottom: 36, maxWidth: 640 }}>
+        <div style={{ marginBottom: 36, maxWidth: 680 }}>
           <h1 style={{ margin: '0 0 10px', fontSize: 32, fontWeight: 800, lineHeight: 1.15, fontFamily: 'Inter, system-ui, sans-serif', background: 'linear-gradient(135deg, #f0f0f0 0%, #34d399 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             Marketing Command Center
           </h1>
           <p style={{ margin: '0 0 20px', color: '#ccc', fontSize: 16, lineHeight: 1.6, fontFamily: 'Inter, system-ui, sans-serif' }}>
-            One click to install. Everything runs automatically. MASSA assembles a complete, AI-powered marketing team — from SEO and paid ads to reputation management and competitive intelligence. No specialists to hire, no complex tools to learn.
+            Your marketing engines run the show. Each engine is an autonomous workflow — upload a loop diagram and MASSA builds it out and automates it. Integrations and connectors plug in underneath to power the engines.
           </p>
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             {[
-              { value: '10', label: 'Marketing Modules' },
+              { value: String(engines.length), label: 'Marketing Engines' },
+              { value: String(documents.length), label: 'Documents' },
               { value: '50', label: 'Integrations' },
-              { value: '100%', label: 'Automated' },
             ].map(stat => (
               <div key={stat.label}>
                 <div style={{ fontSize: 28, fontWeight: 800, color: c.green, fontFamily: 'Inter, system-ui, sans-serif' }}>{stat.value}</div>
@@ -1218,67 +1256,112 @@ function MarketingView({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        <div style={{ marginBottom: 36 }}>
-          <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 20, fontFamily: 'Inter, system-ui, sans-serif' }}>HOW IT WORKS</div>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0, position: 'relative', overflowX: 'auto', paddingBottom: 8 }}>
-            {pipelineSteps.map((step, i) => (
-              <div key={step.label} style={{ flex: '1 0 120px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', minWidth: 120 }}>
-                {i < pipelineSteps.length - 1 && (
-                  <div style={{ position: 'absolute', top: 20, left: '50%', right: '-50%', height: 2, background: `linear-gradient(to right, ${c.green}60, ${c.green}20)`, zIndex: 0 }} />
-                )}
-                <div style={{
-                  width: 40, height: 40, borderRadius: '50%', background: '#0a0d10', border: `2px solid ${c.green}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800,
-                  color: c.green, position: 'relative', zIndex: 1, fontFamily: 'Inter, system-ui, sans-serif',
-                }}>
-                  {i + 1}
+        {/* PRIMARY: Marketing Engines */}
+        <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>MARKETING ENGINES</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14, marginBottom: 32 }}>
+          {engines.map(eng => (
+            <div key={eng.name} style={{ background: 'rgba(52,211,153,0.03)', border: `1px solid ${eng.status === 'ACTIVE' ? 'rgba(52,211,153,0.3)' : c.border}`, borderRadius: 14, padding: 22, transition: 'border-color 0.2s' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: `${engineStatusColors[eng.status]}18`, border: `1px solid ${engineStatusColors[eng.status]}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: engineStatusColors[eng.status], fontWeight: 800, fontSize: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>{eng.name.charAt(0)}</div>
+                  <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>{eng.name}</span>
                 </div>
-                <div style={{ marginTop: 12, textAlign: 'center', padding: '0 4px' }}>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#f0f0f0', marginBottom: 4, fontFamily: 'Inter, system-ui, sans-serif' }}>{step.label}</div>
-                  <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.45, fontFamily: 'Inter, system-ui, sans-serif' }}>{step.desc}</div>
+                <span style={{ fontSize: 11, fontWeight: 600, color: engineStatusColors[eng.status], background: `${engineStatusColors[eng.status]}12`, padding: '4px 10px', borderRadius: 999, fontFamily: 'Inter, system-ui, sans-serif' }}>{engineStatusLabels[eng.status]}</span>
+              </div>
+              <div style={{ color: c.muted, fontSize: 13, lineHeight: 1.55, fontFamily: 'Inter, system-ui, sans-serif' }}>{eng.tagline}</div>
+              {eng.name === 'Autonomous Loop' && (
+                <div style={{ marginTop: 16 }}>
+                  <input ref={loopInputRef} type="file" accept="image/*" onChange={handleLoopUpload} style={{ display: 'none' }} />
+                  {loopImage ? (
+                    <div>
+                      <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, overflow: 'hidden', background: '#0a0d10', marginBottom: 10 }}>
+                        <img src={loopImage} alt="Autonomous loop diagram" style={{ display: 'block', width: '100%', maxHeight: 220, objectFit: 'contain' }} />
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => loopInputRef.current?.click()} style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.border}`, color: '#ccc', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>Replace diagram</button>
+                        <button onClick={() => setLoopImage(null)} style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.border}`, color: c.muted, borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>Remove</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={() => loopInputRef.current?.click()} style={{ width: '100%', border: `1px dashed ${c.green}66`, background: 'rgba(52,211,153,0.04)', borderRadius: 10, padding: '18px 14px', cursor: 'pointer', color: c.green, fontSize: 13, fontWeight: 600, fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'center' }}>
+                      Upload loop diagram
+                      <div style={{ color: c.muted, fontSize: 11, fontWeight: 500, marginTop: 4 }}>PNG, JPG or screenshot of your autonomous loop</div>
+                    </button>
+                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>MARKETING MODULES</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 14 }}>
-          {categories.map(cat => (
-            <div key={cat.name} style={{
-              background: 'rgba(255,255,255,0.02)', border: `1px solid ${c.border}`, borderRadius: 12, padding: 20,
-              transition: 'border-color 0.2s',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 20 }}>{categoryIcons[cat.name]}</span>
-                  <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: 14, fontFamily: 'Inter, system-ui, sans-serif' }}>{cat.name}</span>
-                </div>
-                <span style={{
-                  fontSize: 11, fontWeight: 600, color: statusColors[cat.status],
-                  background: `${statusColors[cat.status]}12`, padding: '4px 10px', borderRadius: 999,
-                  fontFamily: 'Inter, system-ui, sans-serif',
-                }}>
-                  {statusLabels[cat.status]}
-                </span>
-              </div>
-              <div style={{ color: c.muted, fontSize: 13, lineHeight: 1.55, marginBottom: 14, fontFamily: 'Inter, system-ui, sans-serif' }}>{cat.desc}</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {cat.integrations.map(integ => (
-                  <div key={integ.name} title={integ.detail} style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    background: 'rgba(255,255,255,0.03)', border: `1px solid ${c.border}`,
-                    borderRadius: 8, padding: '5px 10px', cursor: 'default',
-                    transition: 'border-color 0.15s',
-                  }}>
-                    <CompanyLogo name={integ.name} size={16} accentColor={integ.color} />
-                    <span style={{ fontSize: 11, color: '#ccc', fontFamily: 'Inter, system-ui, sans-serif' }}>{integ.name}</span>
-                  </div>
-                ))}
-              </div>
+              )}
             </div>
           ))}
         </div>
+
+        {/* PRIMARY: Documents */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif' }}>DOCUMENTS</div>
+          <input ref={docInputRef} type="file" multiple onChange={handleDocUpload} style={{ display: 'none' }} />
+          <button onClick={() => docInputRef.current?.click()} style={{ background: 'rgba(52,211,153,0.08)', border: `1px solid ${c.green}44`, color: c.green, borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>+ Upload</button>
+        </div>
+        <div style={{ marginBottom: 36 }}>
+          {documents.length === 0 ? (
+            <div style={{ border: `1px dashed ${c.border}`, borderRadius: 12, padding: '28px 20px', textAlign: 'center', color: c.muted, fontSize: 13, fontFamily: 'Inter, system-ui, sans-serif' }}>
+              No documents yet. Upload your engine specs and references — they'll be listed here.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {documents.map((doc, i) => (
+                <div key={`${doc.name}-${i}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', border: `1px solid ${c.border}`, borderRadius: 10, padding: '12px 16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                    <div style={{ width: 30, height: 30, borderRadius: 7, background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60a5fa', fontSize: 13, flexShrink: 0 }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <span style={{ color: '#f0f0f0', fontSize: 13, fontWeight: 600, fontFamily: 'Inter, system-ui, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+                    <span style={{ color: c.muted, fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>{doc.size}</span>
+                    <button onClick={() => setDocuments(prev => prev.filter((_, j) => j !== i))} aria-label={`Remove ${doc.name}`} style={{ background: 'transparent', border: 'none', color: c.muted, cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }} title={`Remove ${doc.name}`}>×</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* SECONDARY: Integrations & Connectors */}
+        <button
+          type="button"
+          onClick={() => setIntegrationsOpen(o => !o)}
+          aria-expanded={integrationsOpen}
+          aria-controls="integrations-panel"
+          style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '14px 16px', border: `1px solid ${c.border}`, borderRadius: integrationsOpen ? '12px 12px 0 0' : 12, background: 'rgba(255,255,255,0.015)' }}
+        >
+          <span style={{ fontSize: 10, color: c.muted, transition: 'transform 0.2s', transform: integrationsOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>▸</span>
+          <span style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif' }}>INTEGRATIONS &amp; CONNECTORS</span>
+          <span style={{ fontSize: 11, color: '#6b7280', marginLeft: 'auto', fontFamily: 'Inter, system-ui, sans-serif' }}>{categories.length} categories · supports the engines</span>
+        </button>
+        {integrationsOpen && (
+          <div id="integrations-panel" style={{ border: `1px solid ${c.border}`, borderTop: 'none', borderRadius: '0 0 12px 12px', padding: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 }}>
+              {categories.map(cat => (
+                <div key={cat.name} style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${c.border}`, borderRadius: 12, padding: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 18 }}>{categoryIcons[cat.name]}</span>
+                      <span style={{ color: '#e8eaed', fontWeight: 700, fontSize: 13, fontFamily: 'Inter, system-ui, sans-serif' }}>{cat.name}</span>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: statusColors[cat.status], background: `${statusColors[cat.status]}12`, padding: '3px 8px', borderRadius: 999, fontFamily: 'Inter, system-ui, sans-serif' }}>{statusLabels[cat.status]}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {cat.integrations.map(integ => (
+                      <div key={integ.name} title={integ.detail} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.03)', border: `1px solid ${c.border}`, borderRadius: 8, padding: '4px 9px', cursor: 'default' }}>
+                        <CompanyLogo name={integ.name} size={14} accentColor={integ.color} />
+                        <span style={{ fontSize: 11, color: '#ccc', fontFamily: 'Inter, system-ui, sans-serif' }}>{integ.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
