@@ -115,19 +115,23 @@ You may ask at most 1 question total (the caller enforces a hard cap of 2). Focu
 });
 
 router.post("/ai/enhance-prompt", async (req, res) => {
-  const { content } = req.body;
+  const { content, mode } = req.body;
   if (!content || typeof content !== "string" || content.trim().length < 3) {
     return res.json({ prompt: content || "" });
   }
 
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 250,
-      messages: [
-        {
-          role: "system",
-          content: `You take a rough idea and turn it into a slightly more detailed, actionable prompt for an AI coding assistant. Keep it concise — add a sentence or two of useful specificity without overcomplicating things.
+  const mvpSystem = `You take a rough idea and reframe it as a tightly-scoped MVP (minimum viable product) prompt for an AI coding assistant. Strip it down to the single core feature that proves the concept.
+
+Rules:
+- Preserve the original intent, but ruthlessly cut scope to the ONE essential feature
+- Start with "Build an MVP that..." and describe only what's needed to validate the core idea
+- Explicitly defer nice-to-haves (auth, settings, integrations) unless they ARE the core idea
+- Stay under 220 characters total
+- Do NOT add tech stack, architecture, or framework choices
+- Do NOT add bullet points or numbered lists
+- Return ONLY the scoped prompt text, nothing else`;
+
+  const enhanceSystem = `You take a rough idea and turn it into a slightly more detailed, actionable prompt for an AI coding assistant. Keep it concise — add a sentence or two of useful specificity without overcomplicating things.
 
 Rules:
 - Preserve the original intent completely
@@ -136,7 +140,16 @@ Rules:
 - Stay under 200 characters total
 - Do NOT add tech stack, architecture, or framework choices
 - Do NOT add bullet points or numbered lists
-- Return ONLY the enhanced prompt text, nothing else`,
+- Return ONLY the enhanced prompt text, nothing else`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      max_completion_tokens: 250,
+      messages: [
+        {
+          role: "system",
+          content: mode === "mvp" ? mvpSystem : enhanceSystem,
         },
         { role: "user", content: content.trim() },
       ],

@@ -1652,7 +1652,8 @@ export function Overview() {
   const panelWasCollapsedBeforeSuggestions = useRef(false)
   const suggestionsAutoCollapsed = useRef(false)
   const [rawInput, setRawInput] = useState('')
-  const [vagueMode, setVagueMode] = useState(false)
+  const [promptMode, setPromptMode] = useState<'manual' | 'auto' | 'nebulous' | 'mvp'>('manual')
+  const [modeMenuOpen, setModeMenuOpen] = useState(false)
   const [showClarifyModal, setShowClarifyModal] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [suggestionsLoading, setSuggestionsLoading] = useState(false)
@@ -1762,6 +1763,29 @@ export function Overview() {
     setShowClarifyModal(true)
     fetchClarifyQuestion(prompt, [])
   }, [rawInput, fetchClarifyQuestion])
+
+  const enhanceRawInput = useCallback(async (mode: 'auto' | 'mvp' = 'auto') => {
+    if (enhancingInput || rawInput.trim().length < 3) return
+    const original = rawInput
+    setEnhancingInput(true)
+    try {
+      const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: original, mode }) })
+      const data = await res.json()
+      setRawInput(data.prompt || original)
+    } catch {
+      setRawInput(original)
+    } finally {
+      setEnhancingInput(false)
+    }
+  }, [enhancingInput, rawInput])
+
+  const handleExecute = useCallback(() => {
+    if (rawInput.trim().length === 0) return
+    if (promptMode === 'nebulous') { openClarifyWizard(); return }
+    if (promptMode === 'auto') { enhanceRawInput('auto'); return }
+    if (promptMode === 'mvp') { enhanceRawInput('mvp'); return }
+    setRawInput('')
+  }, [rawInput, promptMode, openClarifyWizard, enhanceRawInput])
 
   const handleClarifyAnswer = useCallback((answer: string) => {
     const newHistory = [...clarifyHistory, { question: clarifyQuestion, answer }]
@@ -2373,30 +2397,10 @@ export function Overview() {
                     <button
                       onMouseEnter={() => setHoveredArchBtn('arch-build')}
                       onMouseLeave={() => setHoveredArchBtn(null)}
-                      onClick={() => { if (rawInput.trim().length > 0) { if (vagueMode) openClarifyWizard(); else setRawInput('') } }}
-                      style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
-                      <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>EXECUTE
-                    </button>
-                    <button
-                      disabled={enhancingInput || rawInput.trim().length < 3}
-                      onMouseEnter={() => setHoveredArchBtn('arch-enhance')}
-                      onMouseLeave={() => setHoveredArchBtn(null)}
-                      onClick={async () => {
-                        if (enhancingInput || rawInput.trim().length < 3) return
-                        const original = rawInput
-                        setEnhancingInput(true)
-                        try {
-                          const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: original }) })
-                          const data = await res.json()
-                          setRawInput(data.prompt || original)
-                        } catch {
-                          setRawInput(original)
-                        } finally {
-                          setEnhancingInput(false)
-                        }
-                      }}
-                      style={{ background: hoveredArchBtn === 'arch-enhance' ? '#16131f' : '#0c0a12', color: '#a78bfa', border: `1px solid ${hoveredArchBtn === 'arch-enhance' ? 'rgba(167,139,250,0.4)' : 'rgba(167,139,250,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: (enhancingInput || rawInput.trim().length < 3) ? 'default' : 'pointer', opacity: (rawInput.trim().length < 3) ? 0.4 : 1, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
-                      <span style={{ marginRight: 5, opacity: 0.7 }}>✦</span>{enhancingInput ? 'ENHANCING…' : 'ENHANCE'}
+                      disabled={enhancingInput}
+                      onClick={handleExecute}
+                      style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: enhancingInput ? 'default' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
+                      <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>{enhancingInput ? (promptMode === 'mvp' ? 'SCOPING…' : 'ENHANCING…') : promptMode === 'nebulous' ? 'CLARIFY' : 'EXECUTE'}
                     </button>
                     <div style={{ position: 'relative', display: 'inline-block' }}
                       onMouseEnter={() => setHoveredArchBtn('claude-rec')}
@@ -2416,22 +2420,52 @@ export function Overview() {
                         </div>
                       )}
                     </div>
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <button
-                        onClick={() => setVagueMode(v => !v)}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = vagueMode ? 'rgba(52,211,153,0.06)' : '#0c0f14'; e.currentTarget.style.color = vagueMode ? '#34d399' : '#9ca3af' }}
-                        style={{ padding: '5px 12px', borderRadius: 4, border: vagueMode ? '1px solid rgba(52,211,153,0.3)' : '1px solid #1e2330', background: vagueMode ? 'rgba(52,211,153,0.06)' : '#0c0f14', color: vagueMode ? '#34d399' : '#9ca3af', fontWeight: 700, fontSize: 10, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'nowrap' }}>nebulous mode</button>
-                      <span
-                        onMouseEnter={() => setHoveredArchBtn('nebulous-tip')}
-                        onMouseLeave={() => setHoveredArchBtn(null)}
-                        style={{ position: 'absolute', top: -4, right: -4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 11, height: 11, borderRadius: '50%', border: '1px solid #333', color: '#555', fontSize: 7, fontWeight: 700, cursor: 'help', fontFamily: '"JetBrains Mono", Menlo, monospace', background: '#0a0d10', lineHeight: 1, zIndex: 2 }}>?</span>
-                      {hoveredArchBtn === 'nebulous-tip' && (
-                        <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#9ca3af', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                          <div style={{ fontWeight: 700, color: '#e8eaed', marginBottom: 4, fontSize: 10 }}>NEBULOUS MODE {vagueMode ? '[ON]' : '[OFF]'}</div>
-                          When enabled, MASSA will ask clarifying questions before building if your prompt is broad or ambiguous.
-                        </div>
-                      )}
+                    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 10, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>mode:</span>
+                      {(() => {
+                        const MODES = [
+                          { key: 'manual' as const, label: 'MANUAL', desc: 'Builds exactly what you typed, no AI changes.' },
+                          { key: 'auto' as const, label: 'AUTO ENHANCE', desc: 'AI sharpens your prompt into a clearer, more actionable spec before building.' },
+                          { key: 'nebulous' as const, label: 'NEBULOUS', desc: 'AI asks a clarifying question or two first when your idea is broad.' },
+                          { key: 'mvp' as const, label: 'MVP', desc: 'Scopes your idea down to the single core feature to validate it fast.' },
+                        ]
+                        const current = MODES.find(m => m.key === promptMode) || MODES[0]
+                        return (
+                          <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <button
+                              onClick={() => setModeMenuOpen(o => !o)}
+                              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(52,211,153,0.3)' }}
+                              onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2330' }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 10px', borderRadius: 4, border: '1px solid #1e2330', background: '#0c0f14', color: '#34d399', fontWeight: 700, fontSize: 10, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'nowrap', minWidth: 116, justifyContent: 'space-between' }}>
+                              <span>{current.label}</span>
+                              <span style={{ color: '#6b7280', fontSize: 8, transform: modeMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}>▼</span>
+                            </button>
+                            {modeMenuOpen && (
+                              <>
+                                <div onClick={() => setModeMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 9 }} />
+                                <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 6, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: 4, width: 280, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                                  {MODES.map(m => {
+                                    const active = promptMode === m.key
+                                    return (
+                                      <button
+                                        key={m.key}
+                                        onClick={() => { setPromptMode(m.key); setModeMenuOpen(false) }}
+                                        onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#141823' }}
+                                        onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+                                        style={{ display: 'block', width: '100%', textAlign: 'left', border: 'none', borderRadius: 6, background: active ? 'rgba(52,211,153,0.08)' : 'transparent', padding: '8px 10px', cursor: 'pointer', transition: 'background 0.15s ease', marginBottom: 2 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, color: active ? '#34d399' : '#e8eaed', marginBottom: 3 }}>
+                                          {active && <span style={{ fontSize: 9 }}>✓</span>}{m.label}
+                                        </div>
+                                        <div style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.45 }}>{m.desc}</div>
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )
+                      })()}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
