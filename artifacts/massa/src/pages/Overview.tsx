@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'wouter'
 import { InlineCompanyLogo, CompanyLogo } from '@/components/CompanyLogo'
 import { NodeGraph } from '@/components/NodeGraph'
@@ -1636,6 +1636,9 @@ export function Overview() {
   const [modeMenuOpen, setModeMenuOpen] = useState(false)
   const [modeMenuRect, setModeMenuRect] = useState<{ left: number; bottom: number } | null>(null)
   const modeBtnRef = useRef<HTMLButtonElement | null>(null)
+  const [availableModels, setAvailableModels] = useState<{ id: string; label: string; provider: string }[]>([])
+  const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-6')
+  const [modelMenuOpen, setModelMenuOpen] = useState(false)
   const [quickType, setQuickType] = useState<string[]>([])
   const [quickTypeLoading, setQuickTypeLoading] = useState(false)
   const [showClarifyModal, setShowClarifyModal] = useState(false)
@@ -1684,7 +1687,7 @@ export function Overview() {
       fetch('/api/ai/suggest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: rawInput.trim(), model: 'sonnet-4.6' }),
+        body: JSON.stringify({ prompt: rawInput.trim(), model: selectedModel }),
         signal: controller.signal,
       })
         .then(r => r.json())
@@ -1693,7 +1696,7 @@ export function Overview() {
         .finally(() => { if (!controller.signal.aborted) setSuggestionsLoading(false) })
     }, 400)
     return () => { clearTimeout(timer); controller.abort(); setSuggestionsLoading(false) }
-  }, [rawInput, promptMode])
+  }, [rawInput, promptMode, selectedModel])
 
   useEffect(() => {
     if (promptMode !== 'auto' || rawInput.trim().length < 3) {
@@ -1707,7 +1710,7 @@ export function Overview() {
       fetch('/api/ai/autocomplete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: rawInput }),
+        body: JSON.stringify({ prompt: rawInput, model: selectedModel }),
         signal: controller.signal,
       })
         .then(r => r.json())
@@ -1716,7 +1719,7 @@ export function Overview() {
         .finally(() => { if (!controller.signal.aborted) setQuickTypeLoading(false) })
     }, 350)
     return () => { clearTimeout(timer); controller.abort(); setQuickTypeLoading(false) }
-  }, [rawInput, promptMode])
+  }, [rawInput, promptMode, selectedModel])
 
   useEffect(() => {
     const visibleSuggestions = ignoredAll ? [] : aiSuggestions.filter(s => !dismissedSuggestions.has(s))
@@ -1740,7 +1743,7 @@ export function Overview() {
     fetch('/api/ai/clarify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, previousAnswers: history }),
+      body: JSON.stringify({ prompt, previousAnswers: history, model: selectedModel }),
     })
       .then(r => r.json())
       .then(d => {
@@ -1757,7 +1760,7 @@ export function Overview() {
         setClarifyOptions(['Web app', 'Mobile app', 'API / Backend', 'Full-stack platform', 'Other'])
       })
       .finally(() => setClarifyLoading(false))
-  }, [])
+  }, [selectedModel])
 
   const openClarifyWizard = useCallback((promptOverride?: string) => {
     const prompt = promptOverride || rawInput
@@ -1776,7 +1779,7 @@ export function Overview() {
     const original = rawInput
     setEnhancingInput(true)
     try {
-      const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: original, mode }) })
+      const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: original, mode, model: selectedModel }) })
       const data = await res.json()
       setRawInput(data.prompt || original)
     } catch {
@@ -1784,7 +1787,16 @@ export function Overview() {
     } finally {
       setEnhancingInput(false)
     }
-  }, [enhancingInput, rawInput])
+  }, [enhancingInput, rawInput, selectedModel])
+
+  useEffect(() => {
+    let aborted = false
+    fetch('/api/ai/models')
+      .then(r => r.json())
+      .then(d => { if (!aborted && Array.isArray(d.models)) setAvailableModels(d.models) })
+      .catch(() => {})
+    return () => { aborted = true }
+  }, [])
 
   const handleExecute = useCallback(() => {
     if (rawInput.trim().length === 0) return
@@ -2312,7 +2324,7 @@ export function Overview() {
             <IdeasView enhancingId={enhancingId} onTurnIntoPrompt={async (content, ideaId) => {
               setEnhancingId(ideaId)
               try {
-                const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) })
+                const res = await fetch('/api/ai/enhance-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, model: selectedModel }) })
                 const data = await res.json()
                 setRawInput(data.prompt || content)
               } catch {
@@ -2349,12 +2361,6 @@ export function Overview() {
 
           {/* Input area — Terminal Command Console */}
           {(() => {
-            const flowSteps = [
-              { label: 'Prompt', active: true },
-              { label: 'Enhance', active: true },
-              { label: 'Build', active: selectedProject?.builds.some(b => b.status !== 'idle') ?? false },
-              { label: 'Deploy', active: selectedProject?.builds.every(b => b.status === 'complete') ?? false },
-            ]
             return (
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>
               <div className="terminal-input-box" style={{ flex: 1, minWidth: 0, border: `1px solid #252a35`, background: '#080a0e', borderRadius: 10, position: 'relative', boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.02)', overflow: 'hidden' }}>
@@ -2366,29 +2372,7 @@ export function Overview() {
                     <div style={{ width: 1, height: 12, background: '#252a35' }} />
                     <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://{selectedTenantId ? (projects.find(p => p.id === selectedTenantId)?.name?.toLowerCase().replace(/\s+/g, '-') ?? 'prompt') : 'prompt'}</span>
                   </div>
-                  <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      {flowSteps.map((step, i) => (
-                        <Fragment key={step.label}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                            <div style={{
-                              width: 22, height: 22, borderRadius: 3,
-                              border: `1px solid ${step.active ? 'rgba(232,234,237,0.2)' : '#252a35'}`,
-                              background: step.active ? 'rgba(232,234,237,0.04)' : '#080a0e',
-                              color: step.active ? '#e8eaed' : '#9ca3af',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              fontWeight: 700, fontSize: 10,
-                              fontFamily: '"JetBrains Mono", Menlo, monospace',
-                              boxShadow: 'none',
-                              transition: 'all 0.3s ease',
-                            }}>{i + 1}</div>
-                            <div style={{ fontSize: 7, color: step.active ? '#9ca3af' : '#4b5563', fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.3, textTransform: 'uppercase' }}>{step.label}</div>
-                          </div>
-                          {i < flowSteps.length - 1 && <div style={{ width: 75, height: 1, background: step.active && flowSteps[i + 1].active ? 'rgba(232,234,237,0.15)' : '#252a35', marginBottom: 10, flexShrink: 0 }} />}
-                        </Fragment>
-                      ))}
-                    </div>
-                  </div>
+                  <div style={{ flex: 1 }} />
                   <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 6, height: 6, borderRadius: 999, background: '#34d399', boxShadow: '0 0 6px rgba(52,211,153,0.5)', animation: 'subtle-glow 3s ease-in-out infinite' }} />
                     <span style={{ fontSize: 9, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600, opacity: 0.7 }}>LIVE</span>
@@ -2443,22 +2427,43 @@ export function Overview() {
                       style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: enhancingInput ? 'default' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
                       <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>{enhancingInput ? (promptMode === 'mvp' ? 'SCOPING…' : 'ENHANCING…') : promptMode === 'nebulous' ? 'CLARIFY' : 'EXECUTE'}
                     </button>
-                    <div style={{ position: 'relative', display: 'inline-block' }}
-                      onMouseEnter={() => setHoveredArchBtn('claude-rec')}
-                      onMouseLeave={() => setHoveredArchBtn(null)}
-                    >
-                      <div style={{ border: '1px solid #1e2330', padding: '5px 12px', borderRadius: 4, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' ? '#0f1215' : '#0a0d10', fontSize: 10, fontWeight: 700, cursor: 'default', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                        <span style={{ color: '#9ca3af', marginRight: 4 }}>llm:</span>
-                        <span style={{ color: '#9ca3af' }}>sonnet-4.6</span>
-                      </div>
-                      <span
-                        onMouseEnter={() => setHoveredArchBtn('llm-tip')}
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                      <button
+                        onClick={() => setModelMenuOpen(o => !o)}
+                        onMouseEnter={() => setHoveredArchBtn('claude-rec')}
                         onMouseLeave={() => setHoveredArchBtn(null)}
-                        style={{ position: 'absolute', top: -4, right: -4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 11, height: 11, borderRadius: '50%', border: '1px solid #333', color: '#555', fontSize: 7, fontWeight: 700, cursor: 'help', fontFamily: '"JetBrains Mono", Menlo, monospace', background: '#0a0d10', lineHeight: 1, zIndex: 2 }}>?</span>
-                      {hoveredArchBtn === 'llm-tip' && (
-                        <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#9ca3af', width: 220, lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                          {getModelReason('Claude')}
-                        </div>
+                        style={{ border: `1px solid ${modelMenuOpen ? 'rgba(52,211,153,0.4)' : '#1e2330'}`, padding: '5px 10px', borderRadius: 4, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' || modelMenuOpen ? '#0f1215' : '#0a0d10', fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                        <span style={{ color: '#6b7280' }}>llm:</span>
+                        <span style={{ color: '#34d399' }}>{availableModels.find(m => m.id === selectedModel)?.label ?? selectedModel}</span>
+                        <span style={{ color: '#4b5563', fontSize: 7, marginLeft: 1 }}>{modelMenuOpen ? '▲' : '▼'}</span>
+                      </button>
+                      {modelMenuOpen && (
+                        <>
+                          <div onClick={() => setModelMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 19 }} />
+                          <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 6, background: '#0c0f14', border: '1px solid #252a35', borderRadius: 8, padding: 4, minWidth: 200, maxHeight: 280, overflowY: 'auto', boxShadow: '0 8px 28px rgba(0,0,0,0.7)', zIndex: 20 }}>
+                            {(['anthropic', 'openai', 'gemini', 'openrouter'] as const).map(prov => {
+                              const items = availableModels.filter(m => m.provider === prov)
+                              if (items.length === 0) return null
+                              return (
+                                <div key={prov}>
+                                  <div style={{ fontSize: 8, letterSpacing: 0.8, color: '#4b5563', fontWeight: 700, padding: '6px 8px 3px', textTransform: 'uppercase', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{prov}</div>
+                                  {items.map(m => (
+                                    <div
+                                      key={m.id}
+                                      onClick={() => { setSelectedModel(m.id); setModelMenuOpen(false) }}
+                                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 5, cursor: 'pointer', fontSize: 11, fontWeight: 600, color: m.id === selectedModel ? '#34d399' : '#cbd5e1', background: m.id === selectedModel ? 'rgba(52,211,153,0.08)' : 'transparent', fontFamily: '"JetBrains Mono", Menlo, monospace' }}
+                                      onMouseEnter={e => { if (m.id !== selectedModel) e.currentTarget.style.background = '#141a20' }}
+                                      onMouseLeave={e => { if (m.id !== selectedModel) e.currentTarget.style.background = 'transparent' }}
+                                    >
+                                      <span style={{ width: 5, height: 5, borderRadius: 999, background: m.id === selectedModel ? '#34d399' : '#2a3340', flexShrink: 0 }} />
+                                      {m.label}
+                                    </div>
+                                  ))}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </>
                       )}
                     </div>
                     <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 6 }}>

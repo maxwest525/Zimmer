@@ -1,11 +1,12 @@
 import { Router } from "express";
-import OpenAI from "openai";
+import { complete, MODEL_CATALOG } from "../lib/models.js";
 
 const router = Router();
 
-const openai = new OpenAI({
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+router.get("/ai/models", (_req, res) => {
+  res.json({
+    models: MODEL_CATALOG.map(({ id, label, provider }) => ({ id, label, provider })),
+  });
 });
 
 router.post("/ai/suggest", async (req, res) => {
@@ -15,13 +16,10 @@ router.post("/ai/suggest", async (req, res) => {
   }
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 300,
-      messages: [
-        {
-          role: "system",
-          content: `You are a sharp product coach. The user just typed a rough idea for a project. Your job is to ask 2-3 SHORT clarifying questions that help narrow down what they actually need — things they haven't specified yet.
+    const raw = await complete({
+      model,
+      maxTokens: 300,
+      system: `You are a sharp product coach. The user just typed a rough idea for a project. Your job is to ask 2-3 SHORT clarifying questions that help narrow down what they actually need — things they haven't specified yet.
 
 Rules:
 - Ask questions, NOT feature suggestions. Frame as "What type of X?" or "Should it support Y or Z?" or "Who's the target user?"
@@ -33,12 +31,9 @@ Rules:
 - Do NOT suggest features or say "Add X" or "Include Y" or "Integrate Z"
 
 Return ONLY a JSON array of question strings, nothing else.`,
-        },
-        { role: "user", content: prompt.trim() },
-      ],
+      user: prompt.trim(),
     });
 
-    const raw = completion.choices[0]?.message?.content || "[]";
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const suggestions = JSON.parse(cleaned);
     res.json({ suggestions: Array.isArray(suggestions) ? suggestions.slice(0, 3) : [] });
@@ -48,19 +43,16 @@ Return ONLY a JSON array of question strings, nothing else.`,
 });
 
 router.post("/ai/autocomplete", async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt, model } = req.body;
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
     return res.json({ completions: [] });
   }
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 80,
-      messages: [
-        {
-          role: "system",
-          content: `You are an autocomplete engine, like the predictive-text bar on a phone keyboard. The user is typing a prompt describing an app they want to build. Predict the next few words that would naturally continue their sentence.
+    const raw = await complete({
+      model,
+      maxTokens: 80,
+      system: `You are an autocomplete engine, like the predictive-text bar on a phone keyboard. The user is typing a prompt describing an app they want to build. Predict the next few words that would naturally continue their sentence.
 
 Rules:
 - Return 3 SHORT continuations — each just the NEXT 1-4 words that come after what they typed, NOT a full sentence or rewrite.
@@ -71,12 +63,9 @@ Rules:
 - No punctuation unless it naturally belongs. No quotes. No numbering.
 
 Return ONLY a JSON array of 3 short strings, nothing else.`,
-        },
-        { role: "user", content: prompt },
-      ],
+      user: prompt,
     });
 
-    const raw = completion.choices[0]?.message?.content || "[]";
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleaned);
     const completions = Array.isArray(parsed)
@@ -92,7 +81,7 @@ Return ONLY a JSON array of 3 short strings, nothing else.`,
 });
 
 router.post("/ai/clarify", async (req, res) => {
-  const { prompt, previousAnswers } = req.body;
+  const { prompt, previousAnswers, model } = req.body;
   if (!prompt || typeof prompt !== "string") {
     return res.status(400).json({ error: "prompt required" });
   }
@@ -113,13 +102,10 @@ router.post("/ai/clarify", async (req, res) => {
   }
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 400,
-      messages: [
-        {
-          role: "system",
-          content: `You are MASSA AI, a build orchestration system. The user submitted a project prompt. Ask ONE clarifying question — the single most important thing you still need to know. Provide 3-4 multiple choice options. Be concise.
+    const raw = await complete({
+      model,
+      maxTokens: 400,
+      system: `You are MASSA AI, a build orchestration system. The user submitted a project prompt. Ask ONE clarifying question — the single most important thing you still need to know. Provide 3-4 multiple choice options. Be concise.
 
 Return ONLY valid JSON in this format:
 {
@@ -137,15 +123,9 @@ If the prompt is already specific enough, return:
 }
 
 You may ask at most 1 question total (the caller enforces a hard cap of 2). Focus on the most critical unknown: target platform, primary user, or core feature priority. Don't repeat questions already answered.`,
-        },
-        {
-          role: "user",
-          content: `Project prompt: "${prompt.trim()}"${answersContext}`,
-        },
-      ],
+      user: `Project prompt: "${prompt.trim()}"${answersContext}`,
     });
 
-    const raw = completion.choices[0]?.message?.content || "{}";
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const result = JSON.parse(cleaned);
     res.json(result);
@@ -159,7 +139,7 @@ You may ask at most 1 question total (the caller enforces a hard cap of 2). Focu
 });
 
 router.post("/ai/enhance-prompt", async (req, res) => {
-  const { content, mode } = req.body;
+  const { content, mode, model } = req.body;
   if (!content || typeof content !== "string" || content.trim().length < 3) {
     return res.json({ prompt: content || "" });
   }
@@ -187,20 +167,13 @@ Rules:
 - Return ONLY the enhanced prompt text, nothing else`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 250,
-      messages: [
-        {
-          role: "system",
-          content: mode === "mvp" ? mvpSystem : enhanceSystem,
-        },
-        { role: "user", content: content.trim() },
-      ],
+    const enhanced = await complete({
+      model,
+      maxTokens: 250,
+      system: mode === "mvp" ? mvpSystem : enhanceSystem,
+      user: content.trim(),
     });
-
-    const enhanced = completion.choices[0]?.message?.content?.trim() || content;
-    res.json({ prompt: enhanced });
+    res.json({ prompt: enhanced || content });
   } catch {
     res.json({ prompt: content });
   }
