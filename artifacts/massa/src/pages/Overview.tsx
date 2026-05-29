@@ -2260,9 +2260,6 @@ export function Overview() {
     { file: 'src/pages/Homepage.tsx', line: 6, code: 'cron.schedule("0 9 * * 1-5", () => runDailyExport())', projectId: 'p2' },
     { file: 'src/pages/ApiSettings.tsx', line: 12, code: 'const providers = await fetchProviders()', projectId: 'p2' },
     { file: 'src/engine/backtest.ts', line: 77, code: 'const equity = positions.reduce((s, p) => s + p.unrealised, initialCapital)', projectId: 'p1' },
-    { file: 'src/scraper/crawler.ts', line: 23, code: 'const $ = cheerio.load(await axios.get(url).then(r => r.data))', projectId: 'p3' },
-    { file: 'src/scraper/parser.ts', line: 11, code: '// Send alert to #trading-alerts channel', projectId: 'p3' },
-    { file: 'src/scraper/exporter.ts', line: 12, code: 'await slackClient.chat.postMessage({ channel, text: message })', projectId: 'p3' },
     { file: 'src/engine/order.ts', line: 55, code: 'export type Order = { id: string; side: "buy" | "sell"; qty: number }', projectId: 'p1' },
   ]
   const QA_POOL = [
@@ -2272,10 +2269,8 @@ export function Overview() {
     { qa: 'pass' as const, content: '✓ Lint: 0 warnings, 0 errors', projectId: 'p2' },
     { qa: 'warn' as const, content: '⚠ Type mismatch on line 42 — Signal | undefined', projectId: 'p1' },
     { qa: 'warn' as const, content: '⚠ Unused import: Logger in risk/limits.ts', projectId: 'p1' },
-    { qa: 'warn' as const, content: '⚠ Missing null check before API call on line 88', projectId: 'p3' },
     { qa: 'pass' as const, content: '✓ Integration test: /v1/orders endpoint — 200 OK', projectId: 'p1' },
     { qa: 'pass' as const, content: '✓ Schema migration dry-run succeeded', projectId: 'p2' },
-    { qa: 'warn' as const, content: '⚠ Bundle size increased by 4.2 kB — review imports', projectId: 'p3' },
     { qa: 'pass' as const, content: '✓ Snapshot test: Dashboard renders correctly', projectId: 'p1' },
   ]
 
@@ -3252,7 +3247,6 @@ export function Overview() {
                     const treeLines: Record<string, string[]> = {
                       'p1': ['├── Backend','│   ├── Core Engine','│   ├── Risk Module','│   └── Exchange / API Logic','├── Interface','│   └── Dashboard UI','└── Operations','    ├── Alerts','    ├── Backtester','    └── Monitoring'],
                       'p2': ['├── Pages','│   ├── Homepage','│   ├── Pricing','│   └── Documentation','└── Infrastructure','    ├── API Settings','    └── Auth Flow'],
-                      'p3': ['├── Pipeline','│   ├── Crawler','│   ├── Parser','│   └── Data Store','└── Operations','    ├── Scheduler','    └── Email Export'],
                     }
                     const lines = treeLines[project.id] || project.builds.map((b, i, a) => `${i === a.length - 1 ? '└' : '├'}── ${b.title}`)
                     return (
@@ -3958,15 +3952,6 @@ export function Overview() {
                   '    \u251C\u2500\u2500 API Settings',
                   '    \u2514\u2500\u2500 Auth Flow',
                 ],
-                'p3': [
-                  '\u251C\u2500\u2500 Pipeline',
-                  '\u2502   \u251C\u2500\u2500 Crawler',
-                  '\u2502   \u251C\u2500\u2500 Parser',
-                  '\u2502   \u2514\u2500\u2500 Data Store',
-                  '\u2514\u2500\u2500 Operations',
-                  '    \u251C\u2500\u2500 Scheduler',
-                  '    \u2514\u2500\u2500 Email Export',
-                ],
               }
               const lines = treeLines[expandProject.id] || expandProject.builds.map((b, i, a) => `${i === a.length - 1 ? '\u2514' : '\u251C'}\u2500\u2500 ${b.title}`)
               return (
@@ -4040,7 +4025,7 @@ export function Overview() {
                   <div style={{ width: 10, height: 10, borderRadius: 99, background: '#34d399' }} />
                 </div>
                 <div style={{ flex: 1, background: '#151920', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: c.muted, border: `1px solid ${c.border}` }}>
-                  {previewProject.id === 'p1' ? 'https://app.tradingbot.io' : previewProject.id === 'p2' ? 'https://massa.ai' : 'https://scraper.massa.ai'}
+                  {previewProject.id === 'p1' ? 'https://app.tradingbot.io' : 'https://massa.ai'}
                 </div>
               </div>
               <div style={{ padding: 0, height: 380, overflow: 'hidden', position: 'relative' }}>
@@ -4104,37 +4089,6 @@ export function Overview() {
                           <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.5 }}>Intelligent system that handles complex workflows automatically.</div>
                         </div>
                       ))}
-                    </div>
-                  </div>
-                )}
-                {previewProject.id === 'p3' && (
-                  <div style={{ padding: 16, height: '100%', display: 'flex', flexDirection: 'column', gap: 12, fontFamily: '"JetBrains Mono", monospace' }}>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                      <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>PAGES CRAWLED</div>
-                        <div style={{ fontSize: 22, fontWeight: 800 }}>12,847</div>
-                        <div style={{ fontSize: 11, color: '#60a5fa', marginTop: 2 }}>142/min avg</div>
-                      </div>
-                      <div style={{ flex: 1, background: '#131619', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>DATA EXTRACTED</div>
-                        <div style={{ fontSize: 22, fontWeight: 800 }}>3.2 GB</div>
-                        <div style={{ fontSize: 11, color: '#34d399', marginTop: 2 }}>98.7% success</div>
-                      </div>
-                      <div style={{ flex: 1, background: '#131619', borderRadius: 8, padding: 12, border: `1px solid ${c.border}` }}>
-                        <div style={{ fontSize: 10, color: c.muted, marginBottom: 6 }}>ACTIVE JOBS</div>
-                        <div style={{ fontSize: 22, fontWeight: 800 }}>3</div>
-                        <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 2 }}>2 queued</div>
-                      </div>
-                    </div>
-                    <div style={{ flex: 1, background: '#111', borderRadius: 8, padding: 10, border: `1px solid ${c.border}`, fontSize: 11, lineHeight: 1.8, color: '#b0b0b0', overflow: 'hidden' }}>
-                      <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=142 <span style={{ color: '#9ca3af' }}>200 OK 234ms</span></div>
-                      <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=143 <span style={{ color: '#9ca3af' }}>200 OK 189ms</span></div>
-                      <div><span style={{ color: '#60a5fa' }}>[PARSE]</span> Extracting 48 records from response...</div>
-                      <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=144 <span style={{ color: '#9ca3af' }}>200 OK 312ms</span></div>
-                      <div><span style={{ color: '#f59e0b' }}>[WARN]</span> Rate limit approaching, throttling to 80/min</div>
-                      <div><span style={{ color: '#34d399' }}>[OK]</span> Stored 48 records to PostgreSQL <span style={{ color: '#9ca3af' }}>batch_id: b-2847</span></div>
-                      <div><span style={{ color: '#60a5fa' }}>[PARSE]</span> Extracting 52 records from response...</div>
-                      <div><span style={{ color: '#34d399' }}>[OK]</span> GET https://api.example.com/products?page=145 <span style={{ color: '#9ca3af' }}>200 OK 198ms</span></div>
                     </div>
                   </div>
                 )}
