@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useThemeColors } from '@/contexts/ThemeContext'
 
 type Idea = {
   id: number
@@ -24,19 +25,8 @@ const SOURCE_ICONS: Record<string, string> = {
   inbox: '📥',
 }
 
-const c = {
-  bg: '#0a0d10',
-  panel: '#080a0e',
-  panelAlt: '#0c0f14',
-  border: '#1e2330',
-  borderLight: '#252a35',
-  text: '#e8eaed',
-  muted: '#9ca3af',
-  green: '#34d399',
-  font: '"JetBrains Mono", Menlo, monospace',
-}
-
 export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?: (content: string, ideaId: number) => void; enhancingId?: number | null }) {
+  const c = useThemeColors()
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [loading, setLoading] = useState(true)
   const [inputValue, setInputValue] = useState('')
@@ -270,7 +260,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
             gap: 8,
             marginTop: 8,
             padding: '6px 10px',
-            background: '#0d1117',
+            background: c.alt,
             border: `1px solid ${c.border}`,
             borderRadius: 6,
           }}>
@@ -279,7 +269,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
             </span>
             <button
               onClick={() => setVideoFile(null)}
-              style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 12, cursor: 'pointer', marginLeft: 'auto', fontFamily: c.font }}
+              style={{ background: 'none', border: 'none', color: c.red, fontSize: 12, cursor: 'pointer', marginLeft: 'auto', fontFamily: c.font }}
             >
               x
             </button>
@@ -324,7 +314,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
             style={{
               background: inputValue.trim() ? c.green : c.borderLight,
               border: 'none',
-              color: inputValue.trim() ? '#0a0d10' : c.muted,
+              color: inputValue.trim() ? c.bg : c.muted,
               padding: '8px 20px',
               borderRadius: 8,
               fontSize: 12,
@@ -369,7 +359,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
           {filteredIdeas.length} idea{filteredIdeas.length !== 1 ? 's' : ''}
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: c.muted, fontSize: 10, fontFamily: c.font, opacity: 0.7 }}>TIP: text ideas to <span style={{ color: c.text, opacity: 0.8 }}>(877) 766-3212</span></span>
+          <span style={{ color: c.muted, fontSize: 11, fontFamily: c.font, opacity: 0.7 }}>TIP: text ideas to <span style={{ color: c.text, opacity: 0.8 }}>(877) 766-3212</span></span>
         </div>
       </div>
 
@@ -441,8 +431,8 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                         rows={2}
                       />
                       <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                        <button onClick={() => saveEdit(idea.id)} style={{ background: c.green, border: 'none', color: c.bg, padding: '4px 12px', borderRadius: 4, fontSize: 10, fontWeight: 700, fontFamily: c.font, cursor: 'pointer' }}>SAVE</button>
-                        <button onClick={() => setEditingId(null)} style={{ background: 'transparent', border: `1px solid ${c.borderLight}`, color: c.muted, padding: '4px 12px', borderRadius: 4, fontSize: 10, fontFamily: c.font, cursor: 'pointer' }}>CANCEL</button>
+                        <button onClick={() => saveEdit(idea.id)} style={{ background: c.green, border: 'none', color: c.bg, padding: '4px 12px', borderRadius: 4, fontSize: 11, fontWeight: 700, fontFamily: c.font, cursor: 'pointer' }}>SAVE</button>
+                        <button onClick={() => setEditingId(null)} style={{ background: 'transparent', border: `1px solid ${c.borderLight}`, color: c.muted, padding: '4px 12px', borderRadius: 4, fontSize: 11, fontFamily: c.font, cursor: 'pointer' }}>CANCEL</button>
                       </div>
                     </div>
                   ) : (
@@ -450,8 +440,8 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                       onClick={() => startEditing(idea)}
                       style={{
                         color: c.text,
-                        fontSize: 12,
-                        fontFamily: c.font,
+                        fontSize: 13,
+                        fontFamily: c.fontSans,
                         lineHeight: 1.6,
                         cursor: 'text',
                         whiteSpace: 'pre-wrap',
@@ -465,14 +455,14 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                     <div style={{
                       marginTop: 10,
                       padding: '10px 12px',
-                      background: '#0d1117',
+                      background: c.alt,
                       border: `1px solid ${c.border}`,
                       borderRadius: 6,
                     }}>
-                      <div style={{ color: '#a78bfa', fontSize: 9, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, opacity: 0.8 }}>
+                      <div style={{ color: '#a78bfa', fontSize: 11, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, opacity: 0.8 }}>
                         AI Summary
                       </div>
-                      <div style={{ color: c.text, fontSize: 11, fontFamily: c.font, lineHeight: 1.6, opacity: 0.9 }}>
+                      <div style={{ color: c.text, fontSize: 13, fontFamily: c.fontSans, lineHeight: 1.6, opacity: 0.9 }}>
                         {idea.enrichmentSummary}
                       </div>
                       {idea.enrichmentUrls && (() => {
@@ -481,7 +471,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                           if (urls.length === 0) return null;
                           return (
                             <div style={{ marginTop: 8 }}>
-                              <div style={{ color: '#60a5fa', fontSize: 9, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, opacity: 0.8 }}>
+                              <div style={{ color: '#60a5fa', fontSize: 11, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, opacity: 0.8 }}>
                                 Mentioned Links
                               </div>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -509,7 +499,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                           if (techs.length === 0) return null;
                           return (
                             <div style={{ marginTop: 8 }}>
-                              <div style={{ color: '#fbbf24', fontSize: 9, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, opacity: 0.8 }}>
+                              <div style={{ color: '#fbbf24', fontSize: 11, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, opacity: 0.8 }}>
                                 Technologies
                               </div>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -522,7 +512,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                                       color: '#fbbf24',
                                       padding: '2px 8px',
                                       borderRadius: 4,
-                                      fontSize: 10,
+                                      fontSize: 11,
                                       fontFamily: c.font,
                                     }}
                                   >
@@ -540,7 +530,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                     <div style={{
                       marginTop: 8,
                       padding: '6px 10px',
-                      background: '#0d1117',
+                      background: c.alt,
                       border: `1px solid ${c.border}`,
                       borderRadius: 6,
                       display: 'flex',
@@ -548,11 +538,11 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                       gap: 6,
                     }}>
                       <span style={{ fontSize: 11 }}>{'\uD83C\uDFA5'}</span>
-                      <span style={{ color: c.muted, fontSize: 10, fontFamily: c.font }}>
+                      <span style={{ color: c.muted, fontSize: 11, fontFamily: c.font }}>
                         Video attached
                       </span>
                       {uploadingVideoId === idea.id && (
-                        <span style={{ color: c.green, fontSize: 10, fontFamily: c.font, marginLeft: 'auto' }}>
+                        <span style={{ color: c.green, fontSize: 11, fontFamily: c.font, marginLeft: 'auto' }}>
                           {uploadProgress}
                         </span>
                       )}
@@ -562,14 +552,14 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                     <div style={{
                       marginTop: 8,
                       padding: '10px 12px',
-                      background: '#0d1117',
+                      background: c.alt,
                       border: `1px solid ${c.border}`,
                       borderRadius: 6,
                     }}>
-                      <div style={{ color: '#22d3ee', fontSize: 9, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, opacity: 0.8 }}>
+                      <div style={{ color: '#22d3ee', fontSize: 11, fontFamily: c.font, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, opacity: 0.8 }}>
                         Video Transcript
                       </div>
-                      <div style={{ color: c.text, fontSize: 11, fontFamily: c.font, lineHeight: 1.6, opacity: 0.85, whiteSpace: 'pre-wrap' }}>
+                      <div style={{ color: c.text, fontSize: 13, fontFamily: c.fontSans, lineHeight: 1.6, opacity: 0.85, whiteSpace: 'pre-wrap' }}>
                         {idea.transcript}
                       </div>
                     </div>
@@ -578,7 +568,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                     <div style={{
                       marginTop: 8,
                       color: c.muted,
-                      fontSize: 10,
+                      fontSize: 11,
                       fontFamily: c.font,
                       opacity: 0.6,
                       fontStyle: 'italic',
@@ -589,10 +579,10 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                     </div>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-                    <span style={{ color: c.muted, fontSize: 10, fontFamily: c.font, opacity: 0.6 }}>
+                    <span style={{ color: c.muted, fontSize: 11, fontFamily: c.font, opacity: 0.6 }}>
                       {SOURCE_ICONS[idea.source] || ''} {idea.source}
                     </span>
-                    <span style={{ color: c.muted, fontSize: 10, fontFamily: c.font, opacity: 0.5 }}>
+                    <span style={{ color: c.muted, fontSize: 11, fontFamily: c.font, opacity: 0.5 }}>
                       {formatDate(idea.createdAt)}
                     </span>
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
@@ -604,7 +594,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                             cardFileInputRef.current?.click()
                           }}
                           disabled={uploadingVideoId === idea.id}
-                          style={{ background: 'none', border: 'none', color: c.muted, fontSize: 10, fontFamily: c.font, cursor: 'pointer', opacity: 0.5, padding: '2px 6px', transition: 'opacity 0.15s' }}
+                          style={{ background: 'none', border: 'none', color: c.muted, fontSize: 11, fontFamily: c.font, cursor: 'pointer', opacity: 0.5, padding: '2px 6px', transition: 'opacity 0.15s' }}
                           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
                           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.5' }}
                           title="Attach video"
@@ -616,7 +606,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                         <button
                           onClick={(e) => { e.stopPropagation(); onTurnIntoPrompt(idea.content, idea.id) }}
                           disabled={enhancingId === idea.id}
-                          style={{ background: 'none', border: 'none', color: c.green, fontSize: 10, fontFamily: c.font, cursor: enhancingId === idea.id ? 'wait' : 'pointer', opacity: enhancingId === idea.id ? 1 : 0.7, padding: '2px 6px', transition: 'opacity 0.15s' }}
+                          style={{ background: 'none', border: 'none', color: c.green, fontSize: 11, fontFamily: c.font, cursor: enhancingId === idea.id ? 'wait' : 'pointer', opacity: enhancingId === idea.id ? 1 : 0.7, padding: '2px 6px', transition: 'opacity 0.15s' }}
                           onMouseEnter={e => { if (enhancingId !== idea.id) (e.currentTarget as HTMLElement).style.opacity = '1' }}
                           onMouseLeave={e => { if (enhancingId !== idea.id) (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                           title="Turn into Prompt"
@@ -626,14 +616,14 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); archiveIdea(idea.id) }}
-                        style={{ background: 'none', border: 'none', color: c.muted, fontSize: 10, fontFamily: c.font, cursor: 'pointer', opacity: 0.5, padding: '2px 6px' }}
+                        style={{ background: 'none', border: 'none', color: c.muted, fontSize: 11, fontFamily: c.font, cursor: 'pointer', opacity: 0.5, padding: '2px 6px' }}
                         title="Archive"
                       >
                         archive
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); deleteIdea(idea.id) }}
-                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 10, fontFamily: c.font, cursor: 'pointer', opacity: 0.5, padding: '2px 6px' }}
+                        style={{ background: 'none', border: 'none', color: c.red, fontSize: 11, fontFamily: c.font, cursor: 'pointer', opacity: 0.5, padding: '2px 6px' }}
                         title="Delete permanently"
                       >
                         delete
@@ -653,7 +643,7 @@ export function IdeasView({ onTurnIntoPrompt, enhancingId }: { onTurnIntoPrompt?
         borderRadius: 8,
         padding: '12px 16px',
       }}>
-        <div style={{ color: c.muted, fontSize: 10, fontFamily: c.font, lineHeight: 1.6, opacity: 0.7 }}>
+        <div style={{ color: c.muted, fontSize: 11, fontFamily: c.font, lineHeight: 1.6, opacity: 0.7 }}>
           <span style={{ color: c.green, opacity: 0.6 }}>{'>'}</span> Text your ideas to <span style={{ color: c.text, opacity: 0.8 }}>(877) 766-3212</span> — they'll appear here tagged as SMS. You'll get a confirmation reply. Works from any phone, anywhere.
         </div>
       </div>

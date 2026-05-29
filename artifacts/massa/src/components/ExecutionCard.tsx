@@ -161,7 +161,7 @@ export function ExecutionCard({ card }: ExecutionCardProps) {
               {card.stack.map((s) => (
                 <span
                   key={s}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-accent text-white border border-border"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-accent text-foreground border border-border"
                 >
                   <InlineCompanyLogo name={s} size={12} />
                   {s}

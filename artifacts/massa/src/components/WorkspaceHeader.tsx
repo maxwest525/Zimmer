@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Project, ProjectStatus } from "@/data/mock";
 import { AlertCircle, Loader2, Circle, XCircle, CheckCircle2, Settings2, Activity, LayoutGrid } from "lucide-react";
 import { TenantSelector } from "@/components/TenantSelector";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface WorkspaceHeaderProps {
   project: Project;
@@ -72,6 +73,7 @@ export function WorkspaceHeader({ project, onOpenActivity, activityCount = 0 }: 
       </div>
       <div className="flex items-center gap-2">
         <TenantSelector />
+        <ThemeToggle />
         {onOpenActivity && (
           <button
             onClick={onOpenActivity}

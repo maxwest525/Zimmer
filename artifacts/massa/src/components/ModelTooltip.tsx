@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useThemeColors } from '@/contexts/ThemeContext'
 
 interface ModelTooltipProps {
   text: string
@@ -7,6 +8,7 @@ interface ModelTooltipProps {
 }
 
 export function ModelTooltip({ text, children, delay = 300 }: ModelTooltipProps) {
+  const c = useThemeColors()
   const [visible, setVisible] = useState(false)
   const [position, setPosition] = useState<'top' | 'bottom'>('top')
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -49,13 +51,13 @@ export function ModelTooltip({ text, children, delay = 300 }: ModelTooltipProps)
           [position === 'top' ? 'bottom' : 'top']: 'calc(100% + 8px)',
           left: '50%',
           transform: 'translateX(-50%)',
-          background: '#1a1d23',
-          border: '1px solid #2a2d35',
+          background: c.panel,
+          border: `1px solid ${c.border}`,
           borderRadius: 8,
           padding: '6px 10px',
           fontSize: 11,
           lineHeight: 1.4,
-          color: '#c8ccd4',
+          color: c.text,
           whiteSpace: 'nowrap',
           maxWidth: 240,
           overflow: 'hidden',
@@ -76,11 +78,11 @@ export function ModelTooltip({ text, children, delay = 300 }: ModelTooltipProps)
             transform: 'translateX(-50%) rotate(45deg)',
             width: 7,
             height: 7,
-            background: '#1a1d23',
-            borderRight: position === 'top' ? '1px solid #2a2d35' : 'none',
-            borderBottom: position === 'top' ? '1px solid #2a2d35' : 'none',
-            borderLeft: position === 'bottom' ? '1px solid #2a2d35' : 'none',
-            borderTop: position === 'bottom' ? '1px solid #2a2d35' : 'none',
+            background: c.panel,
+            borderRight: position === 'top' ? `1px solid ${c.border}` : 'none',
+            borderBottom: position === 'top' ? `1px solid ${c.border}` : 'none',
+            borderLeft: position === 'bottom' ? `1px solid ${c.border}` : 'none',
+            borderTop: position === 'bottom' ? `1px solid ${c.border}` : 'none',
           }}
         />
       </div>

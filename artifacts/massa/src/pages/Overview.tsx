@@ -14,6 +14,8 @@ import { TenantSelector } from '@/components/TenantSelector'
 import { useTenant } from '@/contexts/TenantContext'
 import { useProjects } from '@/contexts/ProjectContext'
 import { getPhaseIcon, getActionIcon, getTabIcon, ThinkingIcon, BuildingIcon } from '@/lib/actionIcons'
+import { useTheme, useThemeColors } from '@/contexts/ThemeContext'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -897,29 +899,29 @@ function CurrentProjectsView({ projects, setProjects, onBack }: { projects: Proj
 
   const tabProjects = useMemo(() => projects.filter(p => p.lifecycle === currentTab), [projects, currentTab])
 
-  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+  const c = useThemeColors()
 
   return (
-    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.text }}
           onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
         >←</button>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Current Projects</div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Current Projects</div>
           <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Manage completed, archived, and deleted projects</div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: '#131619', borderRadius: 6, padding: 3, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: c.alt, borderRadius: 6, padding: 3, width: 'fit-content' }}>
         {(['completed', 'archived', 'deleted'] as const).map(tab => {
           const count = projects.filter(p => p.lifecycle === tab).length
           return (
             <button key={tab} onClick={() => setCurrentTab(tab)}
-              style={{ border: 'none', background: currentTab === tab ? '#1e2430' : 'transparent', color: currentTab === tab ? '#f0f0f0' : c.muted, padding: '6px 14px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: currentTab === tab ? 700 : 500, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}>
+              style={{ border: 'none', background: currentTab === tab ? c.borderLight : 'transparent', color: currentTab === tab ? c.text : c.muted, padding: '6px 14px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: currentTab === tab ? 700 : 500, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}>
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              {count > 0 && <span style={{ fontSize: 9, background: currentTab === tab ? '#252a35' : '#1a1f28', padding: '1px 5px', borderRadius: 10, color: currentTab === tab ? '#f0f0f0' : c.muted }}>{count}</span>}
+              {count > 0 && <span style={{ fontSize: 9, background: currentTab === tab ? c.border : c.borderDim, padding: '1px 5px', borderRadius: 10, color: currentTab === tab ? c.text : c.muted }}>{count}</span>}
             </button>
           )
         })}
@@ -933,10 +935,10 @@ function CurrentProjectsView({ projects, setProjects, onBack }: { projects: Proj
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {tabProjects.map(project => (
-            <div key={project.id} style={{ border: `1px solid ${c.border}`, background: '#131619', borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div key={project.id} style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 2 }}>{project.name}</div>
-                <div style={{ fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{project.goal} — {project.builds.length} build{project.builds.length !== 1 ? 's' : ''}</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 2 }}>{project.name}</div>
+                <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{project.goal} — {project.builds.length} build{project.builds.length !== 1 ? 's' : ''}</div>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'active' } : p))}
@@ -954,7 +956,7 @@ function CurrentProjectsView({ projects, setProjects, onBack }: { projects: Proj
                 {currentTab === 'completed' && (
                   <button onClick={() => setProjects(prev => prev.map(p => p.id === project.id ? { ...p, lifecycle: 'archived' } : p))}
                     style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', fontSize: 10, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1f28' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = c.borderDim }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                   >Archive</button>
                 )}
@@ -968,23 +970,23 @@ function CurrentProjectsView({ projects, setProjects, onBack }: { projects: Proj
 }
 
 function TerminalPageView({ onBack, title, command, lines }: { onBack: () => void; title: string; command: string; lines: string[] }) {
-  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+  const c = useThemeColors()
   return (
-    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.text }}
           onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
         >←</button>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{title}</div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{title}</div>
           <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA://sys/{command}</div>
         </div>
       </div>
       <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 11, lineHeight: 1.8 }}>
         <div style={{ color: c.green, marginBottom: 8 }}>$ massa {command} --status</div>
         {lines.map((line, i) => (
-          <div key={i} style={{ color: line.startsWith('>') ? c.green : line.startsWith('!') ? '#f59e0b' : line.startsWith('[') ? '#60a5fa' : line === '' ? 'transparent' : '#ccc', whiteSpace: 'pre-wrap' }}>
+          <div key={i} style={{ color: line.startsWith('>') ? c.green : line.startsWith('!') ? '#f59e0b' : line.startsWith('[') ? '#60a5fa' : line === '' ? 'transparent' : c.muted, whiteSpace: 'pre-wrap' }}>
             {line || '\u00A0'}
           </div>
         ))}
@@ -1031,7 +1033,7 @@ function AutomationsView({ onBack }: { onBack: () => void }) {
 }
 
 function MarketingView({ onBack }: { onBack: () => void }) {
-  const c = { border: '#1e2530', muted: '#9ca3af', green: '#34d399' }
+  const c = useThemeColors()
 
   const loopInputRef = useRef<HTMLInputElement | null>(null)
   const docInputRef = useRef<HTMLInputElement | null>(null)
@@ -1228,11 +1230,11 @@ function MarketingView({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div style={{ gridColumn: '2 / -1', background: '#0a0d10', padding: 0, overflow: 'auto', borderRadius: 12, minWidth: 0, border: `1px solid ${c.border}` }}>
+    <div style={{ gridColumn: '2 / -1', background: c.bg, padding: 0, overflow: 'auto', borderRadius: 12, minWidth: 0, border: `1px solid ${c.border}` }}>
       <div style={{ padding: '24px 28px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
           <button onClick={onBack} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${c.border}`, background: 'rgba(255,255,255,0.04)', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, padding: 0, transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.borderColor = '#3a4050' }}
+            onMouseEnter={e => { e.currentTarget.style.color = c.text; e.currentTarget.style.borderColor = c.borderLight }}
             onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
           >←</button>
         </div>
@@ -1241,7 +1243,7 @@ function MarketingView({ onBack }: { onBack: () => void }) {
           <h1 style={{ margin: '0 0 10px', fontSize: 32, fontWeight: 800, lineHeight: 1.15, fontFamily: 'Inter, system-ui, sans-serif', background: 'linear-gradient(135deg, #f0f0f0 0%, #34d399 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             Marketing Command Center
           </h1>
-          <p style={{ margin: '0 0 20px', color: '#ccc', fontSize: 16, lineHeight: 1.6, fontFamily: 'Inter, system-ui, sans-serif' }}>
+          <p style={{ margin: '0 0 20px', color: c.muted, fontSize: 16, lineHeight: 1.6, fontFamily: 'Inter, system-ui, sans-serif' }}>
             Your marketing engines run the show. Each engine is an autonomous workflow — upload a loop diagram and MASSA builds it out and automates it. Integrations and connectors plug in underneath to power the engines.
           </p>
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
@@ -1266,7 +1268,7 @@ function MarketingView({ onBack }: { onBack: () => void }) {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ width: 38, height: 38, borderRadius: 10, background: `${engineStatusColors[eng.status]}18`, border: `1px solid ${engineStatusColors[eng.status]}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: engineStatusColors[eng.status], fontWeight: 800, fontSize: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>{eng.name.charAt(0)}</div>
-                  <span style={{ color: '#f0f0f0', fontWeight: 700, fontSize: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>{eng.name}</span>
+                  <span style={{ color: c.text, fontWeight: 700, fontSize: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>{eng.name}</span>
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 600, color: engineStatusColors[eng.status], background: `${engineStatusColors[eng.status]}12`, padding: '4px 10px', borderRadius: 999, fontFamily: 'Inter, system-ui, sans-serif' }}>{engineStatusLabels[eng.status]}</span>
               </div>
@@ -1276,11 +1278,11 @@ function MarketingView({ onBack }: { onBack: () => void }) {
                   <input ref={loopInputRef} type="file" accept="image/*" onChange={handleLoopUpload} style={{ display: 'none' }} />
                   {loopImage ? (
                     <div>
-                      <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, overflow: 'hidden', background: '#0a0d10', marginBottom: 10 }}>
+                      <div style={{ border: `1px solid ${c.border}`, borderRadius: 10, overflow: 'hidden', background: c.bg, marginBottom: 10 }}>
                         <img src={loopImage} alt="Autonomous loop diagram" style={{ display: 'block', width: '100%', maxHeight: 220, objectFit: 'contain' }} />
                       </div>
                       <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={() => loopInputRef.current?.click()} style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.border}`, color: '#ccc', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>Replace diagram</button>
+                        <button onClick={() => loopInputRef.current?.click()} style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.border}`, color: c.muted, borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>Replace diagram</button>
                         <button onClick={() => setLoopImage(null)} style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.border}`, color: c.muted, borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>Remove</button>
                       </div>
                     </div>
@@ -1315,7 +1317,7 @@ function MarketingView({ onBack }: { onBack: () => void }) {
                     <div style={{ width: 30, height: 30, borderRadius: 7, background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#60a5fa', fontSize: 13, flexShrink: 0 }}>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     </div>
-                    <span style={{ color: '#f0f0f0', fontSize: 13, fontWeight: 600, fontFamily: 'Inter, system-ui, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</span>
+                    <span style={{ color: c.text, fontSize: 13, fontWeight: 600, fontFamily: 'Inter, system-ui, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
                     <span style={{ color: c.muted, fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>{doc.size}</span>
@@ -1337,7 +1339,7 @@ function MarketingView({ onBack }: { onBack: () => void }) {
         >
           <span style={{ fontSize: 10, color: c.muted, transition: 'transform 0.2s', transform: integrationsOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>▸</span>
           <span style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif' }}>INTEGRATIONS &amp; CONNECTORS</span>
-          <span style={{ fontSize: 11, color: '#6b7280', marginLeft: 'auto', fontFamily: 'Inter, system-ui, sans-serif' }}>{categories.length} categories · supports the engines</span>
+          <span style={{ fontSize: 11, color: c.dim, marginLeft: 'auto', fontFamily: 'Inter, system-ui, sans-serif' }}>{categories.length} categories · supports the engines</span>
         </button>
         {integrationsOpen && (
           <div id="integrations-panel" style={{ border: `1px solid ${c.border}`, borderTop: 'none', borderRadius: '0 0 12px 12px', padding: 20 }}>
@@ -1347,7 +1349,7 @@ function MarketingView({ onBack }: { onBack: () => void }) {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{ fontSize: 18 }}>{categoryIcons[cat.name]}</span>
-                      <span style={{ color: '#e8eaed', fontWeight: 700, fontSize: 13, fontFamily: 'Inter, system-ui, sans-serif' }}>{cat.name}</span>
+                      <span style={{ color: c.text, fontWeight: 700, fontSize: 13, fontFamily: 'Inter, system-ui, sans-serif' }}>{cat.name}</span>
                     </div>
                     <span style={{ fontSize: 10, fontWeight: 600, color: statusColors[cat.status], background: `${statusColors[cat.status]}12`, padding: '3px 8px', borderRadius: 999, fontFamily: 'Inter, system-ui, sans-serif' }}>{statusLabels[cat.status]}</span>
                   </div>
@@ -1355,7 +1357,7 @@ function MarketingView({ onBack }: { onBack: () => void }) {
                     {cat.integrations.map(integ => (
                       <div key={integ.name} title={integ.detail} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.03)', border: `1px solid ${c.border}`, borderRadius: 8, padding: '4px 9px', cursor: 'default' }}>
                         <CompanyLogo name={integ.name} size={14} accentColor={integ.color} />
-                        <span style={{ fontSize: 11, color: '#ccc', fontFamily: 'Inter, system-ui, sans-serif' }}>{integ.name}</span>
+                        <span style={{ fontSize: 11, color: c.muted, fontFamily: 'Inter, system-ui, sans-serif' }}>{integ.name}</span>
                       </div>
                     ))}
                   </div>
@@ -1370,8 +1372,8 @@ function MarketingView({ onBack }: { onBack: () => void }) {
 }
 
 function IntegrationsView({ onBack }: { onBack: () => void }) {
-  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
-  const mono = '"JetBrains Mono", Menlo, monospace'
+  const c = useThemeColors()
+  const mono = c.font
   const [activeCategory, setActiveCategory] = useState<string>('All')
 
   type IntegrationStatus = 'AVAILABLE' | 'CONNECTED' | 'BETA'
@@ -1508,22 +1510,22 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
   const filteredCategories = activeCategory === 'All' ? categories : categories.filter(cat => cat.name === activeCategory)
 
   return (
-    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.text }}
           onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
         >←</button>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: mono }}>Integrations</div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: mono }}>Integrations</div>
           <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>MASSA://sys/integrations</div>
         </div>
       </div>
 
       <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono, fontSize: 11, lineHeight: 1.8, marginBottom: 16 }}>
         <div style={{ color: c.green, marginBottom: 8 }}>$ massa integrations --list</div>
-        <div style={{ color: '#ccc' }}>{'>'} Loaded {categories.reduce((sum, cat) => sum + cat.integrations.length, 0)} integrations across {categories.length} categories</div>
-        <div style={{ color: '#ccc' }}>{'>'} {categories.reduce((sum, cat) => sum + cat.integrations.filter(i => i.status === 'CONNECTED').length, 0)} connected &middot; {categories.reduce((sum, cat) => sum + cat.integrations.filter(i => i.status === 'AVAILABLE').length, 0)} available &middot; {categories.reduce((sum, cat) => sum + cat.integrations.filter(i => i.status === 'BETA').length, 0)} in beta</div>
+        <div style={{ color: c.muted }}>{'>'} Loaded {categories.reduce((sum, cat) => sum + cat.integrations.length, 0)} integrations across {categories.length} categories</div>
+        <div style={{ color: c.muted }}>{'>'} {categories.reduce((sum, cat) => sum + cat.integrations.filter(i => i.status === 'CONNECTED').length, 0)} connected &middot; {categories.reduce((sum, cat) => sum + cat.integrations.filter(i => i.status === 'AVAILABLE').length, 0)} available &middot; {categories.reduce((sum, cat) => sum + cat.integrations.filter(i => i.status === 'BETA').length, 0)} in beta</div>
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 16, fontFamily: mono }}>
@@ -1531,7 +1533,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
           const isActive = activeCategory === name
           return (
             <button key={name} onClick={() => setActiveCategory(name)} style={{ padding: '5px 12px', borderRadius: 4, border: `1px solid ${isActive ? c.green : c.border}`, background: isActive ? `${c.green}15` : 'transparent', color: isActive ? c.green : c.muted, cursor: 'pointer', fontSize: 10, fontFamily: mono, fontWeight: isActive ? 700 : 500, transition: 'all 0.15s' }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.borderColor = '#4a5568' }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.borderColor = c.borderLight }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.borderColor = c.border }}
             >{name}</button>
           )
@@ -1549,7 +1551,7 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
                     {integ.monogram}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: '#f0f0f0', fontSize: 11, fontWeight: 600 }}>{integ.name}</div>
+                    <div style={{ color: c.text, fontSize: 11, fontWeight: 600 }}>{integ.name}</div>
                     <div style={{ color: c.muted, fontSize: 9, marginTop: 1 }}>{integ.desc}</div>
                   </div>
                   <span style={{ fontSize: 8, fontWeight: 700, color: statusColors[integ.status], background: `${statusColors[integ.status]}15`, padding: '2px 8px', borderRadius: 3, border: `1px solid ${statusColors[integ.status]}30`, flexShrink: 0, letterSpacing: '0.04em' }}>
@@ -1839,17 +1841,17 @@ function PublishedView({ onBack }: { onBack: () => void }) {
   const { completedProducts } = useProjects()
   const publishedProducts = useMemo(() => completedProducts.filter(p => p.publishStatus === 'live'), [completedProducts])
 
-  const c = { border: '#252a35', muted: '#9ca3af', green: '#34d399' }
+  const c = useThemeColors()
 
   return (
-    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.text }}
           onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
         >←</button>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Published</div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Published</div>
           <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{publishedProducts.length} live product{publishedProducts.length !== 1 ? 's' : ''}</div>
         </div>
       </div>
@@ -1858,27 +1860,27 @@ function PublishedView({ onBack }: { onBack: () => void }) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◉</div>
           <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>No published products yet</div>
-          <div style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Deploy and publish a completed product to see it here</div>
+          <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Deploy and publish a completed product to see it here</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {publishedProducts.map(product => (
-            <div key={product.id} style={{ border: `1px solid ${c.border}`, background: '#131619', borderRadius: 8, padding: 14 }}>
+            <div key={product.id} style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 8, padding: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{product.name}</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{product.name}</div>
                 <span style={{ fontSize: 9, fontWeight: 700, color: c.green, background: 'rgba(52,211,153,0.1)', padding: '2px 8px', borderRadius: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.green, boxShadow: `0 0 4px ${c.green}` }} />
                   LIVE
                 </span>
               </div>
-              <div style={{ fontSize: 10, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{product.summary}</div>
+              <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{product.summary}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                 {product.domain && (
                   <span style={{ color: c.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ fontSize: 12 }}>🔗</span> {product.domain}
                   </span>
                 )}
-                <span style={{ color: '#555' }}>Completed {product.completedAt}</span>
+                <span style={{ color: c.dim }}>Completed {product.completedAt}</span>
               </div>
             </div>
           ))}
@@ -2265,18 +2267,8 @@ export function Overview() {
     return null
   }, [projects, expandedBuildId])
 
-  const isDark = true
-  const c = {
-    bg: isDark ? '#0a0d10' : '#f4f6f2',
-    panel: isDark ? '#0f1215' : '#ffffff',
-    alt: isDark ? '#131619' : '#f8fbf6',
-    border: isDark ? '#252a35' : '#d8e5d7',
-    text: isDark ? '#e8eaed' : '#101410',
-    muted: isDark ? '#9ca3af' : '#556155',
-    green: isDark ? '#34d399' : '#1a7a18',
-    greenSoft: isDark ? 'rgba(52,211,153,0.08)' : 'rgba(56,212,48,0.06)',
-    blackGreen: isDark ? '#141820' : '#f0f0f0',
-  }
+  const { isDark } = useTheme()
+  const c = useThemeColors()
 
   const readyBuildsCount = useMemo(
     () => filteredProjects.flatMap(p => p.builds).filter(b => b.status === 'queued').length,
@@ -2465,8 +2457,8 @@ export function Overview() {
       onClick={() => toggleSection(key)}
       style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none' }}
     >
-      <span style={{ fontSize: 8, color: '#9ca3af', transform: collapsedSections[key] ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>&#9660;</span>
-      <span className="panel-header" style={{ color: '#9ca3af' }}>{label}</span>
+      <span style={{ fontSize: 8, color: c.muted, transform: collapsedSections[key] ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>&#9660;</span>
+      <span className="panel-header" style={{ color: c.muted }}>{label}</span>
       {extra}
     </div>
   )
@@ -2572,7 +2564,7 @@ export function Overview() {
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { height: 4px; width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #252a35; border-radius: 99px; }
+        ::-webkit-scrollbar-thumb { background: ${c.border}; border-radius: 99px; }
         ::-webkit-scrollbar-thumb:hover { background: #2a3040; }
         textarea:focus, input:focus { outline: none !important; box-shadow: none !important; }
         .terminal-input-box textarea { caret-color: #34d399; }
@@ -2581,15 +2573,16 @@ export function Overview() {
       `}</style>
 
       {/* HEADER */}
-      <div style={{ height: 56, border: `1px solid #1e2330`, background: '#080a0e', display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+      <div style={{ height: 56, border: `1px solid ${c.border}`, background: c.bg, display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, letterSpacing: 8, color: '#e8eaed', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA</span>
-          <span style={{ background: '#34d399', color: '#080a0e', fontWeight: 800, fontSize: isMobile ? 12 : 14, padding: '2px 8px', borderRadius: 3, boxShadow: '0 0 12px rgba(52,211,153,0.3)', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>AI</span>
+          <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, letterSpacing: 8, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA</span>
+          <span style={{ background: '#34d399', color: c.bg, fontWeight: 800, fontSize: isMobile ? 12 : 14, padding: '2px 8px', borderRadius: 3, boxShadow: '0 0 12px rgba(52,211,153,0.3)', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>AI</span>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
           <TenantSelector />
-          <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: isDesktop ? 'block' : 'none' }}>v2.4.1</span>
-          <div style={{ width: 30, height: 30, borderRadius: 4, background: 'rgba(52,211,153,0.06)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid rgba(52,211,153,0.15)`, fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>M</div>
+          <span style={{ fontSize: 11, color: c.muted, fontFamily: c.font, display: isDesktop ? 'block' : 'none' }}>v2.4.1</span>
+          <ThemeToggle />
+          <div style={{ width: 30, height: 30, borderRadius: 4, background: 'rgba(52,211,153,0.06)', color: c.green, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: `1px solid rgba(52,211,153,0.15)`, fontSize: 12, fontFamily: c.font }}>M</div>
         </div>
       </div>
 
@@ -2597,16 +2590,16 @@ export function Overview() {
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? (`${mobileNavOpen ? '160px' : '42px'} minmax(0, 1fr) ${mobileRightOpen ? '160px' : '42px'}`) : isTablet ? (`${mobileNavOpen ? '160px' : '42px'} minmax(0, 1fr) ${mobileRightOpen ? '180px' : '42px'}`) : (`${leftNavCollapsed ? '42px' : '160px'} minmax(0, 1fr) ${rightPanelCollapsed ? '42px' : '200px'}`), gap: isMobile ? 6 : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease' }}>
 
         {/* LEFT SIDEBAR */}
-        <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2, overflow: 'hidden', transition: 'padding 0.3s ease' }}>
+        <div style={{ border: `1px solid ${c.border}`, background: c.bg, padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2, overflow: 'hidden', transition: 'padding 0.3s ease' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : 'space-between', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid #1e2330' }}>
-              {!(isDesktop ? leftNavCollapsed : !mobileNavOpen) && <span className="panel-header" style={{ color: '#9ca3af' }}>SYS://NAV</span>}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : 'space-between', marginBottom: 12, paddingBottom: 6, borderBottom: `1px solid ${c.border}` }}>
+              {!(isDesktop ? leftNavCollapsed : !mobileNavOpen) && <span className="panel-header" style={{ color: c.muted }}>SYS://NAV</span>}
               <button
                 onClick={() => isDesktop ? setLeftNavCollapsed(!leftNavCollapsed) : setMobileNavOpen(!mobileNavOpen)}
                 title={(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'Expand nav' : 'Collapse nav'}
-                style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
+                style={{ width: 22, height: 22, borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.color = '#34d399'; e.currentTarget.style.borderColor = '#34d399' }}
-                onMouseLeave={e => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
+                onMouseLeave={e => { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border }}
               ><span style={{ display: 'inline-block', transform: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>»</span></button>
             </div>
             {([
@@ -2631,7 +2624,7 @@ export function Overview() {
                 <div key={item.label} onClick={() => {
                   if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
                   else if (item.path) { navigate(item.path) }
-                }} title={(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? item.label : undefined} style={{ padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '8px 0' : '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330', textAlign: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, gap: 8 }}>
+                }} title={(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? item.label : undefined} style={{ padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '8px 0' : '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : c.muted, borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? `1px solid ${c.border}` : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: `1px solid ${c.border}`, textAlign: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, gap: 8 }}>
                   {(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? (
                     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon}</span>
                   ) : (
@@ -2657,7 +2650,7 @@ export function Overview() {
             />
           </div>
         ) : activeView === 'ideas' ? (
-          <div style={{ gridColumn: '2 / -1', border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+          <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
             <IdeasView enhancingId={enhancingId} onTurnIntoPrompt={async (content, ideaId) => {
               setEnhancingId(ideaId)
               try {
@@ -2696,20 +2689,20 @@ export function Overview() {
           <InsideMassaView onBack={() => setActiveView('dashboard')} />
         ) : <>
         {/* CENTER MAIN */}
-        <div style={{ border: `1px solid #1e2330`, background: '#0a0d10', padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+        <div style={{ border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
 
           {/* Input area — Terminal Command Console */}
           {(() => {
             return (
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>
-              <div className="terminal-input-box" style={{ flex: 1, minWidth: 0, border: `1px solid #252a35`, background: '#080a0e', borderRadius: 10, position: 'relative', boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.02)', overflow: 'hidden' }}>
+              <div className="terminal-input-box" style={{ flex: 1, minWidth: 0, border: `1px solid ${c.border}`, background: c.bg, borderRadius: 10, position: 'relative', boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.02)', overflow: 'hidden' }}>
                 {/* Terminal title bar with inline pipeline tracker */}
-                <div style={{ display: 'flex', alignItems: 'center', padding: '6px 14px', borderBottom: '1px solid #1e2330', background: '#0c0f14' }}>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '6px 14px', borderBottom: `1px solid ${c.border}`, background: '#0c0f14' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                     <span style={{ fontSize: 13, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, lineHeight: 1 }}>{'>'}</span>
-                    <span className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>COMMAND</span>
-                    <div style={{ width: 1, height: 12, background: '#252a35' }} />
-                    <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://{selectedTenantId ? (projects.find(p => p.id === selectedTenantId)?.name?.toLowerCase().replace(/\s+/g, '-') ?? 'prompt') : 'prompt'}</span>
+                    <span className="panel-header" style={{ color: c.muted, fontSize: 9 }}>COMMAND</span>
+                    <div style={{ width: 1, height: 12, background: c.border }} />
+                    <span style={{ fontSize: 9, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://{selectedTenantId ? (projects.find(p => p.id === selectedTenantId)?.name?.toLowerCase().replace(/\s+/g, '-') ?? 'prompt') : 'prompt'}</span>
                   </div>
                   <div style={{ flex: 1 }} />
                   <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -2727,7 +2720,7 @@ export function Overview() {
                       value={rawInput}
                       onChange={e => setRawInput(e.target.value)}
                       placeholder={typedPlaceholder}
-                      style={{ width: '100%', minHeight: 80, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaed', fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: '"JetBrains Mono", Menlo, monospace', boxSizing: 'border-box', letterSpacing: '-0.01em' }}
+                      style={{ width: '100%', minHeight: 80, background: 'transparent', border: 'none', outline: 'none', color: c.text, fontSize: 14, lineHeight: 1.7, resize: 'vertical', fontFamily: '"JetBrains Mono", Menlo, monospace', boxSizing: 'border-box', letterSpacing: '-0.01em' }}
                     />
                   </div>
                 </div>
@@ -2748,7 +2741,7 @@ export function Overview() {
                 {promptMode === 'auto' && (quickTypeLoading || quickType.length > 0) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 14px 8px', flexWrap: 'wrap' }}>
                     {quickTypeLoading && quickType.length === 0 ? (
-                      <span style={{ fontSize: 10, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', opacity: 0.8 }}>predicting…</span>
+                      <span style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', opacity: 0.8 }}>predicting…</span>
                     ) : (
                       quickType.map((word, i) => (
                         <button
@@ -2760,8 +2753,8 @@ export function Overview() {
                             })
                           }}
                           onMouseEnter={e => { e.currentTarget.style.background = '#141e18'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.4)'; e.currentTarget.style.color = '#34d399' }}
-                          onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#d1d5db' }}
-                          style={{ background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 999, padding: '4px 12px', fontSize: 11, color: '#d1d5db', cursor: 'pointer', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s ease', whiteSpace: 'nowrap', animation: `suggestion-slide-in 0.2s ease ${i * 0.04}s both` }}>
+                          onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = '#d1d5db' }}
+                          style={{ background: '#0c0f14', border: `1px solid ${c.border}`, borderRadius: 999, padding: '4px 12px', fontSize: 11, color: '#d1d5db', cursor: 'pointer', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s ease', whiteSpace: 'nowrap', animation: `suggestion-slide-in 0.2s ease ${i * 0.04}s both` }}>
                           {word}
                         </button>
                       ))
@@ -2769,7 +2762,7 @@ export function Overview() {
                   </div>
                 )}
                 {/* Bottom bar */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px 10px', borderTop: '1px solid #1e2330' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px 10px', borderTop: `1px solid ${c.border}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <button
                       onMouseEnter={() => setHoveredArchBtn('arch-build')}
@@ -2784,15 +2777,15 @@ export function Overview() {
                         onClick={() => setModelMenuOpen(o => !o)}
                         onMouseEnter={() => setHoveredArchBtn('claude-rec')}
                         onMouseLeave={() => setHoveredArchBtn(null)}
-                        style={{ border: `1px solid ${modelMenuOpen ? 'rgba(52,211,153,0.4)' : '#1e2330'}`, padding: '5px 10px', borderRadius: 4, color: '#9ca3af', background: hoveredArchBtn === 'claude-rec' || modelMenuOpen ? '#0f1215' : '#0a0d10', fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                        <span style={{ color: '#6b7280' }}>llm:</span>
+                        style={{ border: `1px solid ${modelMenuOpen ? 'rgba(52,211,153,0.4)' : c.border}`, padding: '5px 10px', borderRadius: 4, color: c.muted, background: hoveredArchBtn === 'claude-rec' || modelMenuOpen ? c.panel : c.bg, fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                        <span style={{ color: c.dim }}>llm:</span>
                         <span style={{ color: '#34d399' }}>{availableModels.find(m => m.id === selectedModel)?.label ?? selectedModel}</span>
                         <span style={{ color: '#4b5563', fontSize: 7, marginLeft: 1 }}>{modelMenuOpen ? '▲' : '▼'}</span>
                       </button>
                       {modelMenuOpen && (
                         <>
                           <div onClick={() => setModelMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 19 }} />
-                          <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 6, background: '#0c0f14', border: '1px solid #252a35', borderRadius: 8, padding: 4, minWidth: 200, maxHeight: 280, overflowY: 'auto', boxShadow: '0 8px 28px rgba(0,0,0,0.7)', zIndex: 20 }}>
+                          <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 6, background: '#0c0f14', border: `1px solid ${c.border}`, borderRadius: 8, padding: 4, minWidth: 200, maxHeight: 280, overflowY: 'auto', boxShadow: '0 8px 28px rgba(0,0,0,0.7)', zIndex: 20 }}>
                             {(['anthropic', 'openai', 'gemini', 'openrouter'] as const).map(prov => {
                               const items = availableModels.filter(m => m.provider === prov)
                               if (items.length === 0) return null
@@ -2819,7 +2812,7 @@ export function Overview() {
                       )}
                     </div>
                     <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 10, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>mode:</span>
+                      <span style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>mode:</span>
                       {(() => {
                         const MODES = [
                           { key: 'manual' as const, label: 'MANUAL', desc: 'Builds exactly what you typed, no AI changes.' },
@@ -2843,15 +2836,15 @@ export function Overview() {
                                 })
                               }}
                               onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(52,211,153,0.3)' }}
-                              onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2330' }}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 10px', borderRadius: 4, border: '1px solid #1e2330', background: '#0c0f14', color: '#34d399', fontWeight: 700, fontSize: 10, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'nowrap', minWidth: 116, justifyContent: 'space-between' }}>
+                              onMouseLeave={e => { e.currentTarget.style.borderColor = c.border }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 10px', borderRadius: 4, border: `1px solid ${c.border}`, background: '#0c0f14', color: '#34d399', fontWeight: 700, fontSize: 10, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'nowrap', minWidth: 116, justifyContent: 'space-between' }}>
                               <span>{current.label}</span>
-                              <span style={{ color: '#6b7280', fontSize: 8, transform: modeMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}>▼</span>
+                              <span style={{ color: c.dim, fontSize: 8, transform: modeMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}>▼</span>
                             </button>
                             {modeMenuOpen && modeMenuRect && (
                               <>
                                 <div onClick={() => setModeMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 9999 }} />
-                                <div style={{ position: 'fixed', bottom: modeMenuRect.bottom, left: modeMenuRect.left, background: '#0f1215', border: '1px solid #252a35', borderRadius: 8, padding: 4, width: 280, maxWidth: 'calc(100vw - 24px)', boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10000, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                                <div style={{ position: 'fixed', bottom: modeMenuRect.bottom, left: modeMenuRect.left, background: c.panel, border: `1px solid ${c.border}`, borderRadius: 8, padding: 4, width: 280, maxWidth: 'calc(100vw - 24px)', boxShadow: '0 4px 16px rgba(0,0,0,0.6)', zIndex: 10000, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                                   {MODES.map(m => {
                                     const active = promptMode === m.key
                                     return (
@@ -2861,10 +2854,10 @@ export function Overview() {
                                         onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#141823' }}
                                         onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
                                         style={{ display: 'block', width: '100%', textAlign: 'left', border: 'none', borderRadius: 6, background: active ? 'rgba(52,211,153,0.08)' : 'transparent', padding: '8px 10px', cursor: 'pointer', transition: 'background 0.15s ease', marginBottom: 2 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, color: active ? '#34d399' : '#e8eaed', marginBottom: 3 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, color: active ? '#34d399' : c.text, marginBottom: 3 }}>
                                           {active && <span style={{ fontSize: 9 }}>✓</span>}{m.label}
                                         </div>
-                                        <div style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.45 }}>{m.desc}</div>
+                                        <div style={{ fontSize: 10, color: c.muted, lineHeight: 1.45 }}>{m.desc}</div>
                                       </button>
                                     )
                                   })}
@@ -2879,25 +2872,25 @@ export function Overview() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
                     <button
                       onClick={() => setShowAttachMenu(showAttachMenu === 'main' ? null : 'main')}
-                      onMouseEnter={e => e.currentTarget.style.background = '#1a1f28'}
+                      onMouseEnter={e => e.currentTarget.style.background = c.borderDim}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                      style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'main' ? '#e8eaed' : '#9ca3af', cursor: 'pointer', padding: '4px 6px', borderRadius: 4, fontSize: 14, transition: 'color 0.2s, background 0.2s', display: 'flex', alignItems: 'center' }}
+                      style={{ background: 'transparent', border: 'none', color: showAttachMenu === 'main' ? c.text : c.muted, cursor: 'pointer', padding: '4px 6px', borderRadius: 4, fontSize: 14, transition: 'color 0.2s, background 0.2s', display: 'flex', alignItems: 'center' }}
                       title="Attach files"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
                     </button>
                     {showAttachMenu === 'main' && (
-                      <div style={{ position: 'absolute', bottom: 36, right: 0, background: '#0f1215', border: '1px solid #252a35', borderRadius: 10, padding: '4px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
+                      <div style={{ position: 'absolute', bottom: 36, right: 0, background: c.panel, border: `1px solid ${c.border}`, borderRadius: 10, padding: '4px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
                         {[
                           { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, label: 'Photo Library' },
                           { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>, label: 'Take Photo or Video' },
                           { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
                         ].map((item, i) => (
                           <div key={i} onClick={() => setShowAttachMenu(null)}
-                            onMouseEnter={e => e.currentTarget.style.background = '#1a1f28'}
+                            onMouseEnter={e => e.currentTarget.style.background = c.borderDim}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', cursor: 'pointer', color: '#9ca3af', fontSize: 12, fontWeight: 500, transition: 'background 0.15s', borderBottom: i < 2 ? '1px solid #1e2330' : 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                            <span style={{ color: '#9ca3af', display: 'flex' }}>{item.icon}</span>
+                            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', cursor: 'pointer', color: c.muted, fontSize: 12, fontWeight: 500, transition: 'background 0.15s', borderBottom: i < 2 ? `1px solid ${c.border}` : 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                            <span style={{ color: c.muted, display: 'flex' }}>{item.icon}</span>
                             {item.label}
                           </div>
                         ))}
@@ -2929,19 +2922,19 @@ export function Overview() {
                   const showSection = !ignoredAll && (suggestionsLoading || visibleSuggestions.length > 0)
                   if (!showSection) return null
                   return (
-                    <div style={{ width: 340, flexShrink: 0, background: '#0c0f14', border: '1px solid #252a35', borderRadius: 12, padding: '12px 14px', boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.05)', animation: 'suggestion-slide-in 0.25s ease both', alignSelf: 'flex-start' }}>
+                    <div style={{ width: 340, flexShrink: 0, background: '#0c0f14', border: `1px solid ${c.border}`, borderRadius: 12, padding: '12px 14px', boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(52,211,153,0.05)', animation: 'suggestion-slide-in 0.25s ease both', alignSelf: 'flex-start' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <div className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>NEXT STEPS</div>
+                          <div className="panel-header" style={{ color: c.muted, fontSize: 9 }}>NEXT STEPS</div>
                           <div style={{ position: 'relative', display: 'inline-flex' }}
                             onMouseEnter={() => setShowSuggestionsTooltip(true)}
                             onMouseLeave={() => setShowSuggestionsTooltip(false)}
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: 'help', opacity: 0.7 }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${c.muted}" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ cursor: 'help', opacity: 0.7 }}>
                               <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                             </svg>
                             {showSuggestionsTooltip && (
-                              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: '#0f1215', border: '1px solid #252a35', borderRadius: 6, padding: '6px 10px', fontSize: 10, color: '#9ca3af', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', zIndex: 20, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 6, background: c.panel, border: `1px solid ${c.border}`, borderRadius: 6, padding: '6px 10px', fontSize: 10, color: c.muted, whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', zIndex: 20, pointerEvents: 'none', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                                 Let us help improve your prompt
                               </div>
                             )}
@@ -2950,7 +2943,7 @@ export function Overview() {
                         </div>
                         <button
                           onClick={() => { setIgnoredAll(true); setAiSuggestions([]) }}
-                          onMouseEnter={e => { e.currentTarget.style.color = '#e8eaed' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = c.text }}
                           onMouseLeave={e => { e.currentTarget.style.color = '#4b5563' }}
                           style={{ background: 'transparent', border: 'none', color: '#4b5563', cursor: 'pointer', padding: '2px', borderRadius: 4, transition: 'color 0.15s ease', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           title="Dismiss suggestions"
@@ -2960,15 +2953,15 @@ export function Overview() {
                       </div>
                       {suggestionsLoading && visibleSuggestions.length === 0 ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
-                          <span style={{ fontSize: 10, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>analyzing prompt...</span>
+                          <span style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>analyzing prompt...</span>
                         </div>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                           {visibleSuggestions.map((s, i) => (
                             <div key={`${i}-${s}`} onClick={() => { setRawInput(s); setIgnoredAll(true); setAiSuggestions([]); openClarifyWizard(s) }}
-                              style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: '#9ca3af', background: '#080a0e', border: '1px solid #1e2330', borderRadius: 10, padding: '8px 10px 8px 14px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
+                              style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: c.muted, background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: '8px 10px 8px 14px', cursor: 'pointer', lineHeight: 1.5, transition: 'all 0.2s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', animation: `suggestion-slide-in 0.3s ease ${i * 0.06}s both` }}
                               onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = '#34d399'; e.currentTarget.style.color = '#d1d5db'; e.currentTarget.style.boxShadow = '0 0 12px rgba(52,211,153,0.08)' }}
-                              onMouseLeave={e => { e.currentTarget.style.background = '#080a0e'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.boxShadow = 'none' }}>
+                              onMouseLeave={e => { e.currentTarget.style.background = c.bg; e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.muted; e.currentTarget.style.boxShadow = 'none' }}>
                               <span style={{ display: 'flex', alignItems: 'flex-start', gap: 4, flex: 1, minWidth: 0 }}>
                                 <span style={{ color: '#34d399', fontWeight: 700, opacity: 0.5, flexShrink: 0, marginTop: 1 }}>{'›'}</span>
                                 <span>{s}</span>
@@ -2988,7 +2981,7 @@ export function Overview() {
                       {visibleSuggestions.length > 0 && (
                         <button
                           onClick={() => { setIgnoredAll(true); setAiSuggestions([]) }}
-                          onMouseEnter={e => { e.currentTarget.style.color = '#9ca3af' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = c.muted }}
                           onMouseLeave={e => { e.currentTarget.style.color = '#4b5563' }}
                           style={{ background: 'transparent', border: 'none', color: '#4b5563', fontSize: 9, cursor: 'pointer', padding: '6px 0 2px', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'color 0.15s ease', letterSpacing: 0.3, width: '100%', textAlign: 'center' }}
                         >
@@ -3005,15 +2998,15 @@ export function Overview() {
 
           {/* Projects header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <div className="panel-header" style={{ color: '#9ca3af' }}>PROJECTS</div>
+            <div className="panel-header" style={{ color: c.muted }}>PROJECTS</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {/* View mode dropdown */}
               <div style={{ position: 'relative' }}>
                 <button
                   onClick={() => setViewDropdownOpen(o => !o)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, height: 26, padding: '0 10px', border: `1px solid ${c.border}`, borderRadius: 6, background: viewDropdownOpen ? '#1a1a1a' : 'transparent', color: '#9ca3af', cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.12s, color 0.12s', whiteSpace: 'nowrap' }}
-                  onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.borderColor = '#555' }}
-                  onMouseLeave={e => { if (!viewDropdownOpen) { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = c.border } }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, height: 26, padding: '0 10px', border: `1px solid ${c.border}`, borderRadius: 6, background: viewDropdownOpen ? '#1a1a1a' : 'transparent', color: c.muted, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.12s, color 0.12s', whiteSpace: 'nowrap' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = c.text; e.currentTarget.style.borderColor = c.dim }}
+                  onMouseLeave={e => { if (!viewDropdownOpen) { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border } }}
                 >
                   {viewMode === 'list' && <svg width="12" height="10" viewBox="0 0 12 10" fill="currentColor"><rect x="0" y="0" width="12" height="2"/><rect x="0" y="4" width="12" height="2"/><rect x="0" y="8" width="12" height="2"/></svg>}
                   {viewMode === 'grid' && <svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><rect x="0" y="0" width="5" height="5"/><rect x="6" y="0" width="5" height="5"/><rect x="0" y="6" width="5" height="5"/><rect x="6" y="6" width="5" height="5"/></svg>}
@@ -3039,9 +3032,9 @@ export function Overview() {
                         onClick={() => { setViewMode(opt.key); setViewDropdownOpen(false) }}
                         onMouseEnter={e => e.currentTarget.style.background = '#1e1e1e'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                        style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 14px', cursor: 'pointer', fontSize: 12, fontWeight: viewMode === opt.key ? 700 : 500, color: viewMode === opt.key ? c.green : '#ccc', background: 'transparent', transition: 'background 0.12s' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 14px', cursor: 'pointer', fontSize: 12, fontWeight: viewMode === opt.key ? 700 : 500, color: viewMode === opt.key ? c.green : c.muted, background: 'transparent', transition: 'background 0.12s' }}
                       >
-                        <span style={{ color: viewMode === opt.key ? c.green : '#666', display: 'flex', alignItems: 'center' }}>{opt.icon}</span>
+                        <span style={{ color: viewMode === opt.key ? c.green : c.dim, display: 'flex', alignItems: 'center' }}>{opt.icon}</span>
                         {opt.label}
                         {viewMode === opt.key && <span style={{ marginLeft: 'auto', color: c.green, fontSize: 10 }}>✓</span>}
                       </div>
@@ -3062,7 +3055,7 @@ export function Overview() {
               const allBuilds = project.builds
 
               const statusColor = (s: Status) =>
-                s === 'running' ? '#f59e0b' : s === 'failed' ? '#ef4444' : s === 'complete' ? '#34d399' : '#555'
+                s === 'running' ? '#f59e0b' : s === 'failed' ? '#ef4444' : s === 'complete' ? '#34d399' : c.dim
 
               const buildCards = (column: boolean, wrap = false) => (
                 <div style={{ display: 'flex', flexDirection: column ? 'column' : 'row', gap: 16, ...(column ? {} : wrap ? { flexWrap: 'wrap' } : { paddingBottom: 6 }) }}>
@@ -3080,14 +3073,14 @@ export function Overview() {
                     return (
                       <div key={build.id} draggable onDragStart={() => handleDragStart(build.id, project.id)} onDragOver={e => handleDragOver(e, build.id)} onDrop={e => handleDrop(e, build.id, project.id)} onDragEnd={handleDragEnd}
                         onClick={() => { setBuildModalTab('chat'); setExpandedBuildId(build.id) }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = isCardExpanded ? '#aaa' : '#666' }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = isDragOver ? '#888' : isCardExpanded ? '#777' : isFailed ? '#555' : isComplete ? '#333' : c.border }}
-                        style={{ ...(column ? { width: '100%' } : { minWidth: isCardExpanded ? 260 : 176, maxWidth: isCardExpanded ? 260 : 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? '#888' : isCardExpanded ? '#777' : isFailed ? '#555' : isComplete ? '#333' : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border-color 0.2s, min-width 0.2s, max-width 0.2s' }}>
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = isCardExpanded ? '#aaa' : c.dim }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = isDragOver ? '#888' : isCardExpanded ? '#777' : isFailed ? c.dim : isComplete ? '#333' : c.border }}
+                        style={{ ...(column ? { width: '100%' } : { minWidth: isCardExpanded ? 260 : 176, maxWidth: isCardExpanded ? 260 : 176, flexShrink: 0 }), border: `1px solid ${isDragOver ? '#888' : isCardExpanded ? '#777' : isFailed ? c.dim : isComplete ? '#333' : c.border}`, background: c.alt, borderRadius: 12, padding: 0, display: 'flex', flexDirection: column ? 'row' : 'column', alignItems: column ? 'center' : undefined, opacity: isDragging ? 0.4 : isComplete ? 0.65 : 1, position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'opacity 0.2s, border-color 0.2s, min-width 0.2s, max-width 0.2s' }}>
 
                         {column ? (
                           <>
                             <div style={{ width: 50, flexShrink: 0, padding: 8, position: 'relative' }}>
-                              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: '#555', borderRadius: '12px 0 0 12px' }} />
+                              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 2, background: c.dim, borderRadius: '12px 0 0 12px' }} />
                               <PreviewThumbnail buildId={build.id} buildType={bt} sc={sc} size="mini" />
                             </div>
                             <div style={{ flex: 1, padding: '8px 10px 8px 4px', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -3098,7 +3091,7 @@ export function Overview() {
                                 <div style={{ fontSize: 10, color: isFailed ? '#f87171' : c.muted, fontStyle: isRunning ? 'italic' : 'normal' }}>{statusText}</div>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
-                                <div style={{ width: 80, height: 3, background: isDark ? '#131619' : '#dfe8de', borderRadius: 999, overflow: 'hidden' }}>
+                                <div style={{ width: 80, height: 3, background: isDark ? c.alt : '#dfe8de', borderRadius: 999, overflow: 'hidden' }}>
                                   <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
                                 </div>
                                 <span style={{ fontSize: 10, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
@@ -3141,7 +3134,7 @@ export function Overview() {
                                   { label: 'Preview', tab: 'preview' as const },
                                 ].map(btn => (
                                   <button key={btn.label} title={btn.label} onClick={(e: React.MouseEvent) => { e.stopPropagation(); setBuildModalTab(btn.tab); setExpandedBuildId(build.id) }}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.color = '#ccc' }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = c.dim; e.currentTarget.style.color = c.muted }}
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = '#333'; e.currentTarget.style.color = '#777' }}
                                     style={{
                                       flex: 1, height: 28, borderRadius: 4,
@@ -3158,27 +3151,27 @@ export function Overview() {
                                 const snippet = snippets[0]
                                 return (
                                   <div style={{ marginTop: 8, borderTop: `1px solid ${c.border}`, paddingTop: 8 }}>
-                                    <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Thinking</div>
+                                    <div style={{ fontSize: 8, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Thinking</div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}`, marginBottom: 6, overflow: 'hidden' }}>
-                                      <span style={{ fontSize: 9, color: '#555', flexShrink: 0 }}>▸</span>
-                                      <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{build.agent}</span>
-                                      <span style={{ fontSize: 9, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{statusText}</span>
+                                      <span style={{ fontSize: 9, color: c.dim, flexShrink: 0 }}>▸</span>
+                                      <span style={{ fontSize: 9, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{build.agent}</span>
+                                      <span style={{ fontSize: 9, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{statusText}</span>
                                     </div>
 
-                                    <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Code</div>
+                                    <div style={{ fontSize: 8, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, textTransform: 'uppercase' }}>Code</div>
                                     {snippet && (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}`, marginBottom: 3, overflow: 'hidden' }}>
-                                        <span style={{ fontSize: 8, color: '#555', flexShrink: 0 }}>›</span>
+                                        <span style={{ fontSize: 8, color: c.dim, flexShrink: 0 }}>›</span>
                                         <span style={{ fontSize: 8, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{snippet.file}</span>
                                         <span style={{ fontSize: 8, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{snippet.code}</span>
                                       </div>
                                     )}
 
-                                    <div style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, marginTop: 6, textTransform: 'uppercase' }}>Build</div>
+                                    <div style={{ fontSize: 8, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, marginBottom: 4, marginTop: 6, textTransform: 'uppercase' }}>Build</div>
                                     <div style={{ padding: '4px 6px', background: '#080808', borderRadius: 3, border: `1px solid ${c.border}` }}>
                                       <div style={{ fontSize: 9, color: '#999', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 3 }}>{build.summary}</div>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                                        <div style={{ flex: 1, height: 3, background: '#131619', borderRadius: 999, overflow: 'hidden' }}>
+                                        <div style={{ flex: 1, height: 3, background: c.alt, borderRadius: 999, overflow: 'hidden' }}>
                                           <div style={{ width: `${build.progress}%`, height: '100%', background: sc, transition: 'width 0.6s ease' }} />
                                         </div>
                                         <span style={{ fontSize: 9, color: c.muted, minWidth: 28 }}>{build.progress}%</span>
@@ -3207,7 +3200,7 @@ export function Overview() {
                       <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <div style={{ fontSize: 18, color: '#777', lineHeight: 1 }}>+</div>
                       </div>
-                      <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>Add Agent</div>
+                      <div style={{ fontSize: 11, color: c.muted, fontWeight: 600 }}>Add Agent</div>
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', transition: 'background 0.15s' }}
                       onMouseEnter={e => e.currentTarget.style.background = '#161b22'}
@@ -3215,7 +3208,7 @@ export function Overview() {
                       <div style={{ width: 36, height: 36, borderRadius: 999, border: `1.5px dashed #444`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <div style={{ fontSize: 18, color: '#777', lineHeight: 1 }}>+</div>
                       </div>
-                      <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>New Task</div>
+                      <div style={{ fontSize: 11, color: c.muted, fontWeight: 600 }}>New Task</div>
                     </div>
                   </div>
                 </div>
@@ -3230,19 +3223,19 @@ export function Overview() {
 
                       <div onClick={() => setSelectedProjectId(project.id)} style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0, alignSelf: 'stretch' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                          <div style={{ fontWeight: 700, fontSize: 17, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                          <div style={{ fontWeight: 700, fontSize: 17, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                             {project.name}
                           </div>
                           <div style={{ position: 'relative', flexShrink: 0 }}>
                             <button
                               onClick={(e) => { e.stopPropagation(); setProjectMenuOpen(projectMenuOpen === project.id ? null : project.id) }}
-                              style={{ width: 24, height: 24, borderRadius: 4, border: `1px solid ${c.border}`, background: projectMenuOpen === project.id ? `${c.border}` : 'transparent', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s, border-color 0.15s, background 0.15s', lineHeight: 1 }}
-                              onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.borderColor = '#555' }}
-                              onMouseLeave={e => { if (projectMenuOpen !== project.id) { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = c.border } }}
+                              style={{ width: 24, height: 24, borderRadius: 4, border: `1px solid ${c.border}`, background: projectMenuOpen === project.id ? `${c.border}` : 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s, border-color 0.15s, background 0.15s', lineHeight: 1 }}
+                              onMouseEnter={e => { e.currentTarget.style.color = c.text; e.currentTarget.style.borderColor = c.dim }}
+                              onMouseLeave={e => { if (projectMenuOpen !== project.id) { e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = c.border } }}
                               title="Project actions"
                             >⋯</button>
                             {projectMenuOpen === project.id && (
-                              <div style={{ position: 'absolute', top: 28, right: 0, background: '#0f1215', border: `1px solid ${c.border}`, borderRadius: 6, padding: 4, zIndex: 30, minWidth: 150, boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
+                              <div style={{ position: 'absolute', top: 28, right: 0, background: c.panel, border: `1px solid ${c.border}`, borderRadius: 6, padding: 4, zIndex: 30, minWidth: 150, boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
                                 {[
                                   { label: 'Mark Complete', icon: '✓', lifecycle: 'completed' as const },
                                   { label: 'Archive', icon: '▪', lifecycle: 'archived' as const },
@@ -3261,9 +3254,9 @@ export function Overview() {
                                       }
                                       setProjectMenuOpen(null)
                                     }}
-                                    style={{ padding: '6px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, color: action.color || '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.1s, color 0.1s', whiteSpace: 'nowrap' }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1f28'; e.currentTarget.style.color = action.color || '#f0f0f0' }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = action.color || '#9ca3af' }}
+                                    style={{ padding: '6px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, color: action.color || c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.1s, color 0.1s', whiteSpace: 'nowrap' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = c.borderDim; e.currentTarget.style.color = action.color || c.text }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = action.color || c.muted }}
                                   >
                                     <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>{action.icon}</span>
                                     {action.label}
@@ -3274,7 +3267,7 @@ export function Overview() {
                           </div>
                         </div>
 
-                        <div style={{ fontSize: 11, color: '#666', lineHeight: 1.4, marginBottom: 10 }}>
+                        <div style={{ fontSize: 11, color: c.dim, lineHeight: 1.4, marginBottom: 10 }}>
                           {project.goal}
                         </div>
 
@@ -3287,7 +3280,7 @@ export function Overview() {
                               onClick={btn.onClick}
                               onMouseEnter={() => setHoveredArchBtn(btn.hk)}
                               onMouseLeave={() => setHoveredArchBtn(null)}
-                              style={{ flex: 1, padding: '6px 0', borderRadius: 4, background: hoveredArchBtn === btn.hk ? '#0f1215' : 'transparent', border: `1px solid ${c.border}`, color: hoveredArchBtn === btn.hk ? '#ccc' : '#666', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s' }}>
+                              style={{ flex: 1, padding: '6px 0', borderRadius: 4, background: hoveredArchBtn === btn.hk ? c.panel : 'transparent', border: `1px solid ${c.border}`, color: hoveredArchBtn === btn.hk ? c.muted : c.dim, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s' }}>
                               {btn.label}
                             </button>
                           ))}
@@ -3297,9 +3290,9 @@ export function Overview() {
                           {([{ label: '+ Agent', type: 'agent' as const }, { label: '+ Task', type: 'task' as const }]).map(btn => (
                             <button key={btn.label}
                               onClick={(e) => { e.stopPropagation(); setAddPromptText(''); setAddPromptModal({ type: btn.type, projectId: project.id }) }}
-                              onMouseEnter={e => { e.currentTarget.style.background = '#0f1215'; e.currentTarget.style.color = '#ccc'; e.currentTarget.style.borderColor = '#34d399' }}
-                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#666'; e.currentTarget.style.borderColor = c.border }}
-                              style={{ flex: 1, textAlign: 'center', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', fontSize: 11, color: '#666', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s, border-color 0.15s', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              onMouseEnter={e => { e.currentTarget.style.background = c.panel; e.currentTarget.style.color = c.muted; e.currentTarget.style.borderColor = '#34d399' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = c.dim; e.currentTarget.style.borderColor = c.border }}
+                              style={{ flex: 1, textAlign: 'center', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', fontSize: 11, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s, color 0.15s, border-color 0.15s', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               {btn.label}
                             </button>
                           ))}
@@ -3360,9 +3353,9 @@ export function Overview() {
                                           setExpandedBuildId(firstAction.id)
                                         }
                                       }}
-                                      onMouseEnter={e => { e.currentTarget.style.background = '#1e2330'; e.currentTarget.style.color = '#e8eaed' }}
-                                      onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.color = '#9ca3af' }}
-                                      style={{ fontSize: 8, fontWeight: 600, color: '#9ca3af', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 3, padding: '2px 8px', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'all 0.15s ease' }}
+                                      onMouseEnter={e => { e.currentTarget.style.background = c.border; e.currentTarget.style.color = c.text }}
+                                      onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.color = c.muted }}
+                                      style={{ fontSize: 8, fontWeight: 600, color: c.muted, background: '#0c0f14', border: `1px solid ${c.border}`, borderRadius: 3, padding: '2px 8px', fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'all 0.15s ease' }}
                                     >Run All</button>
                                   )}
                                   <span style={{ fontSize: 10, color: '#444', transform: isPendingOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>▾</span>
@@ -3374,7 +3367,7 @@ export function Overview() {
                                     <div
                                       key={item.id}
                                       onClick={(e) => { e.stopPropagation(); setBuildModalTab(item.action?.tab ?? 'chat'); setExpandedBuildId(item.id) }}
-                                      onMouseEnter={e => e.currentTarget.style.background = '#0f1215'}
+                                      onMouseEnter={e => e.currentTarget.style.background = c.panel}
                                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                       style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', cursor: 'pointer', borderTop: idx > 0 ? '1px solid #14181e' : 'none', transition: 'background 0.15s' }}
                                     >
@@ -3385,9 +3378,9 @@ export function Overview() {
                                       )}
                                       <span style={{ fontSize: 9, color: '#bbb', fontFamily: '"JetBrains Mono", Menlo, monospace', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
                                       {item.action ? (
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: 'transparent', borderRadius: 3, border: 'none', flexShrink: 0, fontWeight: 600 }}><span style={{ display: 'inline-flex', color: item.action.color }}>{getActionIcon(item.action.type, 9)}</span>{item.action.label}</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 5px', background: 'transparent', borderRadius: 3, border: 'none', flexShrink: 0, fontWeight: 600 }}><span style={{ display: 'inline-flex', color: item.action.color }}>{getActionIcon(item.action.type, 9)}</span>{item.action.label}</span>
                                       ) : (
-                                        <span style={{ fontSize: 8, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 4px', background: '#111', borderRadius: 3, flexShrink: 0 }}>{item.status}</span>
+                                        <span style={{ fontSize: 8, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '1px 4px', background: '#111', borderRadius: 3, flexShrink: 0 }}>{item.status}</span>
                                       )}
                                     </div>
                                   ))}
@@ -3401,8 +3394,8 @@ export function Overview() {
                           <Ticker lines={thinkingLines} render={(line) => (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 4 }}>
                               <span style={{ display: 'inline-flex', flexShrink: 0, color: '#a78bfa' }}><ThinkingIcon size={10} /></span>
-                              <span style={{ fontSize: 10, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.agent}</span>
-                              <span style={{ fontSize: 10, color: '#555', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.text}</span>
+                              <span style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.agent}</span>
+                              <span style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.text}</span>
                             </div>
                           )} />
                         )}
@@ -3421,7 +3414,7 @@ export function Overview() {
 
                       {/* Builds strip (horizontal scroll) */}
                       <div style={{ minWidth: 0 }}>
-                        <div className="panel-header" style={{ color: '#9ca3af', marginBottom: 7, fontSize: 9 }}>BUILDS</div>
+                        <div className="panel-header" style={{ color: c.muted, marginBottom: 7, fontSize: 9 }}>BUILDS</div>
                         <ScrollableBuildStrip arrowColor={c.muted} borderColor={c.border}>
                           {buildCards(false)}
                         </ScrollableBuildStrip>
@@ -3435,7 +3428,7 @@ export function Overview() {
 
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: 0.1, color: '#e8eaed' }}>{project.name}</div>
+                          <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: 0.1, color: c.text }}>{project.name}</div>
                           {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
                           <span style={{ fontSize: 10, color: c.muted }}>{project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done</span>
                         </div>
@@ -3443,31 +3436,31 @@ export function Overview() {
                           <button onClick={(e) => { e.stopPropagation(); setChatProject(project.id); setChatProjectBuildId(project.builds[0]?.id || null) }}
                             onMouseEnter={() => setHoveredArchBtn(project.id + '-card-chat')}
                             onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ border: `1px solid #1e2330`, background: hoveredArchBtn === project.id + '-card-chat' ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
+                            style={{ border: `1px solid ${c.border}`, background: hoveredArchBtn === project.id + '-card-chat' ? c.panel : c.bg, color: c.muted, padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
                             Chat
                           </button>
                           <button onClick={(e) => { e.stopPropagation(); setExpandedProject(expandedProject === project.id ? null : project.id) }}
                             onMouseEnter={() => setHoveredArchBtn(project.id + '-card')}
                             onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ border: `1px solid #1e2330`, background: hoveredArchBtn === project.id + '-card' ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
+                            style={{ border: `1px solid ${c.border}`, background: hoveredArchBtn === project.id + '-card' ? c.panel : c.bg, color: c.muted, padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
                             Arch Map
                           </button>
                           <button onClick={(e) => { e.stopPropagation(); setLivePreviewProject(livePreviewProject === project.id ? null : project.id) }}
                             onMouseEnter={() => setHoveredArchBtn(project.id + '-card-preview')}
                             onMouseLeave={() => setHoveredArchBtn(null)}
-                            style={{ border: `1px solid #1e2330`, background: hoveredArchBtn === project.id + '-card-preview' ? '#0f1215' : '#080a0e', color: '#9ca3af', padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
+                            style={{ border: `1px solid ${c.border}`, background: hoveredArchBtn === project.id + '-card-preview' ? c.panel : c.bg, color: c.muted, padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'background 0.15s, color 0.15s' }}>
                             Preview
                           </button>
                           <div style={{ position: 'relative' }}>
                             <button
                               onClick={(e) => { e.stopPropagation(); setProjectMenuOpen(projectMenuOpen === project.id ? null : project.id) }}
-                              style={{ border: 'none', background: 'transparent', color: '#6b7280', cursor: 'pointer', fontSize: 16, fontWeight: 700, padding: '2px 6px', borderRadius: 4, lineHeight: 1, transition: 'color 0.12s, background 0.12s' }}
-                              onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0'; e.currentTarget.style.background = '#1a1f28' }}
-                              onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.background = 'transparent' }}
+                              style={{ border: 'none', background: 'transparent', color: c.dim, cursor: 'pointer', fontSize: 16, fontWeight: 700, padding: '2px 6px', borderRadius: 4, lineHeight: 1, transition: 'color 0.12s, background 0.12s' }}
+                              onMouseEnter={e => { e.currentTarget.style.color = c.text; e.currentTarget.style.background = c.borderDim }}
+                              onMouseLeave={e => { e.currentTarget.style.color = c.dim; e.currentTarget.style.background = 'transparent' }}
                               title="Project actions"
                             >⋯</button>
                             {projectMenuOpen === project.id && (
-                              <div style={{ position: 'absolute', top: 28, right: 0, background: '#0f1215', border: `1px solid ${c.border}`, borderRadius: 6, padding: 4, zIndex: 30, minWidth: 150, boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
+                              <div style={{ position: 'absolute', top: 28, right: 0, background: c.panel, border: `1px solid ${c.border}`, borderRadius: 6, padding: 4, zIndex: 30, minWidth: 150, boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
                                 {[
                                   { label: 'Mark Complete', icon: '✓', lifecycle: 'completed' as const },
                                   { label: 'Archive', icon: '▪', lifecycle: 'archived' as const },
@@ -3486,9 +3479,9 @@ export function Overview() {
                                       }
                                       setProjectMenuOpen(null)
                                     }}
-                                    style={{ padding: '6px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, color: action.color || '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.1s, color 0.1s', whiteSpace: 'nowrap' }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = '#1a1f28'; e.currentTarget.style.color = action.color || '#f0f0f0' }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = action.color || '#9ca3af' }}
+                                    style={{ padding: '6px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 11, color: action.color || c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.1s, color 0.1s', whiteSpace: 'nowrap' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = c.borderDim; e.currentTarget.style.color = action.color || c.text }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = action.color || c.muted }}
                                   >
                                     <span style={{ fontSize: 13 }}>{action.icon}</span> {action.label}
                                   </div>
@@ -3508,10 +3501,10 @@ export function Overview() {
                     const lines = treeLines[project.id] || project.builds.map((b, i, a) => `${i === a.length - 1 ? '└' : '├'}── ${b.title}`)
                     return (
                       <div style={{ border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, background: c.alt }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: '#f0f0f0', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{project.name}</div>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{project.name}</div>
                         <div style={{ fontSize: 13, color: c.muted, lineHeight: 1.8, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                           {viewMode === 'tree' && lines.map((line, i) => (
-                            <div key={i} style={{ color: line.startsWith('│') || line.startsWith('    ') ? '#6b7280' : '#a0c8a0' }}>{line}</div>
+                            <div key={i} style={{ color: line.startsWith('│') || line.startsWith('    ') ? c.dim : '#a0c8a0' }}>{line}</div>
                           ))}
                           {viewMode === 'arch' && (
                             <NodeGraph
@@ -3549,8 +3542,8 @@ export function Overview() {
 
         {/* RIGHT PANEL — Live Feed */}
         <div style={{
-          border: `1px solid #1e2330`,
-          background: '#0a0d10',
+          border: `1px solid ${c.border}`,
+          background: c.bg,
           padding: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? '12px 4px' : 14,
           display: 'flex',
           flexDirection: 'column',
@@ -3561,13 +3554,13 @@ export function Overview() {
           transition: 'padding 0.3s ease, gap 0.3s ease',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 'center' : 'space-between', marginBottom: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 0 : -4 }}>
-            {!(isDesktop ? rightPanelCollapsed : !mobileRightOpen) && <span className="panel-header" style={{ color: '#9ca3af' }}>LIVE FEED</span>}
+            {!(isDesktop ? rightPanelCollapsed : !mobileRightOpen) && <span className="panel-header" style={{ color: c.muted }}>LIVE FEED</span>}
             <button
               onClick={() => isDesktop ? setRightPanelCollapsed(!rightPanelCollapsed) : setMobileRightOpen(!mobileRightOpen)}
               title={(isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 'Expand panel' : 'Collapse panel'}
-              style={{ width: 22, height: 22, borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
+              style={{ width: 22, height: 22, borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, padding: 0, flexShrink: 0, transition: 'color 0.15s, border-color 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.borderColor = '#ffffff' }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.borderColor = '#1e2330' }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.borderColor = c.border }}
             ><span style={{ display: 'inline-block', transform: (isDesktop ? rightPanelCollapsed : !mobileRightOpen) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>»</span></button>
           </div>
 
@@ -3581,7 +3574,7 @@ export function Overview() {
                 <div
                   key={item.label}
                   title={item.label}
-                  style={{ padding: '8px 0', color: item.color, textAlign: 'center', cursor: 'default', borderBottom: '1px solid #1e2330', width: '100%', display: 'flex', justifyContent: 'center' }}
+                  style={{ padding: '8px 0', color: item.color, textAlign: 'center', cursor: 'default', borderBottom: `1px solid ${c.border}`, width: '100%', display: 'flex', justifyContent: 'center' }}
                 >
                   {item.icon}
                 </div>
@@ -3591,14 +3584,14 @@ export function Overview() {
 
           {!(isDesktop ? rightPanelCollapsed : !mobileRightOpen) && <>
           {/* Ready Builds KPI */}
-          <div style={{ border: `1px solid #1e2330`, background: '#080a0e', borderRadius: 6, padding: 12 }}>
+          <div style={{ border: `1px solid ${c.border}`, background: c.bg, borderRadius: 6, padding: 12 }}>
             {sectionHeader('READY BUILDS', 'readyBuilds')}
             {!collapsedSections.readyBuilds && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 8 }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontSize: 26, fontWeight: 800, color: readyBuildsCount > 0 ? '#f59e0b' : '#9ca3af', lineHeight: 1, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{readyBuildsCount}</span>
-                    <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>queued</span>
+                    <span style={{ fontSize: 26, fontWeight: 800, color: readyBuildsCount > 0 ? '#f59e0b' : c.muted, lineHeight: 1, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{readyBuildsCount}</span>
+                    <span style={{ fontSize: 11, color: c.muted, fontWeight: 500, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>queued</span>
                   </div>
                 </div>
                 <button
@@ -3607,9 +3600,9 @@ export function Overview() {
                   onMouseEnter={e => { if (readyBuildsCount > 0) e.currentTarget.style.background = '#141a12' }}
                   onMouseLeave={e => { if (readyBuildsCount > 0) e.currentTarget.style.background = '#0c1210' }}
                   style={{
-                    background: readyBuildsCount > 0 ? '#0c1210' : '#080a0e',
-                    color: readyBuildsCount > 0 ? '#34d399' : '#9ca3af',
-                    border: `1px solid ${readyBuildsCount > 0 ? 'rgba(52,211,153,0.2)' : '#1e2330'}`,
+                    background: readyBuildsCount > 0 ? '#0c1210' : c.bg,
+                    color: readyBuildsCount > 0 ? '#34d399' : c.muted,
+                    border: `1px solid ${readyBuildsCount > 0 ? 'rgba(52,211,153,0.2)' : c.border}`,
                     borderRadius: 4,
                     padding: '6px 12px',
                     fontSize: 11,
@@ -3821,7 +3814,7 @@ export function Overview() {
                         <span style={{ display: 'inline-flex', flexShrink: 0 }}>{getActionIcon(item.action.type, 10)}</span>
                         {item.action.label}
                       </div>
-                      <div style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{item.title}</div>
+                      <div style={{ fontSize: 9, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{item.title}</div>
                       {isPinned && editingPinNoteKey === key && (
                         <input
                           autoFocus
@@ -3846,7 +3839,7 @@ export function Overview() {
                             border: 'none',
                             borderBottom: '1px solid #374151',
                             outline: 'none',
-                            color: '#9ca3af',
+                            color: c.muted,
                             fontSize: 9,
                             fontFamily: '"JetBrains Mono", Menlo, monospace',
                             padding: '1px 0',
@@ -3862,7 +3855,7 @@ export function Overview() {
                         >
                           <span
                             onClick={() => { setEditingPinNoteKey(key); setEditingPinNoteText(pinnedNotes[key] || '') }}
-                            style={{ fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', fontStyle: 'italic', cursor: 'text', lineHeight: 1.4 }}
+                            style={{ fontSize: 9, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', fontStyle: 'italic', cursor: 'text', lineHeight: 1.4 }}
                           >
                             {pinnedNotes[key]}
                           </span>
@@ -3874,7 +3867,7 @@ export function Overview() {
                               border: 'none',
                               padding: 0,
                               cursor: 'pointer',
-                              color: '#6b7280',
+                              color: c.dim,
                               fontSize: 8,
                               lineHeight: 1,
                               flexShrink: 0,
@@ -3887,7 +3880,7 @@ export function Overview() {
                     </div>
                     <button
                       onClick={() => togglePin(item.id, item.action.type)}
-                      onMouseEnter={e => { e.currentTarget.style.color = isPinned ? '#fcd34d' : '#9ca3af'; e.currentTarget.style.opacity = '1' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = isPinned ? '#fcd34d' : c.muted; e.currentTarget.style.opacity = '1' }}
                       onMouseLeave={e => { e.currentTarget.style.color = isPinned ? '#f59e0b' : '#374151'; e.currentTarget.style.opacity = isPinned ? '1' : '0.6' }}
                       style={{
                         background: 'none',
@@ -3911,7 +3904,7 @@ export function Overview() {
                         setExpandedBuildId(item.id)
                         dismissItem(item.id, item.action.type, el)
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.color = '#e8eaed' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = c.text }}
                       onMouseLeave={e => { e.currentTarget.style.color = '#4b5563' }}
                       style={{
                         background: 'none',
@@ -3933,7 +3926,7 @@ export function Overview() {
                         const el = e.currentTarget.closest('[data-action-item]') as HTMLElement
                         dismissItem(item.id, item.action.type, el)
                       }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#e8eaed')}
+                      onMouseEnter={e => (e.currentTarget.style.color = c.text)}
                       onMouseLeave={e => (e.currentTarget.style.color = '#4b5563')}
                       style={{
                         background: 'none',
@@ -3955,8 +3948,8 @@ export function Overview() {
             }
 
             return (
-              <div style={{ border: '1px solid #1e2330', borderRadius: 4, background: '#080a0e', overflow: 'hidden' }}>
-                <div style={{ padding: '8px 12px', borderBottom: '1px solid #1e2330', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ border: `1px solid ${c.border}`, borderRadius: 4, background: c.bg, overflow: 'hidden' }}>
+                <div style={{ padding: '8px 12px', borderBottom: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span className="panel-header" style={{ fontSize: 9, letterSpacing: 1.2 }}>ACTION REQUIRED</span>
                     {visibleSorted.length > 0 && <span style={{ fontSize: 9, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{visibleSorted.length}</span>}
@@ -3969,7 +3962,7 @@ export function Overview() {
                         <button
                           onClick={() => setCollapsedProjectGroups(allCollapsed ? new Set() : new Set(groupedByProject.map(g => g.projectName)))}
                           style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 9, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600, padding: 0, letterSpacing: 0.5, transition: 'color 0.15s' }}
-                          onMouseEnter={e => e.currentTarget.style.color = '#9ca3af'}
+                          onMouseEnter={e => e.currentTarget.style.color = c.muted}
                           onMouseLeave={e => e.currentTarget.style.color = '#4b5563'}
                         >
                           {allCollapsed ? 'EXPAND ALL' : 'COLLAPSE ALL'}
@@ -3982,20 +3975,20 @@ export function Overview() {
                           setDismissedActionKeys(new Set())
                           localStorage.removeItem('massa_dismissedActionKeys')
                         }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, padding: 0, textDecoration: 'underline' }}
-                        onMouseEnter={e => (e.currentTarget.style.color = '#9ca3af')}
-                        onMouseLeave={e => (e.currentTarget.style.color = '#6b7280')}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 9, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.5, padding: 0, textDecoration: 'underline' }}
+                        onMouseEnter={e => (e.currentTarget.style.color = c.muted)}
+                        onMouseLeave={e => (e.currentTarget.style.color = c.dim)}
                       >
                         SHOW ALL
                       </button>
                     )}
                   </div>
                 </div>
-                <div style={{ maxHeight: 360, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#1e293b #080a0e' }}>
+                <div style={{ maxHeight: 360, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: `${c.border} ${c.bg}` }}>
                   {visibleSorted.length === 0 ? (
                     <div style={{ padding: '16px 12px', textAlign: 'center' }}>
                       <span style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>✓ All clear</span>
-                      <div className="panel-header" style={{ color: '#9ca3af', fontSize: 8, marginTop: 4 }}>NO ACTIONS PENDING</div>
+                      <div className="panel-header" style={{ color: c.muted, fontSize: 8, marginTop: 4 }}>NO ACTIONS PENDING</div>
                     </div>
                   ) : (
                     <>
@@ -4061,10 +4054,10 @@ export function Overview() {
                           {showGroupHeader && (
                             <div
                               onClick={toggleGroup}
-                              style={{ padding: '6px 12px 4px', background: '#0a0d12', borderTop: (groupIdx > 0 || pinnedItems.length > 0) ? '1px solid #1e2330' : 'none', cursor: groupedByProject.length > 1 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none' }}
+                              style={{ padding: '6px 12px 4px', background: '#0a0d12', borderTop: (groupIdx > 0 || pinnedItems.length > 0) ? `1px solid ${c.border}` : 'none', cursor: groupedByProject.length > 1 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: 6, userSelect: 'none' }}
                             >
                               {groupedByProject.length > 1 && <span style={{ fontSize: 8, color: '#4b5563', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1, transition: 'transform 0.2s', display: 'inline-block', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>}
-                              <span style={{ fontSize: 8, letterSpacing: 1, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textTransform: 'uppercase' as const, flex: 1 }}>{projectName}</span>
+                              <span style={{ fontSize: 8, letterSpacing: 1, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textTransform: 'uppercase' as const, flex: 1 }}>{projectName}</span>
                               {isCollapsed && (
                                 <span style={{ fontSize: 8, color: '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, background: '#1c1a1a', borderRadius: 3, padding: '1px 5px' }}>{items.length}</span>
                               )}
@@ -4084,8 +4077,8 @@ export function Overview() {
           })()}
 
           {/* Code Stream + Build Activity */}
-          <div style={{ border: `1px solid #1e2330`, borderRadius: 4, display: 'flex', flexDirection: 'column', flex: 'none', maxHeight: collapsedSections.codeStream ? 'none' : 260, minHeight: 0, background: '#080a0e', marginTop: 8 }}>
-            <div style={{ padding: '8px 12px 6px', borderBottom: collapsedSections.codeStream ? 'none' : `1px solid #1e2330` }}>
+          <div style={{ border: `1px solid ${c.border}`, borderRadius: 4, display: 'flex', flexDirection: 'column', flex: 'none', maxHeight: collapsedSections.codeStream ? 'none' : 260, minHeight: 0, background: c.bg, marginTop: 8 }}>
+            <div style={{ padding: '8px 12px 6px', borderBottom: collapsedSections.codeStream ? 'none' : `1px solid ${c.border}` }}>
               {sectionHeader('CODE STREAM', 'codeStream', <span style={{ width: 6, height: 6, borderRadius: 999, background: '#34d399', display: 'inline-block', boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />)}
             </div>
             {!collapsedSections.codeStream && (
@@ -4093,9 +4086,9 @@ export function Overview() {
                 ref={codeRef}
                 onMouseEnter={() => setCodeHovered(true)}
                 onMouseLeave={() => setCodeHovered(false)}
-                style={{ flex: 1, overflowY: 'auto', background: isDark ? '#0f1215' : '#f0f0f0', padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
+                style={{ flex: 1, overflowY: 'auto', background: isDark ? c.panel : c.text, padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
               >
-                <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? '#0f1215' : '#f0f0f0'} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
+                <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? c.panel : c.text} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
                 {feedEntries.length > 0 && feedEntries.filter(entry => {
                   if (!selectedTenantId) return true
                   const tenantProject = filteredProjects[0]
@@ -4160,17 +4153,17 @@ export function Overview() {
                 <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>{expandProject.name}</div>
                 <div style={{ color: c.muted, fontSize: 13 }}>{expandProject.goal}</div>
               </div>
-              <button onClick={() => setExpandedProject(null)} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #252a35', background: '#151920', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
+              <button onClick={() => setExpandedProject(null)} onMouseEnter={e => e.currentTarget.style.background = c.borderLight} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.border}`, background: '#151920', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
             </div>
 
-            <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: isDark ? '#131619' : '#eee', borderRadius: 8, padding: 3, width: 'fit-content' }}>
+            <div style={{ display: 'flex', gap: 2, marginBottom: 16, background: isDark ? c.alt : '#eee', borderRadius: 8, padding: 3, width: 'fit-content' }}>
               {(['tree', 'graph', 'timeline'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setArchTab(tab)}
                   style={{
                     border: 'none',
-                    background: archTab === tab ? (isDark ? '#1e2430' : '#fff') : 'transparent',
+                    background: archTab === tab ? (isDark ? c.borderLight : '#fff') : 'transparent',
                     color: archTab === tab ? c.text : c.muted,
                     padding: '6px 16px',
                     borderRadius: 6,
@@ -4270,12 +4263,12 @@ export function Overview() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <div style={{ width: 8, height: 8, borderRadius: 99, background: '#34d399', animation: 'phase-pulse 2s ease-in-out infinite', boxShadow: '0 0 6px rgba(52,211,153,0.4)' }} />
                 <span style={{ fontSize: 11, color: '#34d399', fontWeight: 600 }}>Running</span>
-                <button onClick={() => setLivePreviewProject(null)} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #252a35', background: '#151920', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', marginLeft: 8 }}>Close</button>
+                <button onClick={() => setLivePreviewProject(null)} onMouseEnter={e => e.currentTarget.style.background = c.borderLight} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.border}`, background: '#151920', color: '#ffffff', padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', marginLeft: 8 }}>Close</button>
               </div>
             </div>
 
             <div style={{ flex: 1, background: '#0a0a0a', borderRadius: 12, border: `1px solid ${c.border}`, overflow: 'hidden', minHeight: 420 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderBottom: `1px solid ${c.border}`, background: '#131619' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderBottom: `1px solid ${c.border}`, background: c.alt }}>
                 <div style={{ display: 'flex', gap: 5 }}>
                   <div style={{ width: 10, height: 10, borderRadius: 99, background: '#f87171' }} />
                   <div style={{ width: 10, height: 10, borderRadius: 99, background: '#f59e0b' }} />
@@ -4335,8 +4328,8 @@ export function Overview() {
                       <div style={{ fontSize: 28, fontWeight: 800, marginBottom: 8, background: 'linear-gradient(135deg, #fff 0%, #888 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Build anything with AI agents, in parallel</div>
                       <div style={{ fontSize: 13, color: c.muted, maxWidth: 500, margin: '0 auto 20px' }}>Deploy multiple intelligent agents that architect, build, and ship production-ready software simultaneously.</div>
                       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-                        <div style={{ background: '#34d399', color: '#0a0d10', padding: '10px 24px', borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Start Building</div>
-                        <div style={{ border: '1px solid #2a3040', color: '#ccc', padding: '10px 24px', borderRadius: 8, fontWeight: 600, fontSize: 13 }}>View Demo</div>
+                        <div style={{ background: '#34d399', color: c.bg, padding: '10px 24px', borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Start Building</div>
+                        <div style={{ border: '1px solid #2a3040', color: c.muted, padding: '10px 24px', borderRadius: 8, fontWeight: 600, fontSize: 13 }}>View Demo</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 12, padding: '20px 40px' }}>
@@ -4382,7 +4375,7 @@ export function Overview() {
                       <div key={b.id} onClick={() => setChatProjectBuildId(b.id)}
                         style={{ padding: '10px 14px', cursor: 'pointer', background: isActive ? c.alt : 'transparent', borderLeft: isActive ? `2px solid ${bsc}` : '2px solid transparent', transition: 'all 0.15s' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                          <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#34d399' : bMsgs.length > 0 ? '#f59e0b' : '#9ca3af', flexShrink: 0 }} />
+                          <div style={{ width: 5, height: 5, borderRadius: 99, background: agentReplied ? '#34d399' : bMsgs.length > 0 ? '#f59e0b' : c.muted, flexShrink: 0 }} />
                           <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? '#fff' : c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.title}</div>
                         </div>
                         <div style={{ fontSize: 10, color: c.muted, marginLeft: 11 }}>{b.agent}</div>
@@ -4400,7 +4393,7 @@ export function Overview() {
                     </div>
                     <div style={{ fontSize: 11, color: c.muted }}>{activeBuild.agent} · {activeBuild.agentRole}</div>
                   </div>
-                  <button onClick={() => { setChatProject(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #252a35', background: '#151920', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
+                  <button onClick={() => { setChatProject(null); setChatInput('') }} onMouseEnter={e => e.currentTarget.style.background = c.borderLight} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.border}`, background: '#151920', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
                   {msgs.map(msg => (
@@ -4416,7 +4409,7 @@ export function Overview() {
                           if (isInCodeBlock) {
                             return <div key={li} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, background: '#0a0a0a', padding: '2px 8px', borderRadius: 4, color: '#b0b0b0', margin: '2px 0' }}>{line}</div>
                           }
-                          return <div key={li} style={{ fontSize: 12, lineHeight: 1.6, color: msg.role === 'user' ? '#e0e0e0' : '#ccc' }}>{line}</div>
+                          return <div key={li} style={{ fontSize: 12, lineHeight: 1.6, color: msg.role === 'user' ? '#e0e0e0' : c.muted }}>{line}</div>
                         })}
                       </div>
                       <div style={{ fontSize: 9, color: c.muted, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>{msg.time}</div>
@@ -4444,7 +4437,7 @@ export function Overview() {
                           { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
                         ].map((item, i) => (
                           <div key={i} onClick={() => setShowAttachMenu(null)}
-                            onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                            onMouseEnter={e => e.currentTarget.style.background = c.borderLight}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
                             <span style={{ color: '#b0b0b0', display: 'flex' }}>{item.icon}</span>
@@ -4458,13 +4451,13 @@ export function Overview() {
                       onChange={e => setChatInput(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(activeBuild.id) } }}
                       placeholder={`Message ${activeBuild.agent}...`}
-                      style={{ flex: 1, background: '#151920', border: '1px solid #252a35', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
+                      style={{ flex: 1, background: '#151920', border: `1px solid ${c.border}`, borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
                     />
                     <button
                       onClick={() => sendChatMessage(activeBuild.id)}
-                      onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                      onMouseEnter={e => e.currentTarget.style.background = c.borderLight}
                       onMouseLeave={e => e.currentTarget.style.background = '#151920'}
-                      style={{ border: '1px solid #252a35', background: '#151920', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}
+                      style={{ border: `1px solid ${c.border}`, background: '#151920', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}
                     >Send</button>
                   </div>
                 </div>
@@ -4493,12 +4486,12 @@ export function Overview() {
                         <div style={{ fontSize: 12, color: c.muted }}>{expandedBuild.project.name} · {expandedBuild.build.agent} ({expandedBuild.build.agentRole})</div>
                       </div>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button onClick={() => { setChatOriginBuildId(expandedBuild.build.id); setSelectedChatBuildId(expandedBuild.build.id); setExpandedBuildId(null); setActiveView('chats'); setRevertPending(null); setRevertConfirmed(null) }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.green}44`, background: '#151920', color: c.green, padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}>Open in Chats</button>
-                        <button onClick={() => { setExpandedBuildId(null); setChatInput(''); setRevertPending(null); setRevertConfirmed(null) }} onMouseEnter={e => e.currentTarget.style.background = '#1e2430'} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: '1px solid #252a35', background: '#151920', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
+                        <button onClick={() => { setChatOriginBuildId(expandedBuild.build.id); setSelectedChatBuildId(expandedBuild.build.id); setExpandedBuildId(null); setActiveView('chats'); setRevertPending(null); setRevertConfirmed(null) }} onMouseEnter={e => e.currentTarget.style.background = c.borderLight} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.green}44`, background: '#151920', color: c.green, padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s', whiteSpace: 'nowrap' }}>Open in Chats</button>
+                        <button onClick={() => { setExpandedBuildId(null); setChatInput(''); setRevertPending(null); setRevertConfirmed(null) }} onMouseEnter={e => e.currentTarget.style.background = c.borderLight} onMouseLeave={e => e.currentTarget.style.background = '#151920'} style={{ border: `1px solid ${c.border}`, background: '#151920', color: '#ffffff', padding: '7px 14px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}>Close</button>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 1, background: '#0d1014', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 0, borderBottom: '1px solid #252a35', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }}>
+                    <div style={{ display: 'flex', gap: 1, background: '#0d1014', borderRadius: 10, padding: 4, width: 'fit-content', marginBottom: 0, borderBottom: `1px solid ${c.border}`, boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }}>
                       {([
                         { key: 'chat' as const, label: 'Chat', icon: getTabIcon('chat') },
                         { key: 'archmap' as const, label: 'Arch Map', icon: getTabIcon('archmap') },
@@ -4519,8 +4512,8 @@ export function Overview() {
                             onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = c.muted; } }}
                             style={{
                               border: 'none',
-                              background: isActive ? '#1e2430' : 'transparent',
-                              color: isActive ? '#e8eaed' : c.muted,
+                              background: isActive ? c.borderLight : 'transparent',
+                              color: isActive ? c.text : c.muted,
                               padding: '7px 14px',
                               borderRadius: 7,
                               fontSize: 11,
@@ -4559,7 +4552,7 @@ export function Overview() {
                                 if (isInCodeBlock) {
                                   return <div key={li} style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, background: '#0a0a0a', padding: '2px 8px', borderRadius: 4, color: '#b0b0b0', margin: '2px 0' }}>{line}</div>
                                 }
-                                return <div key={li} style={{ fontSize: 12, lineHeight: 1.6, color: msg.role === 'user' ? '#e0e0e0' : '#ccc' }}>{line}</div>
+                                return <div key={li} style={{ fontSize: 12, lineHeight: 1.6, color: msg.role === 'user' ? '#e0e0e0' : c.muted }}>{line}</div>
                               })}
                             </div>
                             <div style={{ fontSize: 9, color: c.muted, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>{msg.time}</div>
@@ -4586,7 +4579,7 @@ export function Overview() {
                                 { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
                               ].map((item, i) => (
                                 <div key={i} onClick={() => setShowAttachMenu(null)}
-                                  onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                                  onMouseEnter={e => e.currentTarget.style.background = c.borderLight}
                                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                   style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
                                   <span style={{ color: '#b0b0b0', display: 'flex' }}>{item.icon}</span>
@@ -4600,13 +4593,13 @@ export function Overview() {
                             onChange={e => setChatInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(expandedBuild.build.id) } }}
                             placeholder={`Message ${expandedBuild.build.agent}...`}
-                            style={{ flex: 1, background: '#151920', border: '1px solid #252a35', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
+                            style={{ flex: 1, background: '#151920', border: `1px solid ${c.border}`, borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
                           />
                           <button
                             onClick={() => sendChatMessage(expandedBuild.build.id)}
-                            onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                            onMouseEnter={e => e.currentTarget.style.background = c.borderLight}
                             onMouseLeave={e => e.currentTarget.style.background = '#151920'}
-                            style={{ border: '1px solid #252a35', background: '#151920', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}
+                            style={{ border: `1px solid ${c.border}`, background: '#151920', color: '#fff', padding: '10px 18px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}
                           >Send</button>
                         </div>
                       </div>
@@ -4619,7 +4612,7 @@ export function Overview() {
                         <div style={{ fontSize: 12, color: c.muted, marginBottom: 16 }}>View the full architecture map for {expandedBuild.project.name}</div>
                         <button
                           onClick={() => { setExpandedBuildId(null); setExpandedProject(expandedBuild.project.id) }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                          onMouseEnter={e => e.currentTarget.style.background = c.borderLight}
                           onMouseLeave={e => e.currentTarget.style.background = '#151920'}
                           style={{ border: `1px solid ${c.green}44`, background: '#151920', color: c.green, padding: '8px 20px', borderRadius: 9, cursor: 'pointer', fontSize: 12, fontWeight: 600, boxShadow: '0 2px 6px rgba(0,0,0,0.35)', transition: 'background 0.15s' }}
                         >Open Arch Map</button>
@@ -4744,7 +4737,7 @@ export function Overview() {
                           <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>BUILD CONTEXT</div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                             {expandedBuild.build.stack.map(s => (
-                              <span key={s} style={{ fontSize: 11, color: '#ccc', fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '3px 8px', background: '#111', borderRadius: 6, border: `1px solid ${c.border}` }}>{s}</span>
+                              <span key={s} style={{ fontSize: 11, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '3px 8px', background: '#111', borderRadius: 6, border: `1px solid ${c.border}` }}>{s}</span>
                             ))}
                           </div>
                         </div>
@@ -4777,10 +4770,10 @@ export function Overview() {
                               </div>
                               <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                                  <span style={{ fontSize: 12, fontWeight: 700, color: step.status === 'pending' ? '#555' : c.text }}>{step.phase}</span>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: step.status === 'pending' ? c.dim : c.text }}>{step.phase}</span>
                                   <span style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{step.time}</span>
                                 </div>
-                                <div style={{ fontSize: 11, color: step.status === 'pending' ? '#555' : c.muted, lineHeight: 1.5 }}>{step.text}</div>
+                                <div style={{ fontSize: 11, color: step.status === 'pending' ? c.dim : c.muted, lineHeight: 1.5 }}>{step.text}</div>
                               </div>
                             </div>
                           ))}
@@ -4835,7 +4828,7 @@ export function Overview() {
                               >Yes, Revert</button>
                               <button
                                 onClick={() => setRevertPending(null)}
-                                onMouseEnter={e => e.currentTarget.style.background = '#1e2430'}
+                                onMouseEnter={e => e.currentTarget.style.background = c.borderLight}
                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                 style={{ border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, padding: '8px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600, transition: 'background 0.15s' }}
                               >Cancel</button>
@@ -4894,21 +4887,21 @@ export function Overview() {
       {addPromptModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(4px)' }}
           onClick={e => { if (e.target === e.currentTarget) setAddPromptModal(null) }}>
-          <div style={{ background: '#0a0d10', border: '1px solid #252a35', borderRadius: 12, width: '100%', maxWidth: 440, boxShadow: '0 24px 80px rgba(0,0,0,0.8)', overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid #1e2330', background: '#0c0f14' }}>
+          <div style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 12, width: '100%', maxWidth: 440, boxShadow: '0 24px 80px rgba(0,0,0,0.8)', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: `1px solid ${c.border}`, background: '#0c0f14' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 13, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>+</span>
-                <span className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>{addPromptModal.type === 'agent' ? 'ADD AGENT' : 'ADD TASK'}</span>
+                <span className="panel-header" style={{ color: c.muted, fontSize: 9 }}>{addPromptModal.type === 'agent' ? 'ADD AGENT' : 'ADD TASK'}</span>
               </div>
               <button onClick={() => setAddPromptModal(null)}
                 onMouseEnter={e => e.currentTarget.style.color = '#f87171'}
-                onMouseLeave={e => e.currentTarget.style.color = '#555'}
-                style={{ background: 'transparent', border: 'none', color: '#555', cursor: 'pointer', padding: 4, display: 'flex', transition: 'color 0.15s' }}>
+                onMouseLeave={e => e.currentTarget.style.color = c.dim}
+                style={{ background: 'transparent', border: 'none', color: c.dim, cursor: 'pointer', padding: 4, display: 'flex', transition: 'color 0.15s' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
             <div style={{ padding: 16 }}>
-              <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.5 }}>
                 {addPromptModal.type === 'agent'
                   ? 'Describe the agent you want to add — its role, focus area, and what it should handle.'
                   : 'Describe the task — what needs to be done, any constraints, and expected outcome.'}
@@ -4919,20 +4912,20 @@ export function Overview() {
                 onChange={e => setAddPromptText(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && addPromptText.trim()) { e.preventDefault(); setAddPromptModal(null) } }}
                 placeholder={addPromptModal.type === 'agent' ? 'e.g. A QA agent that reviews code for bugs and edge cases...' : 'e.g. Set up authentication with email + OAuth support...'}
-                style={{ width: '100%', minHeight: 100, background: '#080a0e', border: '1px solid #1e2330', borderRadius: 8, padding: '10px 12px', color: '#e8eaed', fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace', resize: 'vertical', outline: 'none', lineHeight: 1.6, boxSizing: 'border-box' }}
+                style={{ width: '100%', minHeight: 100, background: c.bg, border: `1px solid ${c.border}`, borderRadius: 8, padding: '10px 12px', color: c.text, fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace', resize: 'vertical', outline: 'none', lineHeight: 1.6, boxSizing: 'border-box' }}
               />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
                 <button onClick={() => setAddPromptModal(null)}
-                  onMouseEnter={e => e.currentTarget.style.background = '#1e2330'}
+                  onMouseEnter={e => e.currentTarget.style.background = c.border}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  style={{ padding: '6px 14px', borderRadius: 4, border: '1px solid #1e2330', background: 'transparent', color: '#9ca3af', fontSize: 10, fontWeight: 700, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s' }}>
+                  style={{ padding: '6px 14px', borderRadius: 4, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, fontSize: 10, fontWeight: 700, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'background 0.15s' }}>
                   Cancel
                 </button>
                 <button
                   onClick={() => { if (addPromptText.trim()) setAddPromptModal(null) }}
                   onMouseEnter={e => { if (addPromptText.trim()) { e.currentTarget.style.background = '#141e14'; e.currentTarget.style.boxShadow = '0 0 16px rgba(52,211,153,0.1)' } }}
                   onMouseLeave={e => { e.currentTarget.style.background = addPromptText.trim() ? '#0c1210' : 'transparent'; e.currentTarget.style.boxShadow = 'none' }}
-                  style={{ padding: '6px 14px', borderRadius: 4, border: `1px solid ${addPromptText.trim() ? 'rgba(52,211,153,0.3)' : '#1e2330'}`, background: addPromptText.trim() ? '#0c1210' : 'transparent', color: addPromptText.trim() ? '#34d399' : '#555', fontSize: 10, fontWeight: 700, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: addPromptText.trim() ? 'pointer' : 'default', transition: 'all 0.15s', letterSpacing: 0.3 }}>
+                  style={{ padding: '6px 14px', borderRadius: 4, border: `1px solid ${addPromptText.trim() ? 'rgba(52,211,153,0.3)' : c.border}`, background: addPromptText.trim() ? '#0c1210' : 'transparent', color: addPromptText.trim() ? '#34d399' : c.dim, fontSize: 10, fontWeight: 700, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: addPromptText.trim() ? 'pointer' : 'default', transition: 'all 0.15s', letterSpacing: 0.3 }}>
                   <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>{addPromptModal.type === 'agent' ? 'Add Agent' : 'Add Task'}
                 </button>
               </div>
@@ -4944,33 +4937,33 @@ export function Overview() {
       {showClarifyModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(4px)' }}
           onClick={e => { if (e.target === e.currentTarget) setShowClarifyModal(false) }}>
-          <div style={{ background: '#0a0d10', border: '1px solid #252a35', borderRadius: 12, width: '100%', maxWidth: 520, boxShadow: '0 24px 80px rgba(0,0,0,0.8), 0 0 40px rgba(52,211,153,0.03)', overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid #1e2330', background: '#0c0f14' }}>
+          <div style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 12, width: '100%', maxWidth: 520, boxShadow: '0 24px 80px rgba(0,0,0,0.8), 0 0 40px rgba(52,211,153,0.03)', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: `1px solid ${c.border}`, background: '#0c0f14' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 13, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>{'>'}</span>
-                <span className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>CLARIFY</span>
-                <div style={{ width: 1, height: 12, background: '#252a35' }} />
-                <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://vague-mode</span>
+                <span className="panel-header" style={{ color: c.muted, fontSize: 9 }}>CLARIFY</span>
+                <div style={{ width: 1, height: 12, background: c.border }} />
+                <span style={{ fontSize: 9, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 500, letterSpacing: 0.5 }}>MASSA://vague-mode</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>step {clarifyHistory.length + (clarifyDone ? 0 : 1)}</span>
-                <button onClick={() => setShowClarifyModal(false)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '2px 4px', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>✕</button>
+                <span style={{ fontSize: 9, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>step {clarifyHistory.length + (clarifyDone ? 0 : 1)}</span>
+                <button onClick={() => setShowClarifyModal(false)} style={{ background: 'transparent', border: 'none', color: c.muted, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: '2px 4px', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>✕</button>
               </div>
             </div>
 
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #1e2330' }}>
+            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${c.border}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                 <span style={{ fontSize: 10, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', opacity: 0.5 }}>$</span>
-                <span className="panel-header" style={{ color: '#9ca3af', fontSize: 9 }}>INPUT</span>
+                <span className="panel-header" style={{ color: c.muted, fontSize: 9 }}>INPUT</span>
               </div>
-              <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{rawInput}</div>
+              <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.5, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{rawInput}</div>
             </div>
 
             {clarifyHistory.length > 0 && (
-              <div style={{ padding: '8px 16px', borderBottom: '1px solid #1e2330', maxHeight: 140, overflowY: 'auto' }}>
+              <div style={{ padding: '8px 16px', borderBottom: `1px solid ${c.border}`, maxHeight: 140, overflowY: 'auto' }}>
                 {clarifyHistory.map((h, i) => (
                   <div key={i} style={{ marginBottom: i < clarifyHistory.length - 1 ? 8 : 0 }}>
-                    <div style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 2 }}>Q{i + 1}: {h.question}</div>
+                    <div style={{ fontSize: 9, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 2 }}>Q{i + 1}: {h.question}</div>
                     <div style={{ fontSize: 11, color: '#34d399', fontFamily: '"JetBrains Mono", Menlo, monospace', opacity: 0.8 }}>→ {h.answer}</div>
                   </div>
                 ))}
@@ -4981,7 +4974,7 @@ export function Overview() {
               {clarifyLoading ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '20px 0', justifyContent: 'center' }}>
                   <div style={{ width: 6, height: 6, borderRadius: 999, background: '#34d399', animation: 'subtle-glow 1s ease-in-out infinite' }} />
-                  <span style={{ fontSize: 11, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>generating question...</span>
+                  <span style={{ fontSize: 11, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>generating question...</span>
                 </div>
               ) : clarifyDone ? (
                 <div>
@@ -4990,7 +4983,7 @@ export function Overview() {
                     <span className="panel-header" style={{ color: '#34d399', fontSize: 9 }}>READY TO BUILD</span>
                   </div>
                   {clarifySummary && (
-                    <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.6, fontFamily: '"JetBrains Mono", Menlo, monospace', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 8, padding: '10px 12px', marginBottom: 16 }}>
+                    <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.6, fontFamily: '"JetBrains Mono", Menlo, monospace', background: '#0c0f14', border: `1px solid ${c.border}`, borderRadius: 8, padding: '10px 12px', marginBottom: 16 }}>
                       {clarifySummary}
                     </div>
                   )}
@@ -5004,7 +4997,7 @@ export function Overview() {
                 </div>
               ) : (
                 <div>
-                  <div style={{ fontSize: 13, color: '#e8eaed', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 13, color: c.text, fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
                     {clarifyQuestion}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -5012,21 +5005,21 @@ export function Overview() {
                       opt === 'Other' ? (
                         <div key={i}>
                           <div
-                            style={{ fontSize: 12, color: '#9ca3af', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
+                            style={{ fontSize: 12, color: c.muted, background: '#0c0f14', border: `1px solid ${c.border}`, borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
                             onClick={() => {
                               const el = document.getElementById('clarify-other-input')
                               if (el) el.focus()
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#252a35'; e.currentTarget.style.color = '#9ca3af' }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#9ca3af' }}>
-                            <span style={{ color: '#9ca3af', fontWeight: 700, fontSize: 10, flexShrink: 0 }}>{String.fromCharCode(65 + i)}.</span>
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.muted }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.muted }}>
+                            <span style={{ color: c.muted, fontWeight: 700, fontSize: 10, flexShrink: 0 }}>{String.fromCharCode(65 + i)}.</span>
                             <input
                               id="clarify-other-input"
                               value={clarifyOtherText}
                               onChange={e => setClarifyOtherText(e.target.value)}
                               onKeyDown={e => { if (e.key === 'Enter' && clarifyOtherText.trim()) handleClarifyAnswer(clarifyOtherText.trim()) }}
                               placeholder="type your own answer..."
-                              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#e8eaed', fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}
+                              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: c.text, fontSize: 12, fontFamily: '"JetBrains Mono", Menlo, monospace' }}
                             />
                             {clarifyOtherText.trim() && (
                               <button
@@ -5040,9 +5033,9 @@ export function Overview() {
                       ) : (
                         <div key={i}
                           onClick={() => handleClarifyAnswer(opt)}
-                          style={{ fontSize: 12, color: '#9ca3af', background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
-                          onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.2)'; e.currentTarget.style.color = '#9ca3af' }}
-                          onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#9ca3af' }}>
+                          style={{ fontSize: 12, color: c.muted, background: '#0c0f14', border: `1px solid ${c.border}`, borderRadius: 8, padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 8 }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#141820'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.2)'; e.currentTarget.style.color = c.muted }}
+                          onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.muted }}>
                           <span style={{ color: '#34d399', fontWeight: 700, fontSize: 10, opacity: 0.5, flexShrink: 0 }}>{String.fromCharCode(65 + i)}.</span>
                           {opt}
                         </div>
@@ -5052,9 +5045,9 @@ export function Overview() {
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
                     <button
                       onClick={() => { setClarifyDone(true); setClarifySummary('Building based on current context.') }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#9ca3af'}
-                      onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
-                      style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '4px 8px', transition: 'color 0.15s' }}>
+                      onMouseEnter={e => e.currentTarget.style.color = c.muted}
+                      onMouseLeave={e => e.currentTarget.style.color = c.muted}
+                      style={{ background: 'transparent', border: 'none', color: c.muted, cursor: 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', padding: '4px 8px', transition: 'color 0.15s' }}>
                       skip → build now
                     </button>
                   </div>

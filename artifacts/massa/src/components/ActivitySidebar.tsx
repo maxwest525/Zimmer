@@ -24,17 +24,17 @@ function ActivityItemRow({ item }: ActivityItemProps) {
       <div className="flex-1 min-w-0">
         <div className="text-xs text-foreground leading-snug">{item.label}</div>
         {item.projectName && (
-          <div className="text-[10px] text-emerald-400/80 font-medium mt-0.5 truncate">
+          <div className="text-[11px] text-emerald-400/80 font-medium mt-0.5 truncate">
             {item.projectName}
           </div>
         )}
         {item.sublabel && (
-          <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+          <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
             {item.sublabel}
           </div>
         )}
       </div>
-      <span className="text-[10px] text-muted-foreground/80 shrink-0 mt-0.5">
+      <span className="text-[11px] text-muted-foreground/80 shrink-0 mt-0.5">
         {item.timestamp}
       </span>
     </div>

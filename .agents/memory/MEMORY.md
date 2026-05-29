@@ -5,3 +5,4 @@
 - [MASSA marketing engines](massa-marketing-engines.md) — Command Center is engine-led; never fabricate engine descriptions, user sends defining docs.
 - [MCP status history](mcp-status-history.md) — transition rows written only on status change (not every poll); pass prevStatus into refreshServer.
 - [HyperFX templates scrape](hyperfx-templates-scrape.md) — Agents tab templates are scraped live from hyperfx.ai/templates HTML (no API); selectors are brittle, list fails loudly on empty parse.
+- [MASSA theming system](massa-theming.md) — two styling systems (Tailwind CSS-vars + inline `c` objects) bridged by useThemeColors(); ThemeColors needs index signature; don't bump PreviewThumbnail miniatures.

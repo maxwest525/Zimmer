@@ -1,19 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-
-const c = {
-  bg: '#0a0d10',
-  panel: '#080a0e',
-  panelAlt: '#0c0f14',
-  border: '#252a35',
-  borderDim: '#1e2330',
-  text: '#e8eaed',
-  muted: '#9ca3af',
-  dim: '#6b7280',
-  green: '#34d399',
-  blue: '#60a5fa',
-  amber: '#f59e0b',
-  font: '"JetBrains Mono", Menlo, monospace',
-}
+import { useThemeColors } from '@/contexts/ThemeContext'
 
 const apiBase = '/api'
 
@@ -54,15 +40,16 @@ type TemplateDetail = {
 }
 
 function MarkdownView({ md }: { md: string }) {
+  const c = useThemeColors()
   const lines = md.split('\n')
   const blocks: React.ReactNode[] = []
   let list: string[] = []
   const flush = (key: string) => {
     if (list.length === 0) return
     blocks.push(
-      <ul key={key} style={{ margin: '6px 0 12px', paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <ul key={key} style={{ margin: '6px 0 12px', paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
         {list.map((it, i) => (
-          <li key={i} style={{ color: c.muted, fontFamily: c.font, fontSize: 12, lineHeight: 1.6 }}>{it}</li>
+          <li key={i} style={{ color: c.muted, fontFamily: c.fontSans, fontSize: 13, lineHeight: 1.6 }}>{it}</li>
         ))}
       </ul>,
     )
@@ -77,13 +64,13 @@ function MarkdownView({ md }: { md: string }) {
     flush(`ul-${i}`)
     if (!line) return
     if (line.startsWith('#### ')) {
-      blocks.push(<div key={i} style={{ color: c.text, fontFamily: c.font, fontSize: 12, fontWeight: 700, margin: '12px 0 4px' }}>{line.slice(5)}</div>)
+      blocks.push(<div key={i} style={{ color: c.text, fontFamily: c.font, fontSize: 13, fontWeight: 700, margin: '12px 0 4px' }}>{line.slice(5)}</div>)
     } else if (line.startsWith('### ')) {
-      blocks.push(<div key={i} style={{ color: c.green, fontFamily: c.font, fontSize: 13, fontWeight: 700, margin: '16px 0 6px' }}>{line.slice(4)}</div>)
+      blocks.push(<div key={i} style={{ color: c.green, fontFamily: c.font, fontSize: 14, fontWeight: 700, margin: '16px 0 6px' }}>{line.slice(4)}</div>)
     } else if (line.startsWith('## ')) {
       blocks.push(<div key={i} style={{ color: c.text, fontFamily: c.font, fontSize: 15, fontWeight: 700, margin: '20px 0 8px', paddingBottom: 6, borderBottom: `1px solid ${c.borderDim}` }}>{line.slice(3)}</div>)
     } else {
-      blocks.push(<p key={i} style={{ color: c.muted, fontFamily: c.font, fontSize: 12, lineHeight: 1.7, margin: '0 0 10px' }}>{line}</p>)
+      blocks.push(<p key={i} style={{ color: c.muted, fontFamily: c.fontSans, fontSize: 13, lineHeight: 1.7, margin: '0 0 10px' }}>{line}</p>)
     }
   })
   flush('ul-end')
@@ -91,6 +78,7 @@ function MarkdownView({ md }: { md: string }) {
 }
 
 export function AgentsView({ onBack }: { onBack: () => void }) {
+  const c = useThemeColors()
   // --- HyperFX Agent Skills (github.com/hyperfx-ai/marketing-skills) ---
   const [hfx, setHfx] = useState<HfxSkill[]>([])
   const [hfxLoading, setHfxLoading] = useState(true)
@@ -201,30 +189,30 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#f0f0f0' }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.text }}
           onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
         >←</button>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#f0f0f0', fontFamily: c.font }}>Agents</div>
-          <div style={{ fontSize: 10, color: c.muted, fontFamily: c.font }}>MASSA://sys/agents/hyper</div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: c.font }}>Agents</div>
+          <div style={{ fontSize: 11, color: c.muted, fontFamily: c.font }}>MASSA://sys/agents/hyper</div>
         </div>
       </div>
 
       {/* HyperFX Agent Skills */}
       <div style={{ background: c.panel, border: `1px solid rgba(52,211,153,0.18)`, borderRadius: 6, padding: 14, marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-          <div style={{ fontSize: 13, color: c.text, fontFamily: c.font, fontWeight: 700 }}>HyperFX Agent Skills</div>
+          <div style={{ fontSize: 14, color: c.text, fontFamily: c.font, fontWeight: 700 }}>HyperFX Agent Skills</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <a href={hfxRepoUrl} target="_blank" rel="noreferrer" style={{ color: c.dim, fontFamily: c.font, fontSize: 10, textDecoration: 'none' }}
+            <a href={hfxRepoUrl} target="_blank" rel="noreferrer" style={{ color: c.dim, fontFamily: c.font, fontSize: 11, textDecoration: 'none' }}
               onMouseEnter={e => { e.currentTarget.style.color = c.green }}
               onMouseLeave={e => { e.currentTarget.style.color = c.dim }}>hyperfx-ai/marketing-skills ↗</a>
             <button onClick={fetchHfx} disabled={hfxLoading}
-              style={{ padding: '4px 10px', borderRadius: 4, border: `1px solid rgba(52,211,153,0.2)`, background: '#0c1210', color: c.green, fontWeight: 700, fontSize: 10, cursor: hfxLoading ? 'default' : 'pointer', fontFamily: c.font }}>
+              style={{ padding: '4px 10px', borderRadius: 4, border: `1px solid rgba(52,211,153,0.2)`, background: c.greenDark, color: c.green, fontWeight: 700, fontSize: 11, cursor: hfxLoading ? 'default' : 'pointer', fontFamily: c.font }}>
               {hfxLoading ? 'SYNCING…' : '↻ SYNC'}
             </button>
           </div>
         </div>
-        <div style={{ fontSize: 10, color: c.muted, fontFamily: c.font, marginBottom: 12, lineHeight: 1.6 }}>
+        <div style={{ fontSize: 13, color: c.muted, fontFamily: c.fontSans, marginBottom: 12, lineHeight: 1.6 }}>
           <span style={{ color: c.green, fontWeight: 700 }}>Official</span> Hyper skills — reusable SOPs that turn agents into domain experts. Hyper agents auto-pick them from the library when relevant. Pulled live from the repo. Click any skill to read it.
         </div>
 
@@ -232,42 +220,42 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
         <div style={{ background: c.bg, border: `1px solid rgba(52,211,153,0.2)`, borderRadius: 4, padding: '11px 12px', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ color: c.green, fontFamily: c.font, fontSize: 10, fontWeight: 700 }}>import into hyper</span>
-              <span style={{ color: '#0a0a0a', background: c.green, fontFamily: c.font, fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3, letterSpacing: '0.04em' }}>RECOMMENDED</span>
+              <span style={{ color: c.green, fontFamily: c.font, fontSize: 11, fontWeight: 700 }}>import into hyper</span>
+              <span style={{ color: '#0a0a0a', background: c.green, fontFamily: c.font, fontSize: 11, fontWeight: 700, padding: '1px 5px', borderRadius: 3, letterSpacing: '0.04em' }}>RECOMMENDED</span>
             </div>
             <button onClick={() => copyCmd(HFX_REPO_URL)} title="copy repo url"
-              style={{ padding: '3px 9px', borderRadius: 3, border: `1px solid ${c.borderDim}`, background: 'transparent', color: copied === HFX_REPO_URL ? c.green : c.dim, fontWeight: 700, fontSize: 9, cursor: 'pointer', fontFamily: c.font }}>
+              style={{ padding: '3px 9px', borderRadius: 3, border: `1px solid ${c.borderDim}`, background: 'transparent', color: copied === HFX_REPO_URL ? c.green : c.dim, fontWeight: 700, fontSize: 11, cursor: 'pointer', fontFamily: c.font }}>
               {copied === HFX_REPO_URL ? 'copied url' : 'copy repo url'}
             </button>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {HFX_IMPORT_STEPS.map((step, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <span style={{ color: c.green, fontFamily: c.font, fontSize: 10, flexShrink: 0, width: 14 }}>{i + 1}.</span>
-                <span style={{ color: c.text, fontFamily: c.font, fontSize: 10, lineHeight: 1.5 }}>{step}</span>
+                <span style={{ color: c.green, fontFamily: c.font, fontSize: 12, flexShrink: 0, width: 14 }}>{i + 1}.</span>
+                <span style={{ color: c.text, fontFamily: c.fontSans, fontSize: 13, lineHeight: 1.5 }}>{step}</span>
               </div>
             ))}
           </div>
         </div>
 
         {hfxLoading ? (
-          <div style={{ padding: 12, color: c.muted, fontFamily: c.font, fontSize: 11 }}>Loading agent skills…</div>
+          <div style={{ padding: 12, color: c.muted, fontFamily: c.fontSans, fontSize: 13 }}>Loading agent skills…</div>
         ) : hfxError ? (
-          <div style={{ padding: 12, color: c.amber, fontFamily: c.font, fontSize: 11, lineHeight: 1.6 }}>{hfxError}</div>
+          <div style={{ padding: 12, color: c.amber, fontFamily: c.fontSans, fontSize: 13, lineHeight: 1.6 }}>{hfxError}</div>
         ) : hfx.length === 0 ? (
-          <div style={{ padding: 12, color: c.muted, fontFamily: c.font, fontSize: 11 }}>No skills found.</div>
+          <div style={{ padding: 12, color: c.muted, fontFamily: c.fontSans, fontSize: 13 }}>No skills found.</div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 }}>
             {hfx.map(s => (
               <div key={s.slug} onClick={() => pullHfxFile(s)} title={s.description}
-                style={{ padding: '9px 11px', background: c.bg, border: `1px solid ${c.borderDim}`, borderRadius: 4, cursor: 'pointer' }}
+                style={{ padding: '11px 13px', background: c.bg, border: `1px solid ${c.borderDim}`, borderRadius: 4, cursor: 'pointer' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(52,211,153,0.3)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = c.borderDim }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                  <span style={{ color: c.text, fontFamily: c.font, fontSize: 11, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
-                  <span title="Official Hyper skill" style={{ color: c.green, border: `1px solid rgba(52,211,153,0.4)`, fontFamily: c.font, fontSize: 8, fontWeight: 700, padding: '0 4px', borderRadius: 3, flexShrink: 0, letterSpacing: '0.03em' }}>OFFICIAL</span>
+                  <span style={{ color: c.text, fontFamily: c.font, fontSize: 12, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
+                  <span title="Official Hyper skill" style={{ color: c.green, border: `1px solid rgba(52,211,153,0.4)`, fontFamily: c.font, fontSize: 11, fontWeight: 700, padding: '0 4px', borderRadius: 3, flexShrink: 0, letterSpacing: '0.03em' }}>OFFICIAL</span>
                 </div>
-                <div style={{ color: c.muted, fontFamily: c.font, fontSize: 10, lineHeight: 1.5, marginTop: 4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.description}</div>
+                <div style={{ color: c.muted, fontFamily: c.fontSans, fontSize: 12, lineHeight: 1.5, marginTop: 4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.description}</div>
               </div>
             ))}
           </div>
@@ -276,18 +264,18 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
 
       {/* Agents = Hyper templates */}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-        <div style={{ fontSize: 13, color: c.text, fontFamily: c.font, fontWeight: 700 }}>Hyper Agents</div>
+        <div style={{ fontSize: 14, color: c.text, fontFamily: c.font, fontWeight: 700 }}>Hyper Agents</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a href="https://www.hyperfx.ai/templates" target="_blank" rel="noreferrer" style={{ color: c.dim, fontFamily: c.font, fontSize: 10, textDecoration: 'none' }}
+          <a href="https://www.hyperfx.ai/templates" target="_blank" rel="noreferrer" style={{ color: c.dim, fontFamily: c.font, fontSize: 11, textDecoration: 'none' }}
             onMouseEnter={e => { e.currentTarget.style.color = c.green }}
             onMouseLeave={e => { e.currentTarget.style.color = c.dim }}>hyperfx.ai/templates ↗</a>
           <button onClick={fetchTemplates} disabled={tplLoading}
-            style={{ padding: '4px 10px', borderRadius: 4, border: `1px solid rgba(52,211,153,0.2)`, background: '#0c1210', color: c.green, fontWeight: 700, fontSize: 10, cursor: tplLoading ? 'default' : 'pointer', fontFamily: c.font }}>
+            style={{ padding: '4px 10px', borderRadius: 4, border: `1px solid rgba(52,211,153,0.2)`, background: c.greenDark, color: c.green, fontWeight: 700, fontSize: 11, cursor: tplLoading ? 'default' : 'pointer', fontFamily: c.font }}>
             {tplLoading ? 'LOADING…' : '↻ REFRESH'}
           </button>
         </div>
       </div>
-      <div style={{ fontSize: 10, color: c.muted, fontFamily: c.font, marginBottom: 12, lineHeight: 1.6 }}>
+      <div style={{ fontSize: 13, color: c.muted, fontFamily: c.fontSans, marginBottom: 12, lineHeight: 1.6 }}>
         Ready-to-use Hyper agents — each comes with its own prompts, connectors, and skills. Click one to see everything it does.
       </div>
 
@@ -298,7 +286,7 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
             const active = cat === category
             return (
               <button key={cat} onClick={() => setCategory(cat)}
-                style={{ padding: '4px 12px', borderRadius: 4, border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : c.borderDim}`, background: active ? 'rgba(52,211,153,0.08)' : 'transparent', color: active ? c.green : c.muted, fontFamily: c.font, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>
+                style={{ padding: '4px 12px', borderRadius: 4, border: `1px solid ${active ? 'rgba(52,211,153,0.4)' : c.borderDim}`, background: active ? 'rgba(52,211,153,0.08)' : 'transparent', color: active ? c.green : c.muted, fontFamily: c.font, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
                 {cat}
               </button>
             )
@@ -307,11 +295,11 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
       )}
 
       {tplLoading ? (
-        <div style={{ padding: 24, color: c.muted, fontFamily: c.font, fontSize: 11 }}>Loading Hyper agents…</div>
+        <div style={{ padding: 24, color: c.muted, fontFamily: c.fontSans, fontSize: 13 }}>Loading Hyper agents…</div>
       ) : tplError ? (
-        <div style={{ padding: 24, color: c.amber, fontFamily: c.font, fontSize: 11, lineHeight: 1.6 }}>{tplError}</div>
+        <div style={{ padding: 24, color: c.amber, fontFamily: c.fontSans, fontSize: 13, lineHeight: 1.6 }}>{tplError}</div>
       ) : visible.length === 0 ? (
-        <div style={{ padding: 24, color: c.muted, fontFamily: c.font, fontSize: 11 }}>No agents found.</div>
+        <div style={{ padding: 24, color: c.muted, fontFamily: c.fontSans, fontSize: 13 }}>No agents found.</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
           {visible.map(tpl => (
@@ -320,18 +308,18 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(52,211,153,0.35)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = c.borderDim }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span style={{ color: c.text, fontFamily: c.font, fontSize: 13, fontWeight: 700 }}>{tpl.name}</span>
-                {tpl.category && <span style={{ color: c.dim, border: `1px solid ${c.borderDim}`, fontFamily: c.font, fontSize: 8, fontWeight: 700, padding: '1px 6px', borderRadius: 3, flexShrink: 0, letterSpacing: '0.03em' }}>{tpl.category}</span>}
+                <span style={{ color: c.text, fontFamily: c.font, fontSize: 14, fontWeight: 700 }}>{tpl.name}</span>
+                {tpl.category && <span style={{ color: c.dim, border: `1px solid ${c.borderDim}`, fontFamily: c.font, fontSize: 11, fontWeight: 700, padding: '1px 6px', borderRadius: 3, flexShrink: 0, letterSpacing: '0.03em' }}>{tpl.category}</span>}
               </div>
-              <div style={{ color: c.muted, fontFamily: c.font, fontSize: 11, lineHeight: 1.6, flex: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tpl.description}</div>
+              <div style={{ color: c.muted, fontFamily: c.fontSans, fontSize: 13, lineHeight: 1.6, flex: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tpl.description}</div>
               {tpl.integrations.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                   {tpl.integrations.slice(0, 4).map(it => (
-                    <span key={it} style={{ color: c.blue, border: `1px solid rgba(96,165,250,0.25)`, background: 'rgba(96,165,250,0.05)', fontFamily: c.font, fontSize: 8, padding: '1px 5px', borderRadius: 3 }}>{it}</span>
+                    <span key={it} style={{ color: c.blue, border: `1px solid rgba(96,165,250,0.25)`, background: 'rgba(96,165,250,0.05)', fontFamily: c.font, fontSize: 11, padding: '1px 5px', borderRadius: 3 }}>{it}</span>
                   ))}
                 </div>
               )}
-              <span style={{ color: c.green, fontFamily: c.font, fontSize: 9, fontWeight: 700 }}>view agent →</span>
+              <span style={{ color: c.green, fontFamily: c.font, fontSize: 11, fontWeight: 700 }}>view agent →</span>
             </div>
           ))}
 
@@ -341,9 +329,9 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
             onMouseEnter={e => { e.currentTarget.style.borderColor = c.green }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = c.border }}>
             <span style={{ color: c.green, fontFamily: c.font, fontSize: 26, fontWeight: 700, lineHeight: 1 }}>+</span>
-            <span style={{ color: c.text, fontFamily: c.font, fontSize: 12, fontWeight: 700 }}>Build a custom agent</span>
-            <span style={{ color: c.muted, fontFamily: c.font, fontSize: 10, lineHeight: 1.5, maxWidth: 240 }}>Start blank in Hyper and give it any job, tools, tasks, and schedule.</span>
-            <span style={{ color: c.green, fontFamily: c.font, fontSize: 10, fontWeight: 700 }}>open in hyper ↗</span>
+            <span style={{ color: c.text, fontFamily: c.font, fontSize: 13, fontWeight: 700 }}>Build a custom agent</span>
+            <span style={{ color: c.muted, fontFamily: c.fontSans, fontSize: 12, lineHeight: 1.5, maxWidth: 240 }}>Start blank in Hyper and give it any job, tools, tasks, and schedule.</span>
+            <span style={{ color: c.green, fontFamily: c.font, fontSize: 11, fontWeight: 700 }}>open in hyper ↗</span>
           </a>
         </div>
       )}
@@ -359,9 +347,9 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
               <div style={{ minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span style={{ color: c.text, fontFamily: c.font, fontSize: 15, fontWeight: 700 }}>{selected.name}</span>
-                  {selected.category && <span style={{ color: c.dim, border: `1px solid ${c.borderDim}`, fontFamily: c.font, fontSize: 8, fontWeight: 700, padding: '1px 6px', borderRadius: 3, letterSpacing: '0.03em' }}>{selected.category}</span>}
+                  {selected.category && <span style={{ color: c.dim, border: `1px solid ${c.borderDim}`, fontFamily: c.font, fontSize: 11, fontWeight: 700, padding: '1px 6px', borderRadius: 3, letterSpacing: '0.03em' }}>{selected.category}</span>}
                 </div>
-                <div style={{ color: c.muted, fontFamily: c.font, fontSize: 10, marginTop: 4 }}>Hyper agent template</div>
+                <div style={{ color: c.muted, fontFamily: c.fontSans, fontSize: 12, marginTop: 4 }}>Hyper agent template</div>
               </div>
               <button onClick={() => { setSelected(null); setDetail(null) }} style={{ border: 'none', background: 'transparent', color: c.dim, cursor: 'pointer', fontSize: 16, padding: '2px 6px', fontFamily: c.font, flexShrink: 0 }}
                 onMouseEnter={e => { e.currentTarget.style.color = c.text }}
@@ -370,18 +358,18 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
 
             <div style={{ padding: 18 }}>
               {detailLoading ? (
-                <div style={{ color: c.muted, fontFamily: c.font, fontSize: 12 }}>Loading everything this agent does…</div>
+                <div style={{ color: c.muted, fontFamily: c.fontSans, fontSize: 13 }}>Loading everything this agent does…</div>
               ) : detailError ? (
-                <div style={{ color: c.amber, fontFamily: c.font, fontSize: 12, lineHeight: 1.6 }}>{detailError}</div>
+                <div style={{ color: c.amber, fontFamily: c.fontSans, fontSize: 13, lineHeight: 1.6 }}>{detailError}</div>
               ) : detail ? (
                 <>
                   {/* Connectors */}
                   {detail.integrations.length > 0 && (
                     <div style={{ marginBottom: 16 }}>
-                      <div style={{ color: c.dim, fontFamily: c.font, fontSize: 9, letterSpacing: '0.05em', marginBottom: 6 }}>CONNECTORS & SKILLS</div>
+                      <div style={{ color: c.dim, fontFamily: c.font, fontSize: 11, letterSpacing: '0.05em', marginBottom: 6 }}>CONNECTORS & SKILLS</div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {detail.integrations.map(it => (
-                          <span key={it} style={{ color: c.green, border: `1px solid rgba(52,211,153,0.25)`, background: 'rgba(52,211,153,0.05)', fontFamily: c.font, fontSize: 10, padding: '3px 8px', borderRadius: 3 }}>{it}</span>
+                          <span key={it} style={{ color: c.green, border: `1px solid rgba(52,211,153,0.25)`, background: 'rgba(52,211,153,0.05)', fontFamily: c.font, fontSize: 11, padding: '3px 8px', borderRadius: 3 }}>{it}</span>
                         ))}
                       </div>
                     </div>
@@ -390,25 +378,25 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
                   {/* Example prompt */}
                   {detail.prompt && (
                     <div style={{ marginBottom: 16 }}>
-                      <div style={{ color: c.dim, fontFamily: c.font, fontSize: 9, letterSpacing: '0.05em', marginBottom: 6 }}>EXAMPLE PROMPT</div>
-                      <div style={{ background: c.panel, border: `1px solid ${c.borderDim}`, borderRadius: 6, padding: '10px 12px', color: c.text, fontFamily: c.font, fontSize: 12, lineHeight: 1.6 }}>“{detail.prompt}”</div>
+                      <div style={{ color: c.dim, fontFamily: c.font, fontSize: 11, letterSpacing: '0.05em', marginBottom: 6 }}>EXAMPLE PROMPT</div>
+                      <div style={{ background: c.panel, border: `1px solid ${c.borderDim}`, borderRadius: 6, padding: '10px 12px', color: c.text, fontFamily: c.fontSans, fontSize: 13, lineHeight: 1.6 }}>“{detail.prompt}”</div>
                     </div>
                   )}
 
                   {/* Full description */}
                   {detail.content && (
                     <div style={{ marginBottom: 8 }}>
-                      <div style={{ color: c.dim, fontFamily: c.font, fontSize: 9, letterSpacing: '0.05em', marginBottom: 6 }}>WHAT THIS AGENT DOES</div>
+                      <div style={{ color: c.dim, fontFamily: c.font, fontSize: 11, letterSpacing: '0.05em', marginBottom: 6 }}>WHAT THIS AGENT DOES</div>
                       <MarkdownView md={detail.content} />
                     </div>
                   )}
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 16, paddingTop: 14, borderTop: `1px solid ${c.borderDim}` }}>
                     <a href={detail.useUrl} target="_blank" rel="noreferrer"
-                      style={{ textDecoration: 'none', padding: '8px 16px', borderRadius: 4, border: `1px solid rgba(52,211,153,0.35)`, background: '#0c1210', color: c.green, fontWeight: 700, fontSize: 11, fontFamily: c.font }}>
+                      style={{ textDecoration: 'none', padding: '8px 16px', borderRadius: 4, border: `1px solid rgba(52,211,153,0.35)`, background: c.greenDark, color: c.green, fontWeight: 700, fontSize: 12, fontFamily: c.font }}>
                       ▶ Use this template
                     </a>
-                    <a href={detail.url} target="_blank" rel="noreferrer" style={{ color: c.dim, fontFamily: c.font, fontSize: 10, textDecoration: 'none' }}
+                    <a href={detail.url} target="_blank" rel="noreferrer" style={{ color: c.dim, fontFamily: c.font, fontSize: 11, textDecoration: 'none' }}
                       onMouseEnter={e => { e.currentTarget.style.color = c.green }}
                       onMouseLeave={e => { e.currentTarget.style.color = c.dim }}>view on hyperfx.ai ↗</a>
                   </div>
@@ -427,8 +415,8 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
             style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 8, width: '100%', maxWidth: 760, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 18px', borderBottom: `1px solid ${c.borderDim}`, position: 'sticky', top: 0, background: c.bg, borderRadius: '8px 8px 0 0' }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ color: c.text, fontFamily: c.font, fontSize: 13, fontWeight: 700 }}>{hfxSelected.name}</div>
-                <div style={{ color: c.green, fontFamily: c.font, fontSize: 9, marginTop: 2 }}>skills/{hfxSelected.slug}/SKILL.md</div>
+                <div style={{ color: c.text, fontFamily: c.font, fontSize: 14, fontWeight: 700 }}>{hfxSelected.name}</div>
+                <div style={{ color: c.green, fontFamily: c.font, fontSize: 11, marginTop: 2 }}>skills/{hfxSelected.slug}/SKILL.md</div>
               </div>
               <button onClick={() => setHfxSelected(null)} style={{ border: 'none', background: 'transparent', color: c.dim, cursor: 'pointer', fontSize: 16, padding: '2px 6px', fontFamily: c.font, flexShrink: 0 }}
                 onMouseEnter={e => { e.currentTarget.style.color = c.text }}
@@ -436,15 +424,15 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
             </div>
             <div style={{ maxHeight: '70vh', overflow: 'auto', padding: 18 }}>
               {hfxFileLoading ? (
-                <div style={{ color: c.muted, fontFamily: c.font, fontSize: 12 }}>Pulling skill…</div>
+                <div style={{ color: c.muted, fontFamily: c.fontSans, fontSize: 13 }}>Pulling skill…</div>
               ) : hfxFileError ? (
-                <div style={{ color: c.amber, fontFamily: c.font, fontSize: 12, lineHeight: 1.6 }}>{hfxFileError}</div>
+                <div style={{ color: c.amber, fontFamily: c.fontSans, fontSize: 13, lineHeight: 1.6 }}>{hfxFileError}</div>
               ) : (
-                <pre style={{ color: '#ccc', fontFamily: c.font, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{hfxFileContent}</pre>
+                <pre style={{ color: c.text, fontFamily: c.font, fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>{hfxFileContent}</pre>
               )}
             </div>
             <div style={{ padding: '10px 18px', borderTop: `1px solid ${c.borderDim}` }}>
-              <a href={hfxSelected.htmlUrl} target="_blank" rel="noreferrer" style={{ color: c.green, fontFamily: c.font, fontSize: 10, textDecoration: 'none' }}>view on github ↗</a>
+              <a href={hfxSelected.htmlUrl} target="_blank" rel="noreferrer" style={{ color: c.green, fontFamily: c.font, fontSize: 11, textDecoration: 'none' }}>view on github ↗</a>
             </div>
           </div>
         </div>

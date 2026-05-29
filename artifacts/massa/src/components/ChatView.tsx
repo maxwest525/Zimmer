@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { type ChatMessage, MOCK_CHAT_MESSAGES, getAgentResponsePool } from '@/data/chatData'
+import { useThemeColors } from '@/contexts/ThemeContext'
 
 type Build = {
   id: string
@@ -28,17 +29,6 @@ type ChatViewProps = {
   onMessagesChange: (messages: Record<string, ChatMessage[]>) => void
   onBackToBuild?: () => void
   onGoHome?: () => void
-}
-
-const c = {
-  bg: '#060606',
-  panel: '#0d0d0d',
-  alt: '#111111',
-  border: '#1e1e1e',
-  text: '#f5f5f5',
-  muted: '#8c8f8c',
-  green: '#2d8a32',
-  greenSoft: 'rgba(45,138,50,0.08)',
 }
 
 function renderMessageContent(content: string) {
@@ -127,6 +117,7 @@ export function initChatMessages(projects: Project[]): Record<string, ChatMessag
 }
 
 export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, onMessagesChange, onBackToBuild, onGoHome }: ChatViewProps) {
+  const c = useThemeColors()
   const [inputValue, setInputValue] = useState('')
   const [showAttachMenu, setShowAttachMenu] = useState(false)
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>(() => {
@@ -224,7 +215,7 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
           {onGoHome && (
             <button
               onClick={onGoHome}
-              onMouseEnter={e => e.currentTarget.style.background = '#1e1e1e'}
+              onMouseEnter={e => e.currentTarget.style.background = c.borderDim}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               style={{ background: 'transparent', border: `1px solid ${c.border}`, borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: c.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}
               title="Go to Dashboard"
@@ -235,9 +226,9 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
           {onBackToBuild && (
             <button
               onClick={onBackToBuild}
-              onMouseEnter={e => e.currentTarget.style.background = '#1e1e1e'}
+              onMouseEnter={e => e.currentTarget.style.background = c.borderDim}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              style={{ background: 'transparent', border: `1px solid ${c.border}`, borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: c.muted, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s' }}
+              style={{ background: 'transparent', border: `1px solid ${c.border}`, borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: c.muted, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s', fontFamily: c.font }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
               Back to Build
@@ -248,7 +239,7 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
       <div style={{ display: 'flex', flex: 1, gap: 0, border: `1px solid ${c.border}`, borderRadius: (onBackToBuild || onGoHome) ? '0 0 12px 12px' : '12px', overflow: 'hidden', background: c.panel }}>
       <div style={{ width: 280, borderRight: `1px solid ${c.border}`, display: 'flex', flexDirection: 'column', background: c.alt, flexShrink: 0 }}>
         <div style={{ padding: '14px 16px', borderBottom: `1px solid ${c.border}` }}>
-          <div style={{ fontSize: 10, letterSpacing: 1.2, color: c.muted, fontWeight: 700 }}>CONVERSATIONS</div>
+          <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, fontFamily: c.font }}>CONVERSATIONS</div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
           {projects.map(project => {
@@ -259,12 +250,12 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                   onClick={() => setExpandedProjects(prev => ({ ...prev, [project.id]: !isExpanded }))}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', cursor: 'pointer',
-                    fontSize: 11, fontWeight: 700, color: c.text, letterSpacing: 0.3,
+                    fontSize: 12, fontWeight: 700, color: c.text, letterSpacing: 0.3, fontFamily: c.font,
                   }}
                 >
                   <span style={{ fontSize: 9, color: c.muted, transition: 'transform 0.2s', transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block' }}>▸</span>
                   <span>{project.name}</span>
-                  <span style={{ fontSize: 9, color: c.muted, marginLeft: 'auto' }}>{project.builds.length}</span>
+                  <span style={{ fontSize: 11, color: c.muted, marginLeft: 'auto', fontFamily: c.font }}>{project.builds.length}</span>
                 </div>
                 {isExpanded && project.builds.map(build => {
                   const isActive = selectedBuildId === build.id
@@ -281,20 +272,20 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                         borderLeft: isActive ? `2px solid ${c.green}` : '2px solid transparent',
                         transition: 'background 0.15s',
                       }}
-                      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#1a1a1a' }}
+                      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = c.borderDim }}
                       onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: isActive ? c.green : c.text }}>{build.agent}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: isActive ? c.green : c.text, fontFamily: c.font }}>{build.agent}</span>
                         {build.agentRole && (
-                          <span style={{ fontSize: 8, color: c.muted, background: '#1e1e1e', padding: '1px 4px', borderRadius: 3, fontWeight: 600 }}>{build.agentRole}</span>
+                          <span style={{ fontSize: 11, color: c.muted, background: c.alt, padding: '1px 5px', borderRadius: 3, fontWeight: 600, fontFamily: c.font }}>{build.agentRole}</span>
                         )}
                       </div>
-                      <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 12, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: c.fontSans }}>
                         {build.title}
                       </div>
                       {lastMsg && (
-                        <div style={{ fontSize: 10, color: '#999', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ fontSize: 12, color: c.dim, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: c.fontSans }}>
                           {lastMsg.role === 'user' ? 'You: ' : ''}{lastMsg.content.slice(0, 60).replace(/\n/g, ' ')}
                         </div>
                       )}
@@ -315,11 +306,11 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                 {activeBuild.build.agent.charAt(0)}
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>{activeBuild.build.agent}</div>
-                <div style={{ fontSize: 11, color: c.muted }}>{activeBuild.build.title} · {activeBuild.project.name}</div>
+                <div style={{ fontWeight: 700, fontSize: 14, fontFamily: c.font }}>{activeBuild.build.agent}</div>
+                <div style={{ fontSize: 12, color: c.muted, fontFamily: c.fontSans }}>{activeBuild.build.title} · {activeBuild.project.name}</div>
               </div>
               {activeBuild.build.agentRole && (
-                <span style={{ fontSize: 10, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}44`, padding: '2px 8px', borderRadius: 999, fontWeight: 600, marginLeft: 'auto' }}>{activeBuild.build.agentRole}</span>
+                <span style={{ fontSize: 11, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}44`, padding: '2px 8px', borderRadius: 999, fontWeight: 600, marginLeft: 'auto', fontFamily: c.font }}>{activeBuild.build.agentRole}</span>
               )}
             </div>
 
@@ -328,31 +319,32 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                 <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%', alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   {msg.role === 'agent' && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: c.green }}>{activeBuild.build.agent}</span>
-                      {activeBuild.build.agentRole && <span style={{ fontSize: 8, color: c.muted, background: '#1e1e1e', padding: '1px 4px', borderRadius: 3 }}>{activeBuild.build.agentRole}</span>}
+                      <span style={{ fontSize: 11, fontWeight: 700, color: c.green, fontFamily: c.font }}>{activeBuild.build.agent}</span>
+                      {activeBuild.build.agentRole && <span style={{ fontSize: 11, color: c.muted, background: c.alt, padding: '1px 5px', borderRadius: 3, fontFamily: c.font }}>{activeBuild.build.agentRole}</span>}
                     </div>
                   )}
                   <div style={{
-                    background: msg.role === 'user' ? '#1a1a1a' : '#0a0a0a',
-                    border: `1px solid ${msg.role === 'user' ? '#2e2e2e' : '#1a1a1a'}`,
+                    background: msg.role === 'user' ? c.greenSoft : c.alt,
+                    border: `1px solid ${msg.role === 'user' ? c.border : c.borderDim}`,
                     borderRadius: msg.role === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
                     padding: '10px 14px',
-                    fontSize: 13,
+                    fontSize: 14,
                     lineHeight: 1.6,
                     color: c.text,
                     wordBreak: 'break-word',
+                    fontFamily: c.fontSans,
                   }}>
                     {renderMessageContent(msg.content)}
                   </div>
-                  <div style={{ fontSize: 9, color: '#888', marginTop: 4, padding: '0 4px' }}>{msg.time}</div>
+                  <div style={{ fontSize: 11, color: c.dim, marginTop: 4, padding: '0 4px', fontFamily: c.font }}>{msg.time}</div>
                 </div>
               ))}
               {isTypingForCurrent && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', maxWidth: '85%' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: c.green }}>{activeBuild.build.agent}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: c.green, fontFamily: c.font }}>{activeBuild.build.agent}</span>
                   </div>
-                  <div style={{ background: '#0a0a0a', border: '1px solid #1a1a1a', borderRadius: '12px 12px 12px 4px', padding: '10px 14px', fontSize: 13, color: c.muted }}>
+                  <div style={{ background: c.alt, border: `1px solid ${c.borderDim}`, borderRadius: '12px 12px 12px 4px', padding: '10px 14px', fontSize: 14, color: c.muted, fontFamily: c.fontSans }}>
                     <span style={{ animation: 'phase-pulse 1.5s ease-in-out infinite' }}>Typing</span>
                     <span style={{ animation: 'phase-pulse 1.5s ease-in-out infinite 0.2s' }}>.</span>
                     <span style={{ animation: 'phase-pulse 1.5s ease-in-out infinite 0.4s' }}>.</span>
@@ -367,25 +359,25 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', position: 'relative' }}>
                 <button
                   onClick={() => setShowAttachMenu(prev => !prev)}
-                  onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-                  onMouseLeave={e => { if (!showAttachMenu) e.currentTarget.style.color = '#888' }}
-                  style={{ background: 'transparent', border: 'none', color: showAttachMenu ? '#fff' : '#888', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = c.text}
+                  onMouseLeave={e => { if (!showAttachMenu) e.currentTarget.style.color = c.muted }}
+                  style={{ background: 'transparent', border: 'none', color: showAttachMenu ? c.text : c.muted, cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.15s' }}
                   title="Attach files"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
                 </button>
                 {showAttachMenu && (
-                  <div style={{ position: 'absolute', bottom: 44, left: 0, background: '#1a1a1a', border: '1px solid #333', borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', zIndex: 10 }}>
+                  <div style={{ position: 'absolute', bottom: 44, left: 0, background: c.panel, border: `1px solid ${c.borderLight}`, borderRadius: 14, padding: '6px 0', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.4)', zIndex: 10 }}>
                     {[
                       { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>, label: 'Photo Library' },
                       { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>, label: 'Take Photo or Video' },
                       { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>, label: 'Choose Files' },
                     ].map((item, i) => (
                       <div key={i} onClick={() => setShowAttachMenu(false)}
-                        onMouseEnter={e => e.currentTarget.style.background = '#252525'}
+                        onMouseEnter={e => e.currentTarget.style.background = c.alt}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: '#ddd', fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
-                        <span style={{ color: '#888', display: 'flex' }}>{item.icon}</span>
+                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', color: c.text, fontSize: 13, fontWeight: 500, transition: 'background 0.12s', borderBottom: i < 2 ? `1px solid ${c.borderDim}` : 'none', fontFamily: c.fontSans }}>
+                        <span style={{ color: c.muted, display: 'flex' }}>{item.icon}</span>
                         {item.label}
                       </div>
                     ))}
@@ -401,24 +393,24 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                   disabled={isTypingForCurrent}
                   style={{
                     flex: 1,
-                    background: '#0a0a0a',
-                    border: '1px solid #2a2a2a',
+                    background: c.bg,
+                    border: `1px solid ${c.border}`,
                     borderRadius: 10,
                     padding: '10px 14px',
                     color: c.text,
-                    fontSize: 13,
-                    fontFamily: 'inherit',
+                    fontSize: 14,
+                    fontFamily: c.fontSans,
                     outline: 'none',
                     transition: 'border-color 0.15s',
                   }}
                   onFocus={e => e.currentTarget.style.borderColor = c.green}
-                  onBlur={e => e.currentTarget.style.borderColor = '#2a2a2a'}
+                  onBlur={e => e.currentTarget.style.borderColor = c.border}
                 />
                 <button
                   onClick={handleSend}
                   disabled={!inputValue.trim() || isTypingForCurrent}
                   style={{
-                    background: inputValue.trim() && !isTypingForCurrent ? c.green : '#1a1a1a',
+                    background: inputValue.trim() && !isTypingForCurrent ? c.green : c.alt,
                     color: inputValue.trim() && !isTypingForCurrent ? '#081008' : c.muted,
                     border: 'none',
                     borderRadius: 10,
@@ -428,6 +420,7 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                     cursor: inputValue.trim() && !isTypingForCurrent ? 'pointer' : 'default',
                     transition: 'background 0.15s, color 0.15s',
                     flexShrink: 0,
+                    fontFamily: c.font,
                   }}
                 >
                   Send
@@ -437,9 +430,9 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
           </>
         ) : (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8 }}>
-            <div style={{ fontSize: 32, color: '#222' }}>💬</div>
-            <div style={{ fontSize: 14, color: c.muted, fontWeight: 600 }}>Select a conversation</div>
-            <div style={{ fontSize: 12, color: '#888' }}>Choose a build from the left panel to view its chat thread</div>
+            <div style={{ fontSize: 32, color: c.borderLight }}>💬</div>
+            <div style={{ fontSize: 14, color: c.muted, fontWeight: 600, fontFamily: c.font }}>Select a conversation</div>
+            <div style={{ fontSize: 13, color: c.dim, fontFamily: c.fontSans }}>Choose a build from the left panel to view its chat thread</div>
           </div>
         )}
       </div>
