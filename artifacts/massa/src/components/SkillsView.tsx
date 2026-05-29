@@ -63,6 +63,42 @@ type HfxSkill = {
   htmlUrl: string
 }
 
+type HfxAgent = {
+  id: string
+  name: string
+  description?: string
+  model?: string | null
+  toolkits?: string[]
+  is_default?: boolean
+}
+
+type DeployedAgent = {
+  skillSlug: string
+  skillName: string
+  agentId: string
+}
+
+type RunResult = {
+  status?: string
+  result?: string
+  threadId?: string
+  agentName?: string
+  error?: string
+}
+
+const ROSTER_KEY = 'massa.hfx.roster.v1'
+
+function loadRoster(): DeployedAgent[] {
+  try {
+    const raw = localStorage.getItem(ROSTER_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 const HFX_REPO_URL = 'https://github.com/hyperfx-ai/marketing-skills'
 
 const HFX_IMPORT_STEPS: string[] = [
@@ -95,6 +131,14 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
   const [hfxFileError, setHfxFileError] = useState<string | null>(null)
   const [hfxFileContent, setHfxFileContent] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
+
+  const [agents, setAgents] = useState<HfxAgent[]>([])
+  const [agentsLoading, setAgentsLoading] = useState(true)
+  const [agentsError, setAgentsError] = useState<string | null>(null)
+  const [roster, setRoster] = useState<DeployedAgent[]>(() => loadRoster())
+  const [prompts, setPrompts] = useState<Record<string, string>>({})
+  const [running, setRunning] = useState<Record<string, boolean>>({})
+  const [results, setResults] = useState<Record<string, RunResult>>({})
 
   const [platformId, setPlatformId] = useState<string>(PLATFORMS[0].id)
   const platform = PLATFORMS.find(p => p.id === platformId) ?? PLATFORMS[0]
@@ -178,6 +222,111 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     fetchHfx()
   }, [fetchHfx])
+
+  const fetchAgents = useCallback(async () => {
+    setAgentsLoading(true)
+    setAgentsError(null)
+    try {
+      const res = await fetch(`${apiBase}/skills/hyperfx/agents`)
+      if (res.status === 503) {
+        setAgentsError('Hyper is not connected to this workspace.')
+        return
+      }
+      if (!res.ok) throw new Error('failed')
+      const data = await res.json()
+      setAgents(Array.isArray(data.agents) ? data.agents : [])
+    } catch {
+      setAgentsError('Could not load Hyper agents. Try again shortly.')
+    } finally {
+      setAgentsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchAgents()
+  }, [fetchAgents])
+
+  const persistRoster = useCallback((next: DeployedAgent[]) => {
+    setRoster(next)
+    try {
+      localStorage.setItem(ROSTER_KEY, JSON.stringify(next))
+    } catch {
+      // best-effort persistence
+    }
+  }, [])
+
+  const defaultAgentId = useCallback(() => {
+    const def = agents.find(a => a.is_default) ?? agents[0]
+    return def?.id ?? ''
+  }, [agents])
+
+  const deploySkill = useCallback((skill: HfxSkill) => {
+    if (roster.some(r => r.skillSlug === skill.slug)) return
+    const agentId = defaultAgentId()
+    if (!agentId) return
+    persistRoster([
+      ...roster,
+      { skillSlug: skill.slug, skillName: skill.name, agentId },
+    ])
+  }, [roster, defaultAgentId, persistRoster])
+
+  const undeploySkill = useCallback((slug: string) => {
+    persistRoster(roster.filter(r => r.skillSlug !== slug))
+    setResults(prev => {
+      const next = { ...prev }
+      delete next[slug]
+      return next
+    })
+  }, [roster, persistRoster])
+
+  const bindAgent = useCallback((slug: string, agentId: string) => {
+    persistRoster(roster.map(r => (r.skillSlug === slug ? { ...r, agentId } : r)))
+  }, [roster, persistRoster])
+
+  const runAgent = useCallback(async (entry: DeployedAgent) => {
+    const prompt = (prompts[entry.skillSlug] ?? '').trim()
+    if (!prompt || running[entry.skillSlug]) return
+    setRunning(prev => ({ ...prev, [entry.skillSlug]: true }))
+    setResults(prev => {
+      const next = { ...prev }
+      delete next[entry.skillSlug]
+      return next
+    })
+    try {
+      const res = await fetch(`${apiBase}/skills/hyperfx/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentId: entry.agentId,
+          instructions: `Use the "${entry.skillName}" skill. ${prompt}`,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setResults(prev => ({
+          ...prev,
+          [entry.skillSlug]: { error: data.detail || data.error || 'Run failed.' },
+        }))
+        return
+      }
+      setResults(prev => ({
+        ...prev,
+        [entry.skillSlug]: {
+          status: data.status,
+          result: data.result,
+          threadId: data.thread_id,
+          agentName: data.agent_name,
+        },
+      }))
+    } catch {
+      setResults(prev => ({
+        ...prev,
+        [entry.skillSlug]: { error: 'Could not reach Hyper. Try again shortly.' },
+      }))
+    } finally {
+      setRunning(prev => ({ ...prev, [entry.skillSlug]: false }))
+    }
+  }, [prompts, running])
 
   const pullHfxFile = useCallback(async (skill: HfxSkill) => {
     setHfxSelected(skill)
@@ -334,6 +483,19 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
                         <span style={{ color: active && hfxFileLoading ? c.green : c.dim, fontFamily: c.font, fontSize: 11, flexShrink: 0 }}>{active && hfxFileLoading ? '…' : '↓'}</span>
                       </div>
                       <div style={{ color: c.muted, fontFamily: c.font, fontSize: 10, lineHeight: 1.5, marginTop: 4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.description}</div>
+                      {(() => {
+                        const deployed = roster.some(r => r.skillSlug === s.slug)
+                        const canDeploy = agents.length > 0
+                        return (
+                          <button
+                            onClick={e => { e.stopPropagation(); deploySkill(s) }}
+                            disabled={deployed || !canDeploy}
+                            title={!canDeploy ? 'No Hyper agent available' : deployed ? 'Already deployed' : 'Deploy as a Hyper agent'}
+                            style={{ marginTop: 8, width: '100%', padding: '5px 0', borderRadius: 4, border: `1px solid ${deployed ? c.borderDim : 'rgba(52,211,153,0.35)'}`, background: deployed ? 'transparent' : '#0c1210', color: deployed ? c.dim : c.green, fontWeight: 700, fontSize: 9, letterSpacing: '0.04em', cursor: deployed || !canDeploy ? 'default' : 'pointer', fontFamily: c.font }}>
+                            {deployed ? '✓ DEPLOYED' : '+ DEPLOY'}
+                          </button>
+                        )
+                      })()}
                     </div>
                   )
                 })}
@@ -367,6 +529,92 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Deployed agents roster */}
+      <div style={{ background: c.panel, border: `1px solid rgba(52,211,153,0.18)`, borderRadius: 6, padding: 14, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 11, color: c.green, fontFamily: c.font, fontWeight: 700 }}>$ massa agents --deployed</div>
+          <button onClick={fetchAgents} disabled={agentsLoading}
+            style={{ padding: '4px 10px', borderRadius: 4, border: `1px solid rgba(52,211,153,0.2)`, background: '#0c1210', color: c.green, fontWeight: 700, fontSize: 10, cursor: agentsLoading ? 'default' : 'pointer', fontFamily: c.font }}>
+            {agentsLoading ? 'LOADING…' : '↻ AGENTS'}
+          </button>
+        </div>
+        <div style={{ fontSize: 10, color: c.muted, fontFamily: c.font, marginBottom: 12, lineHeight: 1.6 }}>
+          Deploy a skill above to add it here as an agent. Each runs live through the Hyper agent it's bound to — give it a prompt for the task and hit Run.
+        </div>
+
+        {agentsError && (
+          <div style={{ padding: '8px 10px', marginBottom: 10, color: c.amber, fontFamily: c.font, fontSize: 10, lineHeight: 1.6, border: `1px solid ${c.borderDim}`, borderRadius: 4 }}>{agentsError}</div>
+        )}
+
+        {roster.length === 0 ? (
+          <div style={{ padding: 16, color: c.dim, fontFamily: c.font, fontSize: 11, border: `1px dashed ${c.borderDim}`, borderRadius: 4, textAlign: 'center' }}>
+            No agents deployed yet. Click + DEPLOY on any skill above.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {roster.map(entry => {
+              const isRunning = !!running[entry.skillSlug]
+              const result = results[entry.skillSlug]
+              const bound = agents.find(a => a.id === entry.agentId)
+              return (
+                <div key={entry.skillSlug} style={{ background: c.bg, border: `1px solid ${c.borderDim}`, borderRadius: 4, padding: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                      <span style={{ color: c.text, fontFamily: c.font, fontSize: 11, fontWeight: 700 }}>{entry.skillName}</span>
+                      <span style={{ color: c.green, border: `1px solid rgba(52,211,153,0.4)`, fontFamily: c.font, fontSize: 8, fontWeight: 700, padding: '0 4px', borderRadius: 3, letterSpacing: '0.03em' }}>AGENT</span>
+                    </div>
+                    <button onClick={() => undeploySkill(entry.skillSlug)}
+                      style={{ border: 'none', background: 'transparent', color: c.dim, cursor: 'pointer', fontSize: 9, fontWeight: 700, fontFamily: c.font, letterSpacing: '0.04em' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = c.amber }}
+                      onMouseLeave={e => { e.currentTarget.style.color = c.dim }}>UNDEPLOY</button>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                    <span style={{ color: c.dim, fontFamily: c.font, fontSize: 9 }}>runs on</span>
+                    <select value={entry.agentId} onChange={e => bindAgent(entry.skillSlug, e.target.value)}
+                      style={{ padding: '5px 8px', borderRadius: 4, border: `1px solid ${c.border}`, background: c.bg, color: c.text, fontFamily: c.font, fontSize: 10, cursor: 'pointer', maxWidth: 280 }}>
+                      {agents.map(a => (
+                        <option key={a.id} value={a.id} style={{ background: c.bg, color: c.text }}>{a.name}{a.is_default ? ' (default)' : ''}</option>
+                      ))}
+                    </select>
+                    {bound && bound.toolkits && bound.toolkits.length > 0 && (
+                      <span style={{ color: c.dim, fontFamily: c.font, fontSize: 9 }}>toolkits: {bound.toolkits.join(', ')}</span>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+                    <textarea
+                      value={prompts[entry.skillSlug] ?? ''}
+                      onChange={e => setPrompts(prev => ({ ...prev, [entry.skillSlug]: e.target.value }))}
+                      placeholder={`What should this agent do? e.g. "Run a competitor analysis for example.com"`}
+                      rows={2}
+                      style={{ flex: 1, minWidth: 220, resize: 'vertical', padding: '8px 10px', borderRadius: 4, border: `1px solid ${c.border}`, background: c.bg, color: c.text, fontFamily: c.font, fontSize: 11, lineHeight: 1.5 }} />
+                    <button
+                      onClick={() => runAgent(entry)}
+                      disabled={isRunning || !(prompts[entry.skillSlug] ?? '').trim()}
+                      style={{ padding: '8px 16px', borderRadius: 4, border: `1px solid rgba(52,211,153,0.35)`, background: isRunning ? 'transparent' : '#0c1210', color: c.green, fontWeight: 700, fontSize: 10, letterSpacing: '0.04em', cursor: isRunning || !(prompts[entry.skillSlug] ?? '').trim() ? 'default' : 'pointer', fontFamily: c.font, flexShrink: 0 }}>
+                      {isRunning ? 'RUNNING…' : '▶ RUN'}
+                    </button>
+                  </div>
+
+                  {result && (
+                    <div style={{ marginTop: 10, border: `1px solid ${result.error ? c.borderDim : 'rgba(52,211,153,0.2)'}`, borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderBottom: `1px solid ${c.borderDim}`, background: c.panelAlt }}>
+                        <span style={{ color: result.error ? c.amber : c.green, fontFamily: c.font, fontSize: 9, fontWeight: 700, letterSpacing: '0.04em' }}>
+                          {result.error ? 'RUN FAILED' : `COMPLETED${result.agentName ? ` · ${result.agentName}` : ''}`}
+                        </span>
+                        {result.threadId && <span style={{ color: c.dim, fontFamily: c.font, fontSize: 8 }}>thread {result.threadId.slice(0, 8)}</span>}
+                      </div>
+                      <pre style={{ color: result.error ? c.amber : '#ccc', fontFamily: c.font, fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, padding: 12, maxHeight: 360, overflow: 'auto' }}>{result.error || result.result || '(no output returned)'}</pre>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Section title */}
