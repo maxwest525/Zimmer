@@ -4,6 +4,12 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
+## User preferences
+
+- Hyper / HyperFX is a top priority for this project — treat its integration as central, deepen it faithfully, and use the official docs (hyperfx.ai/docs) as the source of truth rather than guessing.
+- No fake/mock/placeholder content. Software should fail explicitly rather than fall back silently.
+- No emojis, and no code comments unless explicitly requested.
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces

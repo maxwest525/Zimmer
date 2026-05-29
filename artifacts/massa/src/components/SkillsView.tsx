@@ -63,6 +63,15 @@ type HfxSkill = {
   htmlUrl: string
 }
 
+const HFX_REPO_URL = 'https://github.com/hyperfx-ai/marketing-skills'
+
+const HFX_IMPORT_STEPS: string[] = [
+  'Open the Files page in Hyper, then the Skills tab',
+  'Click Import skill',
+  `Paste the repo URL: ${HFX_REPO_URL}`,
+  'Review the skills, then Save',
+]
+
 const HFX_INSTALL: { label: string; cmd: string }[] = [
   { label: 'install all 19 skills', cmd: 'npx skills add hyperfx-ai/marketing-skills --all' },
   { label: 'install one skill', cmd: 'npx skills add hyperfx-ai/marketing-skills --skill google-ads' },
@@ -258,11 +267,34 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
             </button>
           </div>
         </div>
-        <div style={{ fontSize: 10, color: c.muted, fontFamily: c.font, marginBottom: 12 }}>
-          Official marketing skills that run on the Hyper MCP this workspace is connected to. Pulled live from the repo.
+        <div style={{ fontSize: 10, color: c.muted, fontFamily: c.font, marginBottom: 12, lineHeight: 1.6 }}>
+          <span style={{ color: c.green, fontWeight: 700 }}>Official</span> Hyper skills — reusable SOPs that turn agents into domain experts. Hyper agents auto-pick them from the library when relevant, so you don't have to attach them. Pulled live from the repo and run on the Hyper MCP this workspace is connected to.
         </div>
 
-        {/* Install options */}
+        {/* Hyper-native import flow */}
+        <div style={{ background: c.bg, border: `1px solid rgba(52,211,153,0.2)`, borderRadius: 4, padding: '11px 12px', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ color: c.green, fontFamily: c.font, fontSize: 10, fontWeight: 700 }}>import into hyper</span>
+              <span style={{ color: '#0a0a0a', background: c.green, fontFamily: c.font, fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3, letterSpacing: '0.04em' }}>RECOMMENDED</span>
+            </div>
+            <button onClick={() => copyCmd(HFX_REPO_URL)} title="copy repo url"
+              style={{ padding: '3px 9px', borderRadius: 3, border: `1px solid ${c.borderDim}`, background: 'transparent', color: copied === HFX_REPO_URL ? c.green : c.dim, fontWeight: 700, fontSize: 9, cursor: 'pointer', fontFamily: c.font }}>
+              {copied === HFX_REPO_URL ? 'copied url' : 'copy repo url'}
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {HFX_IMPORT_STEPS.map((step, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ color: c.green, fontFamily: c.font, fontSize: 10, flexShrink: 0, width: 14 }}>{i + 1}.</span>
+                <span style={{ color: c.text, fontFamily: c.font, fontSize: 10, lineHeight: 1.5 }}>{step}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Other install options (from the repo, for other coding agents) */}
+        <div style={{ color: c.dim, fontFamily: c.font, fontSize: 9, marginBottom: 6, letterSpacing: '0.04em' }}>OTHER INSTALL OPTIONS</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
           {HFX_INSTALL.map(opt => (
             <div key={opt.cmd} onClick={() => copyCmd(opt.cmd)} title="click to copy"
@@ -295,7 +327,10 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
                       onMouseEnter={e => { if (!active) e.currentTarget.style.background = c.panelAlt }}
                       onMouseLeave={e => { if (!active) e.currentTarget.style.background = c.bg }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                        <span style={{ color: c.text, fontFamily: c.font, fontSize: 11, fontWeight: 700 }}>{s.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                          <span style={{ color: c.text, fontFamily: c.font, fontSize: 11, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
+                          <span title="Official Hyper skill" style={{ color: c.green, border: `1px solid rgba(52,211,153,0.4)`, fontFamily: c.font, fontSize: 8, fontWeight: 700, padding: '0 4px', borderRadius: 3, flexShrink: 0, letterSpacing: '0.03em' }}>OFFICIAL</span>
+                        </div>
                         <span style={{ color: active && hfxFileLoading ? c.green : c.dim, fontFamily: c.font, fontSize: 11, flexShrink: 0 }}>{active && hfxFileLoading ? '…' : '↓'}</span>
                       </div>
                       <div style={{ color: c.muted, fontFamily: c.font, fontSize: 10, lineHeight: 1.5, marginTop: 4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.description}</div>
