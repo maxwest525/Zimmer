@@ -1,2 +1,3 @@
 - [DB schema project references](db-schema-project-refs.md) — after editing lib/db schema, rebuild its .d.ts or api-server typecheck wrongly reports "no exported member".
 - [MCP client transport](mcp-client-transport.md) — every MCP HTTP call must go through openSession()/safeFetch so SSRF guard + redirect revalidation apply to tools/call too.
+- [MCP panel auto-refresh](mcp-panel-auto-refresh.md) — status freshness is client-driven polling of POST /mcp/refresh; no server-side scheduler.

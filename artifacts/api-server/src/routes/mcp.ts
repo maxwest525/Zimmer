@@ -113,6 +113,28 @@ router.post("/mcp", async (req, res) => {
   }
 });
 
+router.post("/mcp/refresh", async (_req, res) => {
+  try {
+    const servers = await db
+      .select()
+      .from(mcpServersTable)
+      .orderBy(desc(mcpServersTable.createdAt));
+
+    const refreshed = await Promise.all(
+      servers.map((server) =>
+        refreshServer(server.id, server.endpoint, server.authToken).then(
+          (updated) => updated ?? server,
+        ),
+      ),
+    );
+
+    res.json(refreshed.map(toPublicServer));
+  } catch (err) {
+    console.error("Failed to refresh MCP servers:", err);
+    res.status(500).json({ error: "Failed to refresh MCP servers" });
+  }
+});
+
 router.post("/mcp/:id/connect", async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface McpTool {
@@ -52,6 +52,7 @@ function blockToText(block: McpContentBlock): string {
 export function McpPanel() {
   const [servers, setServers] = useState<McpServer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [endpoint, setEndpoint] = useState("");
@@ -129,9 +130,46 @@ export function McpPanel() {
     }
   }, []);
 
+  const refreshInFlight = useRef(false);
+  const refreshServers = useCallback(async () => {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
+    setRefreshing(true);
+    try {
+      const res = await fetch(`${apiBase}/mcp/refresh`, { method: "POST" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setServers(data);
+    } catch {
+      // Keep last-known status; a transient failure shouldn't wipe the list.
+    } finally {
+      refreshInFlight.current = false;
+      setRefreshing(false);
+    }
+  }, []);
+
   useEffect(() => {
-    fetchServers();
-  }, [fetchServers]);
+    let cancelled = false;
+    (async () => {
+      await fetchServers();
+      if (!cancelled) await refreshServers();
+    })();
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") refreshServers();
+    }, 30000);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refreshServers();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [fetchServers, refreshServers]);
 
   const handleAdd = async () => {
     if (!name.trim() || !endpoint.trim()) return;
@@ -201,6 +239,11 @@ export function McpPanel() {
           <p className="text-xs font-mono text-[#a0a8b8]">
             Connect MCP servers to extend this project with external tools.
           </p>
+          {servers.length > 0 && (
+            <p className="text-[10px] font-mono text-[#5a6172]">
+              {refreshing ? "Checking connections…" : "Auto-checks every 30s"}
+            </p>
+          )}
         </div>
         <button
           onClick={() => {
