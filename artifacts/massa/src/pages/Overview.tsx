@@ -1632,61 +1632,11 @@ export function Overview() {
   const [buildModalTab, setBuildModalTab] = useState<'chat' | 'details' | 'code' | 'thinking' | 'revert' | 'preview' | 'archmap' | 'addagent' | 'addtask'>('chat')
   const [revertConfirmed, setRevertConfirmed] = useState<string | null>(null)
   const [revertPending, setRevertPending] = useState<string | null>(null)
-  const [chatMessages, setChatMessages] = useState<Record<string, { id: string; role: 'user' | 'agent'; content: string; time: string }[]>>(() => {
-    const t = (h: number, m: number, s: number) => `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
-    return {
-      'core-engine': [
-        { id: '1', role: 'agent', content: 'Starting work on the Core Engine. I\'ll set up the strategy loop, execution logic, and order handling.', time: t(14,22,10) },
-        { id: '2', role: 'user', content: 'Make sure the order handler supports both market and limit orders from the start.', time: t(14,23,4) },
-        { id: '3', role: 'agent', content: 'Got it. I\'ll implement an OrderType enum with MARKET and LIMIT variants. The execution pipeline will route through different handlers based on type.\n\n```typescript\nexport enum OrderType {\n  MARKET = "market",\n  LIMIT = "limit"\n}\n```', time: t(14,23,45) },
-        { id: '4', role: 'agent', content: 'Created src/core/engine.ts with the main strategy loop. It polls every 500ms, evaluates signals, and dispatches orders. Currently compiling APIs...', time: t(14,28,12) },
-        { id: '5', role: 'user', content: 'Can we add a kill switch that halts all trading if drawdown exceeds 5%?', time: t(14,30,1) },
-        { id: '6', role: 'agent', content: 'Adding a circuit breaker module now. It will monitor real-time P&L and freeze the engine if drawdown hits the threshold. I\'ll wire it into the main loop before order dispatch.', time: t(14,30,33) },
-      ],
-      'risk-module': [
-        { id: '1', role: 'agent', content: 'Initializing Risk Module. Waiting for Core Engine dependency to stabilize before wiring position sizing.', time: t(14,25,0) },
-        { id: '2', role: 'agent', content: 'Core Engine schema is available. Building position sizing logic based on account balance and volatility.', time: t(14,32,15) },
-        { id: '3', role: 'user', content: 'Use Kelly Criterion for position sizing. Max 2% risk per trade.', time: t(14,33,8) },
-        { id: '4', role: 'agent', content: 'Implementing Kelly Criterion with a 2% hard cap. I\'ll also add a configurable multiplier so you can scale it down (half-Kelly is common).\n\n```typescript\nconst kellyFraction = (winRate * avgWin - (1 - winRate) * avgLoss) / avgWin;\nconst position = Math.min(kellyFraction * multiplier, 0.02);\n```', time: t(14,34,2) },
-      ],
-      'dashboard-ui': [
-        { id: '1', role: 'agent', content: 'Setting up the Dashboard UI scaffold. Using React with a real-time WebSocket feed for live position updates.', time: t(14,26,0) },
-        { id: '2', role: 'user', content: 'I want a dark trading terminal look. Think Bloomberg-style with green accents.', time: t(14,27,12) },
-        { id: '3', role: 'agent', content: 'Perfect. I\'ll use a #0a0a0a base with #2d8a32 for positive P&L and accent elements. The layout will have a chart area top-center, order book on the right, and positions table below.', time: t(14,27,55) },
-      ],
-      'alerts': [
-        { id: '1', role: 'agent', content: 'Alerts module complete. Set up n8n workflows for Slack notifications on trade execution, daily P&L summary, and critical errors.', time: t(13,50,0) },
-        { id: '2', role: 'user', content: 'Add email alerts too for the daily summary.', time: t(13,52,30) },
-        { id: '3', role: 'agent', content: 'Done. Added SendGrid integration for daily email digest. It fires at market close with a summary of all positions, P&L, and any triggered stop losses.', time: t(13,53,15) },
-      ],
-      'backtester': [
-        { id: '1', role: 'agent', content: 'Backtester is queued. Once the Core Engine is stable, I\'ll build the historical simulation engine using the same strategy interface.', time: t(14,35,0) },
-      ],
-      'homepage': [
-        { id: '1', role: 'agent', content: 'Starting the MASSA homepage build. I\'ll create a hero section, feature cards, and a CTA flow.', time: t(14,20,0) },
-        { id: '2', role: 'user', content: 'Make the hero really impactful. "Build anything with AI agents, in parallel" as the main headline.', time: t(14,21,30) },
-        { id: '3', role: 'agent', content: 'Love it. Using that headline with a gradient text treatment and animated particle background. Below it I\'ll place three feature cards: Multi-Agent, Auto-Architect, and Live Deploy.', time: t(14,22,10) },
-        { id: '4', role: 'agent', content: 'Hero section is live. Working on the pricing comparison table and footer now. Progress at 71%.', time: t(14,40,5) },
-      ],
-      'api-settings': [
-        { id: '1', role: 'agent', content: 'API Settings page scaffolded. Waiting for Homepage to finalize the nav structure before I wire up the settings routes.', time: t(14,30,0) },
-        { id: '2', role: 'user', content: 'Each API provider should have its own card with a connection status indicator.', time: t(14,31,20) },
-        { id: '3', role: 'agent', content: 'Building provider cards with green/red status dots and a "Test Connection" button. Supporting OpenAI, Anthropic, and custom endpoints.', time: t(14,32,0) },
-      ],
-      'crawler': [
-        { id: '1', role: 'agent', content: 'Setting up the crawler pipeline. I\'ll use a queue-based architecture with configurable concurrency and retry logic.', time: t(14,24,0) },
-        { id: '2', role: 'user', content: 'Need to handle rate limiting gracefully. Some sites throttle after 100 requests/min.', time: t(14,25,30) },
-        { id: '3', role: 'agent', content: 'Adding adaptive rate limiting. The crawler will track response times and 429 status codes, then automatically throttle down. I\'ll also add a configurable delay between requests.', time: t(14,26,15) },
-      ],
-      'scheduler': [
-        { id: '1', role: 'agent', content: 'Scheduler is queued behind the Crawler. Once the data pipeline is working, I\'ll set up n8n workflows for daily exports and email delivery.', time: t(14,28,0) },
-      ],
-    }
-  })
+  const [chatMessages, setChatMessages] = useState<Record<string, { id: string; role: 'user' | 'agent'; content: string; time: string }[]>>({})
   const [chatInput, setChatInput] = useState('')
   const [showAttachMenu, setShowAttachMenu] = useState<string | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
-  const [selectedProjectId, setSelectedProjectId] = useState('p1')
+  const [selectedProjectId, setSelectedProjectId] = useState('')
   const [draggedBuild, setDraggedBuild] = useState<{ buildId: string; projectId: string } | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'tree' | 'arch' | 'graph' | 'timeline'>('list')
@@ -1819,44 +1769,7 @@ export function Overview() {
     fetchClarifyQuestion(rawInput, newHistory)
   }, [clarifyHistory, clarifyQuestion, rawInput, fetchClarifyQuestion])
 
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: 'p1',
-      name: 'Trading Bot',
-      goal: 'Automated trading bot with dashboard, risk controls, and alerts',
-      status: 'running',
-      lifecycle: 'active',
-      builds: [
-        { id: 'core-engine', title: 'Core Engine', summary: 'Strategy loop, execution logic, and order handling', status: 'running', progress: 58, stack: ['Claude', 'Claude Code', 'APIs'], agent: 'System Builder', agentRole: 'Backend Architect', buildContext: 'backend' },
-        { id: 'risk-module', title: 'Risk Module', summary: 'Position sizing, loss limits, and safety rules', status: 'running', progress: 46, stack: ['GPT-4o', 'Claude Code'], agent: 'Risk Agent', agentRole: 'Safety Engineer', dependsOn: ['core-engine'], buildContext: 'backend' },
-        { id: 'dashboard-ui', title: 'Dashboard UI', summary: 'Bot controls, positions, and performance views', status: 'queued', progress: 14, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'UI Agent', agentRole: 'Frontend Designer', dependsOn: ['core-engine', 'risk-module'], buildContext: 'ui' },
-        { id: 'alerts', title: 'Alerts', summary: 'Slack, email, and critical event notifications', status: 'complete', progress: 100, stack: ['Mistral', 'n8n', 'APIs'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['core-engine'], buildContext: 'automation' },
-        { id: 'backtester', title: 'Backtester', summary: 'Historical simulation engine and result reporter', status: 'queued', progress: 0, stack: ['Claude', 'Claude Code', 'Gemini'], agent: 'Data Agent', agentRole: 'Data Engineer', dependsOn: ['core-engine'], buildContext: 'backend' },
-      ],
-    },
-    {
-      id: 'p2',
-      name: 'Massa Marketing Site',
-      goal: 'Homepage, funnel, API settings, and workflow pages',
-      status: 'running',
-      lifecycle: 'active',
-      builds: [
-        { id: 'homepage', title: 'Homepage', summary: 'Main marketing page and product explanation', status: 'running', progress: 71, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'UI Agent', agentRole: 'Frontend Designer', buildContext: 'ui' },
-        { id: 'api-settings', title: 'API Settings', summary: 'Provider cards, keys, and connection states', status: 'queued', progress: 24, stack: ['Claude', 'Replit', 'Cursor'], agent: 'Settings Agent', agentRole: 'Integration Engineer', dependsOn: ['homepage'], buildContext: 'backend' },
-      ],
-    },
-    {
-      id: 'p3',
-      name: 'Web Scraper',
-      goal: 'Source intake, parsing, and scheduled export flow',
-      status: 'queued',
-      lifecycle: 'active',
-      builds: [
-        { id: 'crawler', title: 'Crawler', summary: 'Fetch pipeline and retry handling', status: 'queued', progress: 12, stack: ['Claude', 'Claude Code', 'Perplexity'], agent: 'Crawler Agent', agentRole: 'Data Engineer', buildContext: 'backend' },
-        { id: 'scheduler', title: 'Scheduler', summary: 'Daily export and email delivery', status: 'queued', progress: 0, stack: ['Mistral', 'n8n', 'Windsurf'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['crawler'], buildContext: 'automation' },
-      ],
-    },
-  ])
+  const [projects, setProjects] = useState<Project[]>([])
 
   useEffect(() => {
     if (selectedTenantId) {
@@ -2397,8 +2310,8 @@ export function Overview() {
             const flowSteps = [
               { label: 'Prompt', active: true },
               { label: 'Enhance', active: true },
-              { label: 'Build', active: selectedProject.builds.some(b => b.status !== 'idle') },
-              { label: 'Deploy', active: selectedProject.builds.every(b => b.status === 'complete') },
+              { label: 'Build', active: selectedProject?.builds.some(b => b.status !== 'idle') ?? false },
+              { label: 'Deploy', active: selectedProject?.builds.every(b => b.status === 'complete') ?? false },
             ]
             return (
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>
