@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useLocation } from 'wouter'
 import { InlineCompanyLogo, CompanyLogo } from '@/components/CompanyLogo'
 import { NodeGraph } from '@/components/NodeGraph'
@@ -6,6 +7,7 @@ import { TimelineSwimlane } from '@/components/TimelineSwimlane'
 import { ChatView } from '@/components/ChatView'
 import { IdeasView } from '@/components/IdeasView'
 import { SkillsView } from '@/components/SkillsView'
+import { AgentsView } from '@/components/AgentsView'
 import { ModelTooltip } from '@/components/ModelTooltip'
 import { MODEL_COLORS, getModelReason } from '@/data/modelRegistry'
 import { TenantSelector } from '@/components/TenantSelector'
@@ -1679,6 +1681,10 @@ function PublishedView({ onBack }: { onBack: () => void }) {
   )
 }
 
+type OverviewView = 'dashboard' | 'chats' | 'ideas' | 'currentProjects' | 'published' | 'history' | 'automations' | 'marketing' | 'skills' | 'agents' | 'apis' | 'webScraper' | 'insideMassa' | 'integrations'
+
+type NavItem = { label: string; icon: ReactNode; view: OverviewView | null; path: string }
+
 export function Overview() {
   const { isMobile, isTablet, isDesktop } = useScreenSize()
   const { selectedTenantId } = useTenant()
@@ -1736,7 +1742,7 @@ export function Overview() {
   const [clarifyDone, setClarifyDone] = useState(false)
   const [clarifySummary, setClarifySummary] = useState('')
   const [clarifyOtherText, setClarifyOtherText] = useState('')
-  const [activeView, setActiveView] = useState<'dashboard' | 'chats' | 'ideas' | 'currentProjects' | 'published' | 'history' | 'automations' | 'marketing' | 'skills' | 'apis' | 'webScraper' | 'insideMassa' | 'integrations'>('dashboard')
+  const [activeView, setActiveView] = useState<OverviewView>('dashboard')
   const [selectedChatBuildId, setSelectedChatBuildId] = useState<string | null>(null)
   const [chatOriginBuildId, setChatOriginBuildId] = useState<string | null>(null)
   const [enhancingId, setEnhancingId] = useState<number | null>(null)
@@ -2356,7 +2362,7 @@ export function Overview() {
                 onMouseLeave={e => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
               ><span style={{ display: 'inline-block', transform: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>»</span></button>
             </div>
-            {[
+            {([
               { label: 'Dashboard', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, view: 'dashboard' as const, path: '' },
               { label: 'Chats', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, view: 'chats' as const, path: '' },
               { label: 'Ideas', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>, view: 'ideas' as const, path: '' },
@@ -2364,13 +2370,14 @@ export function Overview() {
               { label: 'Automations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, view: 'automations' as const, path: '' },
               { label: 'Marketing', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>, view: 'marketing' as const, path: '' },
               { label: 'Skills', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>, view: 'skills' as const, path: '' },
+              { label: 'Agents', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>, view: 'agents' as const, path: '' },
               { label: 'APIs', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>, view: 'apis' as const, path: '' },
               { label: 'Web Scraper', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, view: 'webScraper' as const, path: '' },
               { label: 'Inside MASSA', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, view: 'insideMassa' as const, path: '' },
               { label: 'Integrations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>, view: 'integrations' as const, path: '' },
               { label: 'Current Projects', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, view: 'currentProjects' as const, path: '' },
               { label: 'Published', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>, view: 'published' as const, path: '' },
-            ].map(item => {
+            ] as NavItem[]).map(item => {
               const active = item.view ? activeView === item.view : false
               const clickable = item.view !== null || item.path !== ''
               return (
@@ -2430,6 +2437,8 @@ export function Overview() {
           <MarketingView onBack={() => setActiveView('dashboard')} />
         ) : activeView === 'skills' ? (
           <SkillsView onBack={() => setActiveView('dashboard')} />
+        ) : activeView === 'agents' ? (
+          <AgentsView onBack={() => setActiveView('dashboard')} />
         ) : activeView === 'apis' ? (
           <ApisView onBack={() => setActiveView('dashboard')} />
         ) : activeView === 'webScraper' ? (
