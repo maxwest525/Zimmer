@@ -2101,6 +2101,8 @@ export function Overview() {
   const [hoveredNoteKey, setHoveredNoteKey] = useState<string | null>(null)
   const draggedPinnedKey = useRef<string | null>(null)
   const [dragOverPinnedKey, setDragOverPinnedKey] = useState<string | null>(null)
+  const [draggedPinnedKeyState, setDraggedPinnedKeyState] = useState<string | null>(null)
+  const [dragOverPosition, setDragOverPosition] = useState<'before' | 'after'>('before')
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
   useEffect(() => {
     try {
@@ -3323,6 +3325,7 @@ export function Overview() {
               const key = `${item.id}:${item.action.type}`
               const isPinned = pinnedActionKeys.has(key)
               const isDragOver = dragOverPinnedKey === key
+              const isBeingDragged = draggedPinnedKeyState === key
               return (
                 <div
                   key={item.id}
@@ -3331,12 +3334,16 @@ export function Overview() {
                   draggable={draggable}
                   onDragStart={draggable ? (e) => {
                     draggedPinnedKey.current = key
+                    setDraggedPinnedKeyState(key)
                     e.dataTransfer.effectAllowed = 'move'
                   } : undefined}
                   onDragOver={draggable ? (e) => {
                     e.preventDefault()
                     e.dataTransfer.dropEffect = 'move'
                     if (dragOverPinnedKey !== key) setDragOverPinnedKey(key)
+                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                    const midY = rect.top + rect.height / 2
+                    setDragOverPosition(e.clientY < midY ? 'before' : 'after')
                   } : undefined}
                   onDragLeave={draggable ? () => {
                     setDragOverPinnedKey(prev => prev === key ? null : prev)
@@ -3345,16 +3352,19 @@ export function Overview() {
                     e.preventDefault()
                     const fromKey = draggedPinnedKey.current
                     setDragOverPinnedKey(null)
+                    setDraggedPinnedKeyState(null)
                     draggedPinnedKey.current = null
                     if (!fromKey || fromKey === key) return
                     setPinnedActionOrder(prev => {
                       const ordered = pinnedItems.map(i => `${i.id}:${i.action.type}`)
                       const fromIdx = ordered.indexOf(fromKey)
-                      const toIdx = ordered.indexOf(key)
+                      let toIdx = ordered.indexOf(key)
                       if (fromIdx === -1 || toIdx === -1) return prev
+                      if (dragOverPosition === 'after') toIdx = toIdx + 1
                       const next = [...ordered]
                       next.splice(fromIdx, 1)
-                      next.splice(toIdx, 0, fromKey)
+                      const adjustedTo = toIdx > fromIdx ? toIdx - 1 : toIdx
+                      next.splice(adjustedTo, 0, fromKey)
                       const rest = prev.filter(k => !next.includes(k))
                       return [...next, ...rest]
                     })
@@ -3362,17 +3372,17 @@ export function Overview() {
                   onDragEnd={draggable ? () => {
                     draggedPinnedKey.current = null
                     setDragOverPinnedKey(null)
+                    setDraggedPinnedKeyState(null)
                   } : undefined}
                   style={{
                     padding: '8px 12px',
                     borderTop,
-                    transition: 'background 0.15s ease, all 0.25s ease',
+                    transition: 'background 0.15s ease, opacity 0.15s ease',
                     overflow: 'hidden',
                     maxHeight: 120,
-                    opacity: 1,
-                    background: isDragOver ? 'rgba(245,158,11,0.12)' : isPinned ? 'rgba(245,158,11,0.04)' : 'transparent',
+                    opacity: isBeingDragged ? 0.35 : 1,
+                    background: isDragOver ? 'rgba(245,158,11,0.06)' : isPinned ? 'rgba(245,158,11,0.04)' : 'transparent',
                     cursor: draggable ? 'default' : 'default',
-                    outline: isDragOver ? '1px solid rgba(245,158,11,0.3)' : 'none',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -3586,7 +3596,29 @@ export function Overview() {
                     <>
                       {pinnedItems.length > 0 && (
                         <div>
-                          {pinnedItems.map((item, idx) => renderActionItemRow(item, idx === 0 ? 'none' : '1px solid #1e2735', true))}
+                          {(() => {
+                            const placeholder = (
+                              <div
+                                key="__drag-placeholder"
+                                style={{
+                                  height: 3,
+                                  margin: '0 12px',
+                                  borderRadius: 2,
+                                  background: 'rgba(245,158,11,0.6)',
+                                  boxShadow: '0 0 6px rgba(245,158,11,0.4)',
+                                }}
+                              />
+                            )
+                            const rows: React.ReactNode[] = []
+                            pinnedItems.forEach((item, idx) => {
+                              const k = `${item.id}:${item.action.type}`
+                              const isTarget = dragOverPinnedKey === k && draggedPinnedKeyState && draggedPinnedKeyState !== k
+                              if (isTarget && dragOverPosition === 'before') rows.push(placeholder)
+                              rows.push(renderActionItemRow(item, idx === 0 && !(isTarget && dragOverPosition === 'before') ? 'none' : '1px solid #1e2735', true))
+                              if (isTarget && dragOverPosition === 'after') rows.push(placeholder)
+                            })
+                            return rows
+                          })()}
                           {unpinnedItems.length > 0 && (
                             <div style={{ borderTop: '1px solid #1e3a2a', display: 'flex', alignItems: 'center', gap: 6, padding: '3px 12px' }}>
                               <span style={{ flex: 1, height: 0, borderTop: '1px dashed #1e3020' }} />
