@@ -2098,6 +2098,7 @@ export function Overview() {
   })
   const [editingPinNoteKey, setEditingPinNoteKey] = useState<string | null>(null)
   const [editingPinNoteText, setEditingPinNoteText] = useState('')
+  const [hoveredNoteKey, setHoveredNoteKey] = useState<string | null>(null)
   const draggedPinnedKey = useRef<string | null>(null)
   const [dragOverPinnedKey, setDragOverPinnedKey] = useState<string | null>(null)
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
@@ -3440,11 +3441,32 @@ export function Overview() {
                       )}
                       {isPinned && editingPinNoteKey !== key && pinnedNotes[key] && (
                         <div
-                          title="Click to edit note"
-                          onClick={() => { setEditingPinNoteKey(key); setEditingPinNoteText(pinnedNotes[key] || '') }}
-                          style={{ fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', marginTop: 3, fontStyle: 'italic', cursor: 'text', lineHeight: 1.4 }}
+                          onMouseEnter={() => setHoveredNoteKey(key)}
+                          onMouseLeave={() => setHoveredNoteKey(null)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 3 }}
                         >
-                          {pinnedNotes[key]}
+                          <span
+                            onClick={() => { setEditingPinNoteKey(key); setEditingPinNoteText(pinnedNotes[key] || '') }}
+                            style={{ fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', fontStyle: 'italic', cursor: 'text', lineHeight: 1.4 }}
+                          >
+                            {pinnedNotes[key]}
+                          </span>
+                          <button
+                            onClick={() => { setEditingPinNoteKey(key); setEditingPinNoteText(pinnedNotes[key] || '') }}
+                            title="Edit note"
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: 0,
+                              cursor: 'pointer',
+                              color: '#6b7280',
+                              fontSize: 8,
+                              lineHeight: 1,
+                              flexShrink: 0,
+                              opacity: hoveredNoteKey === key ? 0.8 : 0,
+                              transition: 'opacity 0.15s',
+                            }}
+                          >✏</button>
                         </div>
                       )}
                     </div>
