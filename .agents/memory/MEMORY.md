@@ -4,3 +4,4 @@
 - [HyperFX MCP integration](hyperfx-mcp.md) — real endpoint is backend.hyperfx.ai/mcp/ (www is marketing only); Bearer MCP API key; seeded on boot, row keyed by vendor name.
 - [MASSA marketing engines](massa-marketing-engines.md) — Command Center is engine-led; never fabricate engine descriptions, user sends defining docs.
 - [MCP status history](mcp-status-history.md) — transition rows written only on status change (not every poll); pass prevStatus into refreshServer.
+- [HyperFX templates scrape](hyperfx-templates-scrape.md) — Agents tab templates are scraped live from hyperfx.ai/templates HTML (no API); selectors are brittle, list fails loudly on empty parse.

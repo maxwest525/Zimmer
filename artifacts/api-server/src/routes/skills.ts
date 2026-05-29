@@ -1,11 +1,6 @@
 import { Router } from "express";
-import { db, mcpServersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import { callTool } from "../lib/mcpClient";
 
 const router = Router();
-
-const HYPERFX_NAME = "HyperFX Marketing";
 
 const GITHUB_API = "https://api.github.com";
 
@@ -283,96 +278,6 @@ router.get("/skills/file", async (req, res) => {
     return res.status(404).json({ error: "no_skill_file_found" });
   } catch {
     return res.status(500).json({ error: "file_fetch_failed" });
-  }
-});
-
-async function getHyperFxServer() {
-  const [server] = await db
-    .select()
-    .from(mcpServersTable)
-    .where(eq(mcpServersTable.name, HYPERFX_NAME));
-  return server ?? null;
-}
-
-type McpTextResult = {
-  content?: Array<{ type?: string; text?: string }>;
-  isError?: boolean;
-};
-
-function extractText(result: McpTextResult): string {
-  const block = (result.content ?? []).find(
-    (c) => c.type === "text" && typeof c.text === "string",
-  );
-  return block?.text ?? "";
-}
-
-router.get("/skills/hyperfx/agents", async (_req, res) => {
-  try {
-    const server = await getHyperFxServer();
-    if (!server) {
-      return res.status(503).json({ error: "hyperfx_not_connected" });
-    }
-    const result = (await callTool(
-      server.endpoint,
-      "agents_list",
-      {},
-      server.authToken,
-    )) as McpTextResult;
-    if (result.isError) {
-      return res.status(502).json({ error: "agents_list_failed" });
-    }
-    let agents: unknown = [];
-    try {
-      const parsed = JSON.parse(extractText(result));
-      agents = Array.isArray(parsed) ? parsed : (parsed?.agents ?? []);
-    } catch {
-      return res.status(502).json({ error: "agents_list_unparseable" });
-    }
-    return res.json({ agents });
-  } catch {
-    return res.status(500).json({ error: "agents_list_error" });
-  }
-});
-
-router.post("/skills/hyperfx/run", async (req, res) => {
-  try {
-    const { agentId, instructions } = (req.body ?? {}) as {
-      agentId?: unknown;
-      instructions?: unknown;
-    };
-    if (typeof agentId !== "string" || agentId.trim().length === 0) {
-      return res.status(400).json({ error: "agentId_required" });
-    }
-    if (
-      typeof instructions !== "string" ||
-      instructions.trim().length === 0
-    ) {
-      return res.status(400).json({ error: "instructions_required" });
-    }
-    const server = await getHyperFxServer();
-    if (!server) {
-      return res.status(503).json({ error: "hyperfx_not_connected" });
-    }
-    const result = (await callTool(
-      server.endpoint,
-      "agents_run",
-      { agent_id: agentId.trim(), instructions: instructions.trim() },
-      server.authToken,
-    )) as McpTextResult;
-    if (result.isError) {
-      return res
-        .status(502)
-        .json({ error: "agent_run_failed", detail: extractText(result) });
-    }
-    let run: Record<string, unknown> = {};
-    try {
-      run = JSON.parse(extractText(result));
-    } catch {
-      run = { result: extractText(result) };
-    }
-    return res.json(run);
-  } catch {
-    return res.status(500).json({ error: "agent_run_error" });
   }
 });
 
