@@ -8,11 +8,12 @@ import { ActivitySidebar } from "@/components/ActivitySidebar";
 import { ActivityDrawer } from "@/components/ActivityDrawer";
 import { OpenProjectsTabBar } from "@/components/OpenProjectsTabBar";
 import { KnowledgePanel, type KnowledgeFile } from "@/components/KnowledgePanel";
+import { McpPanel } from "@/components/McpPanel";
 import { PROJECTS, PROJECT_CARDS, PROJECT_ACTIVITY, ActivityItem } from "@/data/mock";
 import { useTenant } from "@/contexts/TenantContext";
 import { useProjects } from "@/contexts/ProjectContext";
 
-type Tab = "canvas" | "builds" | "history" | "knowledge";
+type Tab = "canvas" | "builds" | "history" | "knowledge" | "mcp";
 
 function timestampToSortKey(ts: string): number {
   if (ts === "now") return 0;
@@ -200,6 +201,10 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
               onAddFiles={handleAddFiles}
               onRemoveFile={handleRemoveFile}
             />
+          </div>
+        ) : activeTab === "mcp" ? (
+          <div className="flex-1 overflow-y-auto border-t border-border/50">
+            <McpPanel />
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto border-t border-border/50">

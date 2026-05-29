@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type Tab = "canvas" | "builds" | "history" | "knowledge";
+type Tab = "canvas" | "builds" | "history" | "knowledge" | "mcp";
 
 interface ProjectTabsProps {
   activeTab: Tab;
@@ -12,6 +12,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "builds", label: "Builds" },
   { id: "history", label: "History" },
   { id: "knowledge", label: "Knowledge" },
+  { id: "mcp", label: "MCP" },
 ];
 
 export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
