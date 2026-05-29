@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useMcp } from "@/contexts/McpContext";
 
 type Tab = "canvas" | "builds" | "history" | "knowledge" | "mcp";
 
@@ -16,6 +17,7 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
+  const { errorCount } = useMcp();
   return (
     <div className="flex items-center gap-0 px-6 pt-0 pb-0 border-b border-[#252a35] shrink-0 bg-[#0a0d10]">
       {TABS.map((tab) => (
@@ -31,6 +33,14 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
         >
           {activeTab === tab.id && <span className="text-emerald-400 mr-1.5 opacity-70">{">"}</span>}
           {tab.label}
+          {tab.id === "mcp" && errorCount > 0 && (
+            <span
+              title={`${errorCount} server${errorCount !== 1 ? "s" : ""} offline`}
+              className="ml-1.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500/20 text-red-400 text-[9px] font-mono leading-none align-middle"
+            >
+              {errorCount}
+            </span>
+          )}
         </button>
       ))}
     </div>

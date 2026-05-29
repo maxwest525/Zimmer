@@ -1,24 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-
-interface McpTool {
-  name: string;
-  description?: string;
-}
-
-interface McpServer {
-  id: number;
-  name: string;
-  endpoint: string;
-  hasAuthToken: boolean;
-  status: "connected" | "disconnected" | "error";
-  toolCount: number;
-  tools: McpTool[] | null;
-  lastError: string | null;
-  lastConnectedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import { useMcp, type McpServer } from "@/contexts/McpContext";
 
 const STATUS_CONFIG: Record<
   McpServer["status"],
@@ -50,9 +32,7 @@ function blockToText(block: McpContentBlock): string {
 }
 
 export function McpPanel() {
-  const [servers, setServers] = useState<McpServer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { servers, setServers, loading, refreshing } = useMcp();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [endpoint, setEndpoint] = useState("");
@@ -116,60 +96,6 @@ export function McpPanel() {
       updateRun(key, { running: false, error: "Network error calling tool" });
     }
   };
-
-  const fetchServers = useCallback(async () => {
-    try {
-      const res = await fetch(`${apiBase}/mcp`);
-      if (!res.ok) throw new Error("Failed to load servers");
-      const data = await res.json();
-      setServers(data);
-    } catch {
-      // Keep whatever we have; surfaced via empty state.
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const refreshInFlight = useRef(false);
-  const refreshServers = useCallback(async () => {
-    if (refreshInFlight.current) return;
-    refreshInFlight.current = true;
-    setRefreshing(true);
-    try {
-      const res = await fetch(`${apiBase}/mcp/refresh`, { method: "POST" });
-      if (!res.ok) return;
-      const data = await res.json();
-      setServers(data);
-    } catch {
-      // Keep last-known status; a transient failure shouldn't wipe the list.
-    } finally {
-      refreshInFlight.current = false;
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      await fetchServers();
-      if (!cancelled) await refreshServers();
-    })();
-
-    const interval = setInterval(() => {
-      if (document.visibilityState === "visible") refreshServers();
-    }, 30000);
-
-    const onVisible = () => {
-      if (document.visibilityState === "visible") refreshServers();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-      document.removeEventListener("visibilitychange", onVisible);
-    };
-  }, [fetchServers, refreshServers]);
 
   const handleAdd = async () => {
     if (!name.trim() || !endpoint.trim()) return;

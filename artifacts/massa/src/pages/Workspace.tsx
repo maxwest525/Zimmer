@@ -9,6 +9,7 @@ import { ActivityDrawer } from "@/components/ActivityDrawer";
 import { OpenProjectsTabBar } from "@/components/OpenProjectsTabBar";
 import { KnowledgePanel, type KnowledgeFile } from "@/components/KnowledgePanel";
 import { McpPanel } from "@/components/McpPanel";
+import { McpProvider } from "@/contexts/McpContext";
 import { PROJECTS, PROJECT_CARDS, PROJECT_ACTIVITY, ActivityItem } from "@/data/mock";
 import { useTenant } from "@/contexts/TenantContext";
 import { useProjects } from "@/contexts/ProjectContext";
@@ -168,6 +169,7 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
   }
 
   return (
+    <McpProvider onViewMcp={() => setActiveTab("mcp")}>
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
       <ProjectSidebar
         projects={sidebarProjects}
@@ -224,5 +226,6 @@ export function Workspace({ initialProjectId }: WorkspaceProps) {
         isGlobal
       />
     </div>
+    </McpProvider>
   );
 }
