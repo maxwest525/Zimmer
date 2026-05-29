@@ -2129,6 +2129,18 @@ export function Overview() {
       localStorage.setItem('massa_pinnedNotes', JSON.stringify(pinnedNotes))
     } catch {}
   }, [pinnedNotes])
+  const [pinnedSectionCollapsed, setPinnedSectionCollapsed] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('massa_pinnedSectionCollapsed')
+      if (stored !== null) return JSON.parse(stored)
+    } catch {}
+    return false
+  })
+  useEffect(() => {
+    try {
+      localStorage.setItem('massa_pinnedSectionCollapsed', JSON.stringify(pinnedSectionCollapsed))
+    } catch {}
+  }, [pinnedSectionCollapsed])
   const actionRequiredProjectNames = useMemo(() => {
     const names = new Set<string>()
     for (const p of filteredProjects) {
@@ -3596,35 +3608,49 @@ export function Overview() {
                     <>
                       {pinnedItems.length > 0 && (
                         <div>
-                          {(() => {
-                            const placeholder = (
-                              <div
-                                key="__drag-placeholder"
-                                style={{
-                                  height: 3,
-                                  margin: '0 12px',
-                                  borderRadius: 2,
-                                  background: 'rgba(245,158,11,0.6)',
-                                  boxShadow: '0 0 6px rgba(245,158,11,0.4)',
-                                }}
-                              />
-                            )
-                            const rows: React.ReactNode[] = []
-                            pinnedItems.forEach((item, idx) => {
-                              const k = `${item.id}:${item.action.type}`
-                              const isTarget = dragOverPinnedKey === k && draggedPinnedKeyState && draggedPinnedKeyState !== k
-                              if (isTarget && dragOverPosition === 'before') rows.push(placeholder)
-                              rows.push(renderActionItemRow(item, idx === 0 && !(isTarget && dragOverPosition === 'before') ? 'none' : '1px solid #1e2735', true))
-                              if (isTarget && dragOverPosition === 'after') rows.push(placeholder)
-                            })
-                            return rows
-                          })()}
-                          {unpinnedItems.length > 0 && (
-                            <div style={{ borderTop: '1px solid #1e3a2a', display: 'flex', alignItems: 'center', gap: 6, padding: '3px 12px' }}>
-                              <span style={{ flex: 1, height: 0, borderTop: '1px dashed #1e3020' }} />
-                              <span style={{ fontSize: 7, color: '#374151', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.8, whiteSpace: 'nowrap' }}>PINNED ABOVE</span>
-                              <span style={{ flex: 1, height: 0, borderTop: '1px dashed #1e3020' }} />
-                            </div>
+                          <div
+                            onClick={() => setPinnedSectionCollapsed(v => !v)}
+                            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', cursor: 'pointer', userSelect: 'none', borderBottom: pinnedSectionCollapsed ? 'none' : '1px solid #1a2235' }}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,158,11,0.04)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                          >
+                            <span style={{ fontSize: 7, color: '#f59e0b', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.8, opacity: 0.7, transition: 'transform 0.15s', display: 'inline-block', transform: pinnedSectionCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
+                            <span style={{ fontSize: 7, color: '#f59e0b', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.8, fontWeight: 700, opacity: 0.7 }}>PINNED</span>
+                            <span style={{ fontSize: 7, color: '#f59e0b', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, opacity: 0.7 }}>{pinnedItems.length}</span>
+                          </div>
+                          {!pinnedSectionCollapsed && (
+                            <>
+                              {(() => {
+                                const placeholder = (
+                                  <div
+                                    key="__drag-placeholder"
+                                    style={{
+                                      height: 3,
+                                      margin: '0 12px',
+                                      borderRadius: 2,
+                                      background: 'rgba(245,158,11,0.6)',
+                                      boxShadow: '0 0 6px rgba(245,158,11,0.4)',
+                                    }}
+                                  />
+                                )
+                                const rows: React.ReactNode[] = []
+                                pinnedItems.forEach((item, idx) => {
+                                  const k = `${item.id}:${item.action.type}`
+                                  const isTarget = dragOverPinnedKey === k && draggedPinnedKeyState && draggedPinnedKeyState !== k
+                                  if (isTarget && dragOverPosition === 'before') rows.push(placeholder)
+                                  rows.push(renderActionItemRow(item, idx === 0 && !(isTarget && dragOverPosition === 'before') ? 'none' : '1px solid #1e2735', true))
+                                  if (isTarget && dragOverPosition === 'after') rows.push(placeholder)
+                                })
+                                return rows
+                              })()}
+                              {unpinnedItems.length > 0 && (
+                                <div style={{ borderTop: '1px solid #1e3a2a', display: 'flex', alignItems: 'center', gap: 6, padding: '3px 12px' }}>
+                                  <span style={{ flex: 1, height: 0, borderTop: '1px dashed #1e3020' }} />
+                                  <span style={{ fontSize: 7, color: '#374151', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: 0.8, whiteSpace: 'nowrap' }}>PINNED ABOVE</span>
+                                  <span style={{ flex: 1, height: 0, borderTop: '1px dashed #1e3020' }} />
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       )}
