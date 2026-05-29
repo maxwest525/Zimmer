@@ -2154,14 +2154,25 @@ export function Overview() {
 
   useEffect(() => {
     const tick = () => {
+      const runningProjectIds = projectsRef.current
+        .filter(p => p.builds.some(b => b.status === 'running'))
+        .map(p => p.id)
+      if (runningProjectIds.length === 0) {
+        setCodeLines(prev => (prev.length === 0 ? prev : []))
+        return
+      }
       codeCounter.current += 1
       const isQA = Math.random() < 0.3
       let entry: CodeLine
       if (isQA) {
-        const q = QA_POOL[Math.floor(Math.random() * QA_POOL.length)]
+        const pool = QA_POOL.filter(q => runningProjectIds.includes(q.projectId))
+        const src = pool.length > 0 ? pool : QA_POOL
+        const q = src[Math.floor(Math.random() * src.length)]
         entry = { id: codeCounter.current, kind: 'qa', content: q.content, qa: q.qa, projectId: q.projectId }
       } else {
-        const c = CODE_POOL[Math.floor(Math.random() * CODE_POOL.length)]
+        const pool = CODE_POOL.filter(c => runningProjectIds.includes(c.projectId))
+        const src = pool.length > 0 ? pool : CODE_POOL
+        const c = src[Math.floor(Math.random() * src.length)]
         entry = { id: codeCounter.current, kind: 'code', content: c.code, file: c.file, lineNo: c.line, projectId: c.projectId }
       }
       setCodeLines(prev => [...prev.slice(-79), entry])
@@ -3725,6 +3736,22 @@ export function Overview() {
                     </div>
                   )
                 })}
+                {(() => {
+                  const visibleCode = codeLines.filter(line => !selectedTenantId || line.projectId === selectedTenantId)
+                  const visibleFeed = feedEntries.filter(entry => {
+                    if (!selectedTenantId) return true
+                    const tenantProject = filteredProjects[0]
+                    return tenantProject && entry.buildName.startsWith(tenantProject.name + ' / ')
+                  })
+                  if (visibleCode.length === 0 && visibleFeed.length === 0) {
+                    return (
+                      <div style={{ padding: '18px 12px', color: isDark ? '#5b6470' : '#9aa0a8', fontFamily: 'inherit', fontSize: 11, lineHeight: 1.6 }}>
+                        <span style={{ opacity: 0.7 }}>// no active builds — stream idle</span>
+                      </div>
+                    )
+                  }
+                  return null
+                })()}
                 {codeLines.filter(line => !selectedTenantId || line.projectId === selectedTenantId).map(line => {
                   if (line.kind === 'qa') {
                     const isPass = line.qa === 'pass'
