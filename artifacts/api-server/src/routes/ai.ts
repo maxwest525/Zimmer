@@ -47,6 +47,50 @@ Return ONLY a JSON array of question strings, nothing else.`,
   }
 });
 
+router.post("/ai/autocomplete", async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
+    return res.json({ completions: [] });
+  }
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      max_completion_tokens: 80,
+      messages: [
+        {
+          role: "system",
+          content: `You are an autocomplete engine, like the predictive-text bar on a phone keyboard. The user is typing a prompt describing an app they want to build. Predict the next few words that would naturally continue their sentence.
+
+Rules:
+- Return 3 SHORT continuations — each just the NEXT 1-4 words that come after what they typed, NOT a full sentence or rewrite.
+- Continue their exact phrasing and grammar. Do not rephrase or restart their sentence.
+- If their text ends mid-word, complete that word.
+- If their text ends with a space, predict the next word(s).
+- Offer 3 DIFFERENT plausible directions when possible.
+- No punctuation unless it naturally belongs. No quotes. No numbering.
+
+Return ONLY a JSON array of 3 short strings, nothing else.`,
+        },
+        { role: "user", content: prompt },
+      ],
+    });
+
+    const raw = completion.choices[0]?.message?.content || "[]";
+    const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const parsed = JSON.parse(cleaned);
+    const completions = Array.isArray(parsed)
+      ? parsed
+          .filter((s) => typeof s === "string" && s.trim().length > 0)
+          .map((s) => s.trim())
+          .slice(0, 3)
+      : [];
+    return res.json({ completions });
+  } catch {
+    return res.json({ completions: [] });
+  }
+});
+
 router.post("/ai/clarify", async (req, res) => {
   const { prompt, previousAnswers } = req.body;
   if (!prompt || typeof prompt !== "string") {

@@ -1636,6 +1636,8 @@ export function Overview() {
   const [modeMenuOpen, setModeMenuOpen] = useState(false)
   const [modeMenuRect, setModeMenuRect] = useState<{ left: number; bottom: number } | null>(null)
   const modeBtnRef = useRef<HTMLButtonElement | null>(null)
+  const [quickType, setQuickType] = useState<string[]>([])
+  const [quickTypeLoading, setQuickTypeLoading] = useState(false)
   const [showClarifyModal, setShowClarifyModal] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [suggestionsLoading, setSuggestionsLoading] = useState(false)
@@ -1672,7 +1674,7 @@ export function Overview() {
   useEffect(() => {
     setIgnoredAll(false)
     setDismissedSuggestions(new Set())
-    if (rawInput.trim().length < 8) {
+    if (promptMode === 'auto' || rawInput.trim().length < 8) {
       setAiSuggestions([])
       return
     }
@@ -1691,7 +1693,30 @@ export function Overview() {
         .finally(() => { if (!controller.signal.aborted) setSuggestionsLoading(false) })
     }, 400)
     return () => { clearTimeout(timer); controller.abort(); setSuggestionsLoading(false) }
-  }, [rawInput])
+  }, [rawInput, promptMode])
+
+  useEffect(() => {
+    if (promptMode !== 'auto' || rawInput.trim().length < 3) {
+      setQuickType([])
+      setQuickTypeLoading(false)
+      return
+    }
+    setQuickTypeLoading(true)
+    const controller = new AbortController()
+    const timer = setTimeout(() => {
+      fetch('/api/ai/autocomplete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: rawInput }),
+        signal: controller.signal,
+      })
+        .then(r => r.json())
+        .then(d => setQuickType(d.completions || []))
+        .catch(() => { if (!controller.signal.aborted) setQuickType([]) })
+        .finally(() => { if (!controller.signal.aborted) setQuickTypeLoading(false) })
+    }, 350)
+    return () => { clearTimeout(timer); controller.abort(); setQuickTypeLoading(false) }
+  }, [rawInput, promptMode])
 
   useEffect(() => {
     const visibleSuggestions = ignoredAll ? [] : aiSuggestions.filter(s => !dismissedSuggestions.has(s))
@@ -1764,7 +1789,6 @@ export function Overview() {
   const handleExecute = useCallback(() => {
     if (rawInput.trim().length === 0) return
     if (promptMode === 'nebulous') { openClarifyWizard(); return }
-    if (promptMode === 'auto') { enhanceRawInput('auto'); return }
     if (promptMode === 'mvp') { enhanceRawInput('mvp'); return }
     setRawInput('')
   }, [rawInput, promptMode, openClarifyWizard, enhanceRawInput])
@@ -2373,6 +2397,30 @@ export function Overview() {
                     />
                   </div>
                 </div>
+                {/* QuickType predictive bar (auto enhance mode) */}
+                {promptMode === 'auto' && (quickTypeLoading || quickType.length > 0) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 14px 8px', flexWrap: 'wrap' }}>
+                    {quickTypeLoading && quickType.length === 0 ? (
+                      <span style={{ fontSize: 10, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', opacity: 0.8 }}>predicting…</span>
+                    ) : (
+                      quickType.map((word, i) => (
+                        <button
+                          key={`${i}-${word}`}
+                          onClick={() => {
+                            setRawInput(prev => {
+                              const needsSpace = prev.length > 0 && !/\s$/.test(prev) && !/^[\s.,;:!?]/.test(word)
+                              return prev + (needsSpace ? ' ' : '') + word
+                            })
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#141e18'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.4)'; e.currentTarget.style.color = '#34d399' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = '#1e2330'; e.currentTarget.style.color = '#d1d5db' }}
+                          style={{ background: '#0c0f14', border: '1px solid #1e2330', borderRadius: 999, padding: '4px 12px', fontSize: 11, color: '#d1d5db', cursor: 'pointer', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s ease', whiteSpace: 'nowrap', animation: `suggestion-slide-in 0.2s ease ${i * 0.04}s both` }}>
+                          {word}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
                 {/* Bottom bar */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px 10px', borderTop: '1px solid #1e2330' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
