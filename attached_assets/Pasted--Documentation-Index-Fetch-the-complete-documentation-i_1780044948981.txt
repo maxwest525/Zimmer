@@ -1,0 +1,50 @@
+> ## Documentation Index
+> Fetch the complete documentation index at: https://hyperfx.ai/docs/llms.txt
+> Use this file to discover all available pages before exploring further.
+
+# Set up your MCP server
+
+> Configure your default Hyper MCP server, choose which tools to expose, and set per-action guardrails.
+
+<iframe width="100%" height="410" src="https://www.youtube.com/embed/NZLAdOL9fP8?start=40" title="Hyper MCP — Setup and Configuration" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
+
+Your Hyper MCP server is the single endpoint that exposes your Hyper workspace to outside AI apps. You decide which integrations and built-in tools it includes, and you control the permissions on every individual action.
+
+## Open your MCP page
+
+Go to **MCP** in the sidebar of your Hyper workspace. Every workspace gets a default server — open it to start configuring.
+
+## Choose which tools to expose
+
+Your MCP server can include any combination of:
+
+* **App integrations** — every app you've connected on the [Apps page](/integrations/overview) (Gmail, Shopify, HubSpot, Meta, Google Ads, etc.)
+* **Built-in tools** — Hyper's native scrapers (Meta Ads Library, Reddit, Twitter, Instagram, TikTok), image generation, video generation, web search, web browsing
+* **Platform tools** — create and manage agents, tasks, skills, files, knowledge bases, and tables from outside Hyper
+
+Toggle each tool on or off depending on what you want available in the connected AI app. Most users start by enabling everything they actively use.
+
+## Set per-action guardrails
+
+Click into any integration on your MCP server to see every action it exposes. For each action you can:
+
+* **Enable / disable** — turn the action on or off entirely
+* **Require approval** — the action runs only after you give it the green light from Hyper
+
+<Tip>
+  Approval mode is your safety net for destructive or irreversible actions. A common pattern is to enable "send email" but require approval, or enable "create campaign" but require approval on "delete campaign."
+</Tip>
+
+For example, on the Meta Marketing API integration you might:
+
+* Enable "Get campaign insights" without approval (read-only, safe)
+* Enable "Create campaign" without approval (you want fast iteration)
+* Enable "Delete campaign" **with approval** (irreversible, you want to sign off)
+
+These guardrails apply to every AI client connected to your Hyper MCP — so the same rules work whether the request comes from Claude, ChatGPT, or anywhere else.
+
+## Verify your setup
+
+Once configured, your MCP page shows the total number of tools available across the server. A typical fully-configured workspace exposes a few hundred tools — every action across every integration plus the platform tools.
+
+When you're happy with the configuration, head to [Connect to Claude](/mcp/connect-claude) to wire it up.
