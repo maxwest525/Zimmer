@@ -15,6 +15,14 @@ export interface McpTool {
   description?: string;
 }
 
+export interface McpStatusEvent {
+  id: number;
+  serverId: number;
+  status: "connected" | "disconnected" | "error";
+  error: string | null;
+  createdAt: string;
+}
+
 export interface McpServer {
   id: number;
   name: string;
@@ -25,6 +33,7 @@ export interface McpServer {
   tools: McpTool[] | null;
   lastError: string | null;
   lastConnectedAt: string | null;
+  history: McpStatusEvent[];
   createdAt: string;
   updatedAt: string;
 }

@@ -29,6 +29,13 @@
       "when": 1780026559858,
       "tag": "0003_tiny_revanche",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780030813996,
+      "tag": "0004_mcp_status_events",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,25 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useMcp, type McpServer } from "@/contexts/McpContext";
+import { useMcp, type McpServer, type McpStatusEvent } from "@/contexts/McpContext";
+
+function timeAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const seconds = Math.max(0, Math.round((Date.now() - then) / 1000));
+  if (seconds < 60) return "just now";
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  return `${days}d ago`;
+}
+
+function eventLabel(event: McpStatusEvent): string {
+  if (event.status === "connected") return "Recovered";
+  if (event.status === "error") return "Went offline";
+  return "Disconnected";
+}
 
 const STATUS_CONFIG: Record<
   McpServer["status"],
@@ -317,6 +336,51 @@ export function McpPanel() {
                     <p className="text-[10px] font-mono text-red-400/80">
                       {server.lastError}
                     </p>
+                  </div>
+                )}
+
+                {server.history.length > 0 && (
+                  <div className="px-3 pb-2.5 -mt-0.5 flex flex-col gap-1">
+                    <p className="text-[9px] font-mono text-[#5a6172] uppercase tracking-widest">
+                      Status history
+                    </p>
+                    {server.history.map((event) => (
+                      <div
+                        key={event.id}
+                        className="flex items-center gap-2 text-[10px] font-mono"
+                      >
+                        <span
+                          className={cn(
+                            "w-1.5 h-1.5 rounded-full shrink-0",
+                            event.status === "connected"
+                              ? "bg-emerald-400"
+                              : event.status === "error"
+                                ? "bg-red-400"
+                                : "bg-[#7a8294]",
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "shrink-0",
+                            event.status === "connected"
+                              ? "text-emerald-400/80"
+                              : event.status === "error"
+                                ? "text-red-400/80"
+                                : "text-[#7a8294]",
+                          )}
+                        >
+                          {eventLabel(event)}
+                        </span>
+                        <span className="text-[#5a6172] shrink-0">
+                          {timeAgo(event.createdAt)}
+                        </span>
+                        {event.error && (
+                          <span className="text-[#5a6172] truncate" title={event.error}>
+                            — {event.error}
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
 

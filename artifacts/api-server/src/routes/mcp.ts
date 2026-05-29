@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { db, mcpServersTable } from "@workspace/db";
-import type { McpServer } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import { db, mcpServersTable, mcpStatusEventsTable } from "@workspace/db";
+import type { McpServer, McpStatusEvent } from "@workspace/db";
+import { eq, desc, inArray } from "drizzle-orm";
 import { connectAndListTools, callTool } from "../lib/mcpClient";
 
 const router = Router();
+
+// How many recent status transitions to keep/return per server.
+const HISTORY_LIMIT = 10;
 
 /**
  * Strips the stored credential before returning a server to the client.
@@ -16,7 +19,71 @@ function toPublicServer(server: McpServer) {
   return { ...rest, hasAuthToken: Boolean(authToken) };
 }
 
-async function refreshServer(id: number, endpoint: string, authToken: string | null) {
+/**
+ * Records a status transition for a server. Only writes an event when the new
+ * status differs from the previous one, so the history reflects genuine
+ * up/down flips rather than every health-check tick.
+ */
+async function recordTransition(
+  serverId: number,
+  prevStatus: string | undefined,
+  nextStatus: string,
+  error: string | null,
+) {
+  if (prevStatus === nextStatus) return;
+  try {
+    await db.insert(mcpStatusEventsTable).values({
+      serverId,
+      status: nextStatus,
+      error,
+    });
+  } catch (err) {
+    // History is best-effort; never let it break a refresh.
+    console.error("Failed to record MCP status transition:", err);
+  }
+}
+
+/**
+ * Fetches the most recent status transitions for the given servers, grouped by
+ * server id and capped at HISTORY_LIMIT each (newest first).
+ */
+async function historyForServers(
+  serverIds: number[],
+): Promise<Map<number, McpStatusEvent[]>> {
+  const byServer = new Map<number, McpStatusEvent[]>();
+  if (serverIds.length === 0) return byServer;
+  const events = await db
+    .select()
+    .from(mcpStatusEventsTable)
+    .where(inArray(mcpStatusEventsTable.serverId, serverIds))
+    .orderBy(desc(mcpStatusEventsTable.createdAt));
+  for (const event of events) {
+    const list = byServer.get(event.serverId) ?? [];
+    if (list.length < HISTORY_LIMIT) {
+      list.push(event);
+      byServer.set(event.serverId, list);
+    }
+  }
+  return byServer;
+}
+
+/**
+ * Attaches the recent status history to each public server payload.
+ */
+async function withHistory(servers: McpServer[]) {
+  const history = await historyForServers(servers.map((s) => s.id));
+  return servers.map((server) => ({
+    ...toPublicServer(server),
+    history: history.get(server.id) ?? [],
+  }));
+}
+
+async function refreshServer(
+  id: number,
+  endpoint: string,
+  authToken: string | null,
+  prevStatus?: string,
+) {
   try {
     const tools = await connectAndListTools(endpoint, authToken);
     const [updated] = await db
@@ -31,6 +98,7 @@ async function refreshServer(id: number, endpoint: string, authToken: string | n
       })
       .where(eq(mcpServersTable.id, id))
       .returning();
+    await recordTransition(id, prevStatus, "connected", null);
     return updated;
   } catch (err) {
     const message = err instanceof Error ? err.message : "Connection failed";
@@ -43,6 +111,7 @@ async function refreshServer(id: number, endpoint: string, authToken: string | n
       })
       .where(eq(mcpServersTable.id, id))
       .returning();
+    await recordTransition(id, prevStatus, "error", message);
     return updated;
   }
 }
@@ -53,7 +122,7 @@ router.get("/mcp", async (_req, res) => {
       .select()
       .from(mcpServersTable)
       .orderBy(desc(mcpServersTable.createdAt));
-    res.json(servers.map(toPublicServer));
+    res.json(await withHistory(servers));
   } catch (err) {
     console.error("Failed to fetch MCP servers:", err);
     res.status(500).json({ error: "Failed to fetch MCP servers" });
@@ -105,8 +174,10 @@ router.post("/mcp", async (req, res) => {
       server.id,
       server.endpoint,
       server.authToken,
+      server.status,
     );
-    res.json(toPublicServer(connected ?? server));
+    const [withHist] = await withHistory([connected ?? server]);
+    res.json(withHist);
   } catch (err) {
     console.error("Failed to create MCP server:", err);
     res.status(500).json({ error: "Failed to create MCP server" });
@@ -122,13 +193,16 @@ router.post("/mcp/refresh", async (_req, res) => {
 
     const refreshed = await Promise.all(
       servers.map((server) =>
-        refreshServer(server.id, server.endpoint, server.authToken).then(
-          (updated) => updated ?? server,
-        ),
+        refreshServer(
+          server.id,
+          server.endpoint,
+          server.authToken,
+          server.status,
+        ).then((updated) => updated ?? server),
       ),
     );
 
-    res.json(refreshed.map(toPublicServer));
+    res.json(await withHistory(refreshed));
   } catch (err) {
     console.error("Failed to refresh MCP servers:", err);
     res.status(500).json({ error: "Failed to refresh MCP servers" });
@@ -154,8 +228,10 @@ router.post("/mcp/:id/connect", async (req, res) => {
       server.id,
       server.endpoint,
       server.authToken,
+      server.status,
     );
-    res.json(toPublicServer(updated ?? server));
+    const [withHist] = await withHistory([updated ?? server]);
+    res.json(withHist);
   } catch (err) {
     console.error("Failed to connect MCP server:", err);
     res.status(500).json({ error: "Failed to connect MCP server" });

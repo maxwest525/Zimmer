@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -20,6 +20,27 @@ export const mcpServersTable = pgTable("mcp_servers", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const mcpStatusEventsTable = pgTable(
+  "mcp_status_events",
+  {
+    id: serial("id").primaryKey(),
+    serverId: integer("server_id")
+      .notNull()
+      .references(() => mcpServersTable.id, { onDelete: "cascade" }),
+    status: text("status").notNull(),
+    error: text("error"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("mcp_status_events_server_created_idx").on(
+      table.serverId,
+      table.createdAt.desc(),
+    ),
+  ],
+);
+
+export type McpStatusEvent = typeof mcpStatusEventsTable.$inferSelect;
 
 export const insertMcpServerSchema = createInsertSchema(mcpServersTable).omit({
   id: true,
