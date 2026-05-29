@@ -2089,6 +2089,15 @@ export function Overview() {
     } catch {}
     return []
   })
+  const [pinnedNotes, setPinnedNotes] = useState<Record<string, string>>(() => {
+    try {
+      const stored = localStorage.getItem('massa_pinnedNotes')
+      if (stored) return JSON.parse(stored)
+    } catch {}
+    return {}
+  })
+  const [editingPinNoteKey, setEditingPinNoteKey] = useState<string | null>(null)
+  const [editingPinNoteText, setEditingPinNoteText] = useState('')
   const draggedPinnedKey = useRef<string | null>(null)
   const [dragOverPinnedKey, setDragOverPinnedKey] = useState<string | null>(null)
   const toggleSection = (key: string) => setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }))
@@ -2112,6 +2121,11 @@ export function Overview() {
       localStorage.setItem('massa_pinnedActionOrder', JSON.stringify(pinnedActionOrder))
     } catch {}
   }, [pinnedActionOrder])
+  useEffect(() => {
+    try {
+      localStorage.setItem('massa_pinnedNotes', JSON.stringify(pinnedNotes))
+    } catch {}
+  }, [pinnedNotes])
   const actionRequiredProjectNames = useMemo(() => {
     const names = new Set<string>()
     for (const p of filteredProjects) {
@@ -3259,6 +3273,7 @@ export function Overview() {
 
             const togglePin = (itemId: string, actionType: string) => {
               const key = `${itemId}:${actionType}`
+              const isCurrentlyPinned = pinnedActionKeys.has(key)
               setPinnedActionKeys(prev => {
                 const next = new Set(prev)
                 if (next.has(key)) next.delete(key)
@@ -3269,6 +3284,14 @@ export function Overview() {
                 if (prev.includes(key)) return prev.filter(k => k !== key)
                 return [...prev, key]
               })
+              if (isCurrentlyPinned) {
+                setPinnedNotes(prev => { const next = { ...prev }; delete next[key]; return next })
+                setEditingPinNoteKey(null)
+                setEditingPinNoteText('')
+              } else {
+                setEditingPinNoteKey(key)
+                setEditingPinNoteText('')
+              }
             }
 
             const pinnedItemsRaw = visibleSorted.filter(item => pinnedActionKeys.has(`${item.id}:${item.action.type}`))
@@ -3344,7 +3367,7 @@ export function Overview() {
                     borderTop,
                     transition: 'background 0.15s ease, all 0.25s ease',
                     overflow: 'hidden',
-                    maxHeight: 80,
+                    maxHeight: 120,
                     opacity: 1,
                     background: isDragOver ? 'rgba(245,158,11,0.12)' : isPinned ? 'rgba(245,158,11,0.04)' : 'transparent',
                     cursor: draggable ? 'default' : 'default',
@@ -3383,6 +3406,47 @@ export function Overview() {
                         {item.action.label}
                       </div>
                       <div style={{ fontSize: 9, color: '#9ca3af', fontFamily: '"JetBrains Mono", Menlo, monospace', lineHeight: 1.4, marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{item.title}</div>
+                      {isPinned && editingPinNoteKey === key && (
+                        <input
+                          autoFocus
+                          maxLength={60}
+                          value={editingPinNoteText}
+                          onChange={e => setEditingPinNoteText(e.target.value)}
+                          onBlur={() => {
+                            setPinnedNotes(prev => ({ ...prev, [key]: editingPinNoteText.trim() }))
+                            setEditingPinNoteKey(null)
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === 'Escape') {
+                              setPinnedNotes(prev => ({ ...prev, [key]: editingPinNoteText.trim() }))
+                              setEditingPinNoteKey(null)
+                            }
+                          }}
+                          placeholder="why pinned? (optional)"
+                          style={{
+                            marginTop: 5,
+                            width: '100%',
+                            background: 'transparent',
+                            border: 'none',
+                            borderBottom: '1px solid #374151',
+                            outline: 'none',
+                            color: '#9ca3af',
+                            fontSize: 9,
+                            fontFamily: '"JetBrains Mono", Menlo, monospace',
+                            padding: '1px 0',
+                            boxSizing: 'border-box',
+                          }}
+                        />
+                      )}
+                      {isPinned && editingPinNoteKey !== key && pinnedNotes[key] && (
+                        <div
+                          title="Click to edit note"
+                          onClick={() => { setEditingPinNoteKey(key); setEditingPinNoteText(pinnedNotes[key] || '') }}
+                          style={{ fontSize: 9, color: '#6b7280', fontFamily: '"JetBrains Mono", Menlo, monospace', marginTop: 3, fontStyle: 'italic', cursor: 'text', lineHeight: 1.4 }}
+                        >
+                          {pinnedNotes[key]}
+                        </div>
+                      )}
                     </div>
                     <button
                       onClick={() => togglePin(item.id, item.action.type)}
