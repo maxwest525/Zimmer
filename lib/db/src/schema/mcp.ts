@@ -11,6 +11,7 @@ export const mcpServersTable = pgTable("mcp_servers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   endpoint: text("endpoint").notNull(),
+  authToken: text("auth_token"),
   status: text("status").default("disconnected").notNull(),
   toolCount: integer("tool_count").default(0).notNull(),
   tools: jsonb("tools").$type<McpTool[]>(),

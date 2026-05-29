@@ -30,11 +30,40 @@ const c = {
 
 const apiBase = '/api'
 
+type Platform = {
+  id: string
+  name: string
+  docLabel: string
+  url: string
+}
+
+// Platforms / LLMs that consume "skills" (rules, prompts, instructions) and
+// their official docs for authoring the ideal skill and uploading it.
+const PLATFORMS: Platform[] = [
+  { id: 'claude', name: 'Claude (Anthropic)', docLabel: 'agent skills documentation', url: 'https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview' },
+  { id: 'replit', name: 'Replit Agent', docLabel: 'agent guide documentation', url: 'https://docs.replit.com/replitai/agent' },
+  { id: 'cursor', name: 'Cursor', docLabel: 'rules documentation', url: 'https://docs.cursor.com/context/rules' },
+  { id: 'lovable', name: 'Lovable', docLabel: 'prompt documentation', url: 'https://docs.lovable.dev/tips-tricks/prompting' },
+  { id: 'windsurf', name: 'Windsurf', docLabel: 'rules & memories documentation', url: 'https://docs.windsurf.com/windsurf/cascade/memories' },
+  { id: 'copilot', name: 'GitHub Copilot', docLabel: 'custom instructions documentation', url: 'https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot' },
+  { id: 'v0', name: 'v0 (Vercel)', docLabel: 'documentation', url: 'https://v0.dev/docs' },
+  { id: 'bolt', name: 'Bolt.new', docLabel: 'prompting documentation', url: 'https://support.bolt.new/' },
+  { id: 'cline', name: 'Cline', docLabel: 'custom instructions documentation', url: 'https://docs.cline.bot/features/cline-rules' },
+  { id: 'openai', name: 'OpenAI (ChatGPT / GPTs)', docLabel: 'prompt engineering documentation', url: 'https://platform.openai.com/docs/guides/prompt-engineering' },
+  { id: 'gemini', name: 'Google Gemini', docLabel: 'prompting documentation', url: 'https://ai.google.dev/gemini-api/docs/prompting-strategies' },
+  { id: 'aider', name: 'Aider', docLabel: 'conventions documentation', url: 'https://aider.chat/docs/usage/conventions.html' },
+  { id: 'continue', name: 'Continue', docLabel: 'rules documentation', url: 'https://docs.continue.dev/customize/deep-dives/rules' },
+  { id: 'devin', name: 'Devin', docLabel: 'knowledge documentation', url: 'https://docs.devin.ai/product-guides/knowledge-onboarding' },
+]
+
 export function SkillsView({ onBack }: { onBack: () => void }) {
   const [repos, setRepos] = useState<TrendingRepo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [since, setSince] = useState('')
+
+  const [platformId, setPlatformId] = useState<string>(PLATFORMS[0].id)
+  const platform = PLATFORMS.find(p => p.id === platformId) ?? PLATFORMS[0]
 
   const [selected, setSelected] = useState<TrendingRepo | null>(null)
   const [fileLoading, setFileLoading] = useState(false)
@@ -114,9 +143,37 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
         </button>
       </div>
 
+      {/* Platform skill-authoring docs */}
+      <div style={{ background: c.panel, border: `1px solid ${c.borderDim}`, borderRadius: 6, padding: 14, marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: c.green, fontFamily: c.font, fontWeight: 700, marginBottom: 4 }}>$ massa skills --write-for &lt;platform&gt;</div>
+        <div style={{ fontSize: 10, color: c.muted, fontFamily: c.font, marginBottom: 10 }}>
+          Pick a platform to open its docs for writing the ideal skill and uploading it.
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <select
+            value={platformId}
+            onChange={e => setPlatformId(e.target.value)}
+            style={{ padding: '7px 10px', borderRadius: 4, border: `1px solid ${c.border}`, background: c.bg, color: c.text, fontFamily: c.font, fontSize: 11, cursor: 'pointer', minWidth: 220 }}>
+            {PLATFORMS.map(p => (
+              <option key={p.id} value={p.id} style={{ background: c.bg, color: c.text }}>{p.name}</option>
+            ))}
+          </select>
+          <span style={{ color: c.dim, fontFamily: c.font, fontSize: 11 }}>—</span>
+          <a
+            href={platform.url}
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: c.green, fontFamily: c.font, fontSize: 11, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+            onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}>
+            {platform.docLabel} <span style={{ color: c.dim }}>→</span>
+          </a>
+        </div>
+      </div>
+
       {/* Section title */}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ fontSize: 11, color: c.green, fontFamily: c.font, fontWeight: 700 }}>$ massa skills --trending --top 10</div>
+        <div style={{ fontSize: 11, color: c.green, fontFamily: c.font, fontWeight: 700 }}>$ massa skills --trending --top 10 (today)</div>
         {since && <div style={{ fontSize: 10, color: c.dim, fontFamily: c.font }}>pushed since {since}</div>}
       </div>
 
@@ -135,30 +192,20 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
               return (
                 <div
                   key={repo.id}
-                  style={{ display: 'flex', gap: 12, padding: '12px 14px', borderBottom: i < repos.length - 1 ? `1px solid ${c.borderDim}` : 'none', background: active ? 'rgba(52,211,153,0.05)' : 'transparent', transition: 'background 0.15s' }}
+                  onClick={() => pullSkillFile(repo)}
+                  title={repo.description || repo.fullName}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderBottom: i < repos.length - 1 ? `1px solid ${c.borderDim}` : 'none', background: active ? 'rgba(52,211,153,0.05)' : 'transparent', transition: 'background 0.15s', cursor: 'pointer' }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#0c0f14' }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}>
                   <div style={{ color: c.dim, fontFamily: c.font, fontSize: 12, fontWeight: 700, width: 22, flexShrink: 0, textAlign: 'right' }}>{i + 1}</div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <a href={repo.url} target="_blank" rel="noreferrer" style={{ color: c.text, fontFamily: c.font, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}
-                        onMouseEnter={e => { e.currentTarget.style.color = c.green }}
-                        onMouseLeave={e => { e.currentTarget.style.color = c.text }}>{repo.fullName}</a>
-                      <span style={{ color: c.amber, fontFamily: c.font, fontSize: 10 }}>★ {repo.stars.toLocaleString()}</span>
-                      {repo.language && <span style={{ color: c.blue, fontFamily: c.font, fontSize: 10 }}>{repo.language}</span>}
-                    </div>
-                    {repo.description && <div style={{ color: c.muted, fontFamily: c.font, fontSize: 11, lineHeight: 1.5, marginTop: 4 }}>{repo.description}</div>}
-                    <div style={{ marginTop: 8 }}>
-                      <button
-                        onClick={() => pullSkillFile(repo)}
-                        disabled={fileLoading && active}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(52,211,153,0.4)'; e.currentTarget.style.color = c.green }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = c.borderDim; e.currentTarget.style.color = c.muted }}
-                        style={{ padding: '4px 10px', borderRadius: 4, border: `1px solid ${c.borderDim}`, background: 'transparent', color: c.muted, fontWeight: 700, fontSize: 9, cursor: 'pointer', fontFamily: c.font, transition: 'all 0.15s' }}>
-                        {fileLoading && active ? 'PULLING…' : '↓ PULL SKILL FILE'}
-                      </button>
-                    </div>
-                  </div>
+                  <a href={repo.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                    style={{ color: c.text, fontFamily: c.font, fontSize: 12, fontWeight: 700, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1 }}
+                    onMouseEnter={e => { e.currentTarget.style.color = c.green }}
+                    onMouseLeave={e => { e.currentTarget.style.color = c.text }}>{repo.fullName}</a>
+                  {repo.description && <span style={{ color: c.muted, fontFamily: c.font, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>{repo.description}</span>}
+                  <span style={{ color: c.amber, fontFamily: c.font, fontSize: 10, flexShrink: 0 }}>★ {repo.stars.toLocaleString()}</span>
+                  {repo.language && <span style={{ color: c.blue, fontFamily: c.font, fontSize: 10, flexShrink: 0, width: 70, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{repo.language}</span>}
+                  <span style={{ color: active && fileLoading ? c.green : c.dim, fontFamily: c.font, fontSize: 11, flexShrink: 0, width: 16, textAlign: 'center' }}>{active && fileLoading ? '…' : '↓'}</span>
                 </div>
               )
             })

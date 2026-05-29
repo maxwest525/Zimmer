@@ -195,7 +195,10 @@ interface McpSession {
  * handshake, and returns a reusable session (endpoint + headers carrying any
  * mcp-session-id). Throws an Error with a human-readable message on failure.
  */
-async function openSession(endpoint: string): Promise<McpSession> {
+async function openSession(
+  endpoint: string,
+  authToken?: string | null,
+): Promise<McpSession> {
   let url: URL;
   try {
     url = new URL(endpoint);
@@ -212,6 +215,15 @@ async function openSession(endpoint: string): Promise<McpSession> {
     "Content-Type": "application/json",
     Accept: "application/json, text/event-stream",
   };
+
+  const token = authToken?.trim();
+  if (token) {
+    // If the user already supplied a scheme (e.g. "Bearer x", "Basic y"),
+    // pass it through verbatim; otherwise default to a Bearer token.
+    baseHeaders["Authorization"] = /^\S+\s+\S+/.test(token)
+      ? token
+      : `Bearer ${token}`;
+  }
 
   let initRes: Response;
   try {
@@ -272,8 +284,11 @@ async function openSession(endpoint: string): Promise<McpSession> {
  * performs the initialize handshake, and returns its advertised tools.
  * Throws an Error with a human-readable message on any failure.
  */
-export async function connectAndListTools(endpoint: string): Promise<McpTool[]> {
-  const session = await openSession(endpoint);
+export async function connectAndListTools(
+  endpoint: string,
+  authToken?: string | null,
+): Promise<McpTool[]> {
+  const session = await openSession(endpoint, authToken);
 
   let toolsRes: Response;
   try {
@@ -339,8 +354,9 @@ export async function callTool(
   endpoint: string,
   toolName: string,
   args: Record<string, unknown>,
+  authToken?: string | null,
 ): Promise<McpToolResult> {
-  const session = await openSession(endpoint);
+  const session = await openSession(endpoint, authToken);
 
   let callRes: Response;
   try {

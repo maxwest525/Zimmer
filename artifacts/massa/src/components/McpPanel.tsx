@@ -10,6 +10,7 @@ interface McpServer {
   id: number;
   name: string;
   endpoint: string;
+  hasAuthToken: boolean;
   status: "connected" | "disconnected" | "error";
   toolCount: number;
   tools: McpTool[] | null;
@@ -54,6 +55,7 @@ export function McpPanel() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [endpoint, setEndpoint] = useState("");
+  const [authToken, setAuthToken] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [connectingId, setConnectingId] = useState<number | null>(null);
@@ -139,7 +141,11 @@ export function McpPanel() {
       const res = await fetch(`${apiBase}/mcp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), endpoint: endpoint.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          endpoint: endpoint.trim(),
+          authToken: authToken.trim() || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -148,6 +154,7 @@ export function McpPanel() {
       setServers((prev) => [data, ...prev]);
       setName("");
       setEndpoint("");
+      setAuthToken("");
       setShowForm(false);
       if (data.status === "connected") setExpandedId(data.id);
     } catch (err) {
@@ -230,6 +237,22 @@ export function McpPanel() {
               className="px-3 py-2 text-xs font-mono rounded-md bg-[#0a0d10] border border-[#1a1f2b] text-[#c0c5cf] placeholder:text-[#5a6172] focus:border-emerald-400/50 focus:outline-none transition-colors"
             />
           </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest">
+              Auth Token <span className="text-[#5a6172] normal-case">(optional)</span>
+            </label>
+            <input
+              type="password"
+              value={authToken}
+              onChange={(e) => setAuthToken(e.target.value)}
+              placeholder="API key or Bearer token"
+              autoComplete="off"
+              className="px-3 py-2 text-xs font-mono rounded-md bg-[#0a0d10] border border-[#1a1f2b] text-[#c0c5cf] placeholder:text-[#5a6172] focus:border-emerald-400/50 focus:outline-none transition-colors"
+            />
+            <p className="text-[10px] font-mono text-[#5a6172] leading-relaxed">
+              Sent as an Authorization header. Stored securely and never shown again.
+            </p>
+          </div>
           {formError && (
             <p className="text-[10px] font-mono text-red-400">{formError}</p>
           )}
@@ -285,7 +308,12 @@ export function McpPanel() {
                       canExpand ? "cursor-pointer" : "cursor-default",
                     )}
                   >
-                    <p className="text-xs font-mono text-[#c0c5cf] truncate">{server.name}</p>
+                    <p className="text-xs font-mono text-[#c0c5cf] truncate flex items-center gap-1.5">
+                      {server.name}
+                      {server.hasAuthToken && (
+                        <span title="Authenticated" className="text-[#7a8294]">🔒</span>
+                      )}
+                    </p>
                     <p className="text-[10px] font-mono text-[#7a8294] truncate">
                       {server.endpoint}
                     </p>

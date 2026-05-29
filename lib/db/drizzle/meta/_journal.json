@@ -22,6 +22,13 @@
       "when": 1780025223073,
       "tag": "0002_left_wallop",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780026559858,
+      "tag": "0003_tiny_revanche",
+      "breakpoints": true
     }
   ]
 }
