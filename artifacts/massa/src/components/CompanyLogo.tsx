@@ -25,6 +25,24 @@ export function DualCompanyLogo({ names, size = 28, accentColor }: DualCompanyLo
 
 type FallbackStage = 'primary' | 'fallback' | 'text'
 
+// Remembers whether a given logo URL loaded successfully (true) or failed (false)
+// across every surface and re-render. This lets a connector start at the correct
+// fallback stage immediately instead of re-probing a known-bad URL and flickering
+// from a broken image to the placeholder.
+const logoLoadStatus = new Map<string, boolean>()
+
+function initialStage(info: LogoInfo): FallbackStage {
+  if (logoLoadStatus.get(info.url) !== false) {
+    // Unknown or known-good primary: start at primary.
+    return 'primary'
+  }
+  // Primary is known-bad.
+  if (info.fallbackUrl) {
+    return logoLoadStatus.get(info.fallbackUrl) === false ? 'text' : 'fallback'
+  }
+  return 'text'
+}
+
 interface CompanyLogoProps {
   name: string
   size?: number
@@ -34,8 +52,8 @@ interface CompanyLogoProps {
 }
 
 export function CompanyLogo({ name, size = 28, style, accentColor, info: infoOverride }: CompanyLogoProps) {
-  const [stage, setStage] = useState<FallbackStage>('primary')
   const info = infoOverride !== undefined ? infoOverride : getLogoInfo(name)
+  const [stage, setStage] = useState<FallbackStage>(() => (info ? initialStage(info) : 'primary'))
 
   if (!info || stage === 'text') {
     const iconColor = accentColor ?? '#888'
@@ -62,11 +80,16 @@ export function CompanyLogo({ name, size = 28, style, accentColor, info: infoOve
   const src = stage === 'primary' ? info.url : info.fallbackUrl
 
   const handleError = () => {
+    if (src) logoLoadStatus.set(src, false)
     if (stage === 'primary' && info.fallbackUrl) {
       setStage('fallback')
     } else {
       setStage('text')
     }
+  }
+
+  const handleLoad = () => {
+    if (src) logoLoadStatus.set(src, true)
   }
 
   return (
@@ -77,6 +100,7 @@ export function CompanyLogo({ name, size = 28, style, accentColor, info: infoOve
       width={size}
       height={size}
       onError={handleError}
+      onLoad={handleLoad}
       style={{
         width: size,
         height: size,
@@ -98,8 +122,8 @@ interface InlineCompanyLogoProps {
 }
 
 export function InlineCompanyLogo({ name, size = 14, style }: InlineCompanyLogoProps) {
-  const [stage, setStage] = useState<FallbackStage>('primary')
   const info = getLogoInfo(name)
+  const [stage, setStage] = useState<FallbackStage>(() => (info ? initialStage(info) : 'primary'))
 
   if (!info) {
     return null
@@ -129,11 +153,16 @@ export function InlineCompanyLogo({ name, size = 14, style }: InlineCompanyLogoP
   const src = stage === 'primary' ? info.url : info.fallbackUrl
 
   const handleError = () => {
+    if (src) logoLoadStatus.set(src, false)
     if (stage === 'primary' && info.fallbackUrl) {
       setStage('fallback')
     } else {
       setStage('text')
     }
+  }
+
+  const handleLoad = () => {
+    if (src) logoLoadStatus.set(src, true)
   }
 
   return (
@@ -144,6 +173,7 @@ export function InlineCompanyLogo({ name, size = 14, style }: InlineCompanyLogoP
       width={size}
       height={size}
       onError={handleError}
+      onLoad={handleLoad}
       style={{
         width: size,
         height: size,

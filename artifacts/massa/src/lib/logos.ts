@@ -337,7 +337,12 @@ export interface ResolvedBrand {
   label: string
 }
 
-export function resolveMcpBrand(name: string, endpoint?: string | null): ResolvedBrand {
+// Resolved brands are memoized per (name, endpoint) so the domain-derived guess
+// and the returned object identity stay stable across re-renders and across the
+// different surfaces that render the same connector.
+const resolvedBrandCache = new Map<string, ResolvedBrand>()
+
+function computeMcpBrand(name: string, endpoint?: string | null): ResolvedBrand {
   const trimmed = (name ?? '').trim()
   const byName = getLogoInfo(trimmed)
   if (byName) return { info: byName, label: byName.label }
@@ -350,4 +355,13 @@ export function resolveMcpBrand(name: string, endpoint?: string | null): Resolve
     }
   }
   return { info: null, label: trimmed || 'Unknown server' }
+}
+
+export function resolveMcpBrand(name: string, endpoint?: string | null): ResolvedBrand {
+  const key = `${name ?? ''}\u0000${endpoint ?? ''}`
+  const cached = resolvedBrandCache.get(key)
+  if (cached) return cached
+  const resolved = computeMcpBrand(name, endpoint)
+  resolvedBrandCache.set(key, resolved)
+  return resolved
 }
