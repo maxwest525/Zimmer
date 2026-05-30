@@ -30,6 +30,9 @@ type Build = {
   agentRole?: string
   dependsOn?: string[]
   buildContext?: string
+  plan?: string
+  code?: string
+  thinkingLog?: string
 }
 
 type ProjectLifecycle = 'active' | 'completed' | 'archived' | 'deleted'
@@ -1501,7 +1504,24 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
   interface Integration { name: string; color: string; monogram: string; desc: string; status: IntegrationStatus }
   interface Category { name: string; integrations: Integration[] }
 
+  const [mcpServers, setMcpServers] = useState<{ id: number; name: string; endpoint: string; status: string; toolCount: number; hasAuthToken: boolean }[]>([])
+  const [mcpLoading, setMcpLoading] = useState(false)
+  useEffect(() => {
+    setMcpLoading(true)
+    fetch('/api/mcp/servers').then(r => r.json()).then(d => { if (Array.isArray(d.servers)) setMcpServers(d.servers) }).catch(() => {}).finally(() => setMcpLoading(false))
+  }, [])
+
   const categories: Category[] = [
+    {
+      name: 'AI Orchestration',
+      integrations: [
+        { name: 'HyperFX Marketing', color: '#34d399', monogram: 'HX', desc: 'Autonomous marketing loop MCP — AI-powered campaigns, content & distribution', status: 'CONNECTED' },
+        { name: 'Claude Code', color: '#d97706', monogram: 'CC', desc: 'Anthropic Claude Code agent — code generation, debugging & architecture', status: 'CONNECTED' },
+        { name: 'OpenRouter', color: '#6366f1', monogram: 'OR', desc: 'Multi-model routing — GPT-4o, Mistral, Llama, Gemma & more', status: 'CONNECTED' },
+        { name: 'Gemini', color: '#4285f4', monogram: 'G', desc: 'Google Gemini Pro & Flash via API', status: 'CONNECTED' },
+        { name: 'n8n Workflows', color: '#ea4b71', monogram: 'N', desc: 'Self-hosted workflow automation connected via MCP', status: 'BETA' },
+      ],
+    },
     {
       name: 'CRM',
       integrations: [
@@ -1642,6 +1662,29 @@ function IntegrationsView({ onBack }: { onBack: () => void }) {
           <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>MASSA://sys/integrations</div>
         </div>
       </div>
+
+      {/* Live MCP connections */}
+      {(mcpLoading || mcpServers.length > 0) && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 9, letterSpacing: 1.2, color: c.green, fontWeight: 700, fontFamily: mono, marginBottom: 8 }}>LIVE MCP CONNECTIONS</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {mcpLoading ? (
+              <div style={{ fontSize: 11, color: c.muted, fontFamily: mono }}>Connecting to MCP servers…</div>
+            ) : mcpServers.map(srv => (
+              <div key={srv.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#080b10', border: `1px solid ${srv.status === 'connected' ? '#34d39933' : '#1e2530'}`, borderRadius: 8, padding: '10px 14px' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: srv.status === 'connected' ? '#34d399' : srv.status === 'error' ? '#f87171' : '#6b7280', flexShrink: 0, boxShadow: srv.status === 'connected' ? '0 0 6px #34d399' : 'none' }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#e8eaed', fontFamily: mono }}>{srv.name}</div>
+                  <div style={{ fontSize: 10, color: c.muted, fontFamily: mono }}>{srv.endpoint}</div>
+                </div>
+                <div style={{ fontSize: 10, color: srv.status === 'connected' ? '#34d399' : '#6b7280', fontFamily: mono, flexShrink: 0 }}>
+                  {srv.status === 'connected' ? `${srv.toolCount} tools` : srv.status}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div style={{ background: '#080808', border: `1px solid ${c.border}`, borderRadius: 6, padding: 16, fontFamily: mono, fontSize: 11, lineHeight: 1.8, marginBottom: 16 }}>
         <div style={{ color: c.green, marginBottom: 8 }}>$ massa integrations --list</div>
@@ -1823,6 +1866,8 @@ export function Overview() {
   const [chatMessages, setChatMessages] = useState<Record<string, { id: string; role: 'user' | 'agent'; content: string; time: string }[]>>({})
   const [chatInput, setChatInput] = useState('')
   const [showAttachMenu, setShowAttachMenu] = useState<string | null>(null)
+  type PendingAction = { id: string; buildId: string; label: string; description: string; type: 'code' | 'deploy' | 'test' | 'refactor' | 'integration' }
+  const [pendingActions, setPendingActions] = useState<Record<string, PendingAction[]>>({})
   const chatEndRef = useRef<HTMLDivElement>(null)
   const [selectedProjectId, setSelectedProjectId] = useState('')
   const [draggedBuild, setDraggedBuild] = useState<{ buildId: string; projectId: string } | null>(null)
@@ -2027,7 +2072,7 @@ export function Overview() {
         goal: p.goal,
         status: 'running',
         lifecycle: 'active',
-        builds: (p.builds || []).map((b: { id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[] }) => ({
+        builds: (p.builds || []).map((b: { id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[]; plan?: string; code?: string; thinkingLog?: string }) => ({
           id: String(b.id),
           title: b.title,
           summary: b.summary,
@@ -2037,6 +2082,9 @@ export function Overview() {
           agent: b.agent,
           agentRole: b.agentRole,
           dependsOn: b.dependsOn || [],
+          plan: b.plan,
+          code: b.code,
+          thinkingLog: b.thinkingLog,
         })),
       }
       setProjects(prev => [newProject, ...prev])
@@ -2051,7 +2099,7 @@ export function Overview() {
           const updated = d.project
           setProjects(prev => prev.map(proj => {
             if (proj.id !== String(updated.id)) return proj
-            const updatedBuilds = (updated.builds || []).map((b: { id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[] }) => ({
+            const updatedBuilds = (updated.builds || []).map((b: { id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[]; plan?: string; code?: string; thinkingLog?: string }) => ({
               id: String(b.id),
               title: b.title,
               summary: b.summary,
@@ -2061,6 +2109,9 @@ export function Overview() {
               agent: b.agent,
               agentRole: b.agentRole,
               dependsOn: b.dependsOn || [],
+              plan: b.plan,
+              code: b.code,
+              thinkingLog: b.thinkingLog,
             }))
             const allDone = updatedBuilds.every((b: { status: Status }) => b.status === 'complete' || b.status === 'failed')
             if (allDone) clearInterval(pollInterval)
@@ -2096,7 +2147,7 @@ export function Overview() {
       .then(r => r.json())
       .then(d => {
         if (!Array.isArray(d.projects)) return
-        setProjects(d.projects.map((p: { id: number; name: string; goal: string; status: string; lifecycle?: string; builds?: Array<{ id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[] }> }) => ({
+        setProjects(d.projects.map((p: { id: number; name: string; goal: string; status: string; lifecycle?: string; builds?: Array<{ id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[]; plan?: string; code?: string; thinkingLog?: string }> }) => ({
           id: String(p.id),
           name: p.name,
           goal: p.goal,
@@ -2112,6 +2163,9 @@ export function Overview() {
             agent: b.agent,
             agentRole: b.agentRole,
             dependsOn: b.dependsOn || [],
+            plan: b.plan,
+            code: b.code,
+            thinkingLog: b.thinkingLog,
           })),
         })))
       })
@@ -2227,6 +2281,53 @@ export function Overview() {
   useEffect(() => {
     if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages, expandedBuildId])
+
+  // Inject pending actions when builds complete
+  useEffect(() => {
+    projects.forEach(project => {
+      project.builds.forEach(build => {
+        if (build.status === 'complete') {
+          setPendingActions(prev => {
+            if (prev[build.id]?.length) return prev
+            return {
+              ...prev,
+              [build.id]: [
+                { id: `pa-${build.id}-test`, buildId: build.id, type: 'test' as const, label: 'Run test suite', description: `Generate and run unit tests for ${build.title}` },
+                { id: `pa-${build.id}-deploy`, buildId: build.id, type: 'deploy' as const, label: 'Deploy to preview', description: `Deploy ${build.title} to a live preview environment` },
+                { id: `pa-${build.id}-refactor`, buildId: build.id, type: 'refactor' as const, label: 'Optimize for production', description: `Refactor and optimize ${build.title} code` },
+              ],
+            }
+          })
+        }
+      })
+    })
+  }, [projects])
+
+  const approvePendingAction = useCallback(async (buildId: string, actionId: string) => {
+    const action = (pendingActions[buildId] || []).find(a => a.id === actionId)
+    if (!action) return
+    setPendingActions(prev => ({ ...prev, [buildId]: (prev[buildId] || []).filter(a => a.id !== actionId) }))
+    const now = new Date()
+    const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`
+    setChatMessages(prev => ({ ...prev, [buildId]: [...(prev[buildId] || []), { id: `u-${Date.now()}`, role: 'user' as const, content: `▶ ${action.label}`, time }] }))
+    const ownerProject = projects.find(p => p.builds.some(b => b.id === buildId))
+    if (!ownerProject) return
+    try {
+      const res = await fetch(`/api/projects/${ownerProject.id}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `Execute: ${action.label}. ${action.description}`, buildId, model: selectedModel }),
+      })
+      const data = await res.json()
+      const rNow = new Date()
+      const rTime = `${String(rNow.getHours()).padStart(2,'0')}:${String(rNow.getMinutes()).padStart(2,'0')}:${String(rNow.getSeconds()).padStart(2,'0')}`
+      setChatMessages(prev => ({ ...prev, [buildId]: [...(prev[buildId] || []), { id: `a-${Date.now()}`, role: 'agent' as const, content: data.message || 'On it.', time: rTime }] }))
+    } catch { /* ignore */ }
+  }, [pendingActions, projects, selectedModel])
+
+  const dismissPendingAction = useCallback((buildId: string, actionId: string) => {
+    setPendingActions(prev => ({ ...prev, [buildId]: (prev[buildId] || []).filter(a => a.id !== actionId) }))
+  }, [])
 
   const filteredProjects = useMemo(() => {
     const active = projects.filter(p => (projectLifecycles[p.id] || p.lifecycle) === 'active')
@@ -4557,6 +4658,33 @@ export function Overview() {
                         ))}
                         <div ref={chatEndRef} />
                       </div>
+                      <div style={{ flexShrink: 0 }}>
+                        {/* Pending Actions */}
+                        {(pendingActions[expandedBuild.build.id] || []).length > 0 && (
+                          <div style={{ padding: '10px 24px 0', borderTop: `1px solid ${c.border}` }}>
+                            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.2, color: '#f59e0b', marginBottom: 8, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>PENDING ACTIONS</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+                              {(pendingActions[expandedBuild.build.id] || []).map(action => {
+                                const typeColors = { test: '#818cf8', deploy: '#34d399', refactor: '#06b6d4', code: '#f59e0b', integration: '#f472b6' }
+                                const typeColor = typeColors[action.type] || '#9ca3af'
+                                return (
+                                  <div key={action.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#0c0f14', border: `1px solid ${typeColor}33`, borderRadius: 8, padding: '8px 12px' }}>
+                                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: typeColor, flexShrink: 0 }} />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ fontSize: 12, fontWeight: 600, color: '#e8eaed', fontFamily: 'Inter, system-ui, sans-serif' }}>{action.label}</div>
+                                      <div style={{ fontSize: 10, color: '#6b7280', fontFamily: 'Inter, system-ui, sans-serif', marginTop: 1 }}>{action.description}</div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                                      <button onClick={() => approvePendingAction(expandedBuild.build.id, action.id)} style={{ padding: '4px 10px', background: `${typeColor}18`, border: `1px solid ${typeColor}44`, borderRadius: 6, color: typeColor, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>Run</button>
+                                      <button onClick={() => dismissPendingAction(expandedBuild.build.id, action.id)} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid #1e2530', borderRadius: 6, color: '#6b7280', fontSize: 11, cursor: 'pointer' }}>✕</button>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <div style={{ padding: '12px 24px 20px', borderTop: `1px solid ${c.border}`, flexShrink: 0 }}>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center', position: 'relative' }}>
                           <button
@@ -4710,26 +4838,37 @@ export function Overview() {
                       </div>
                     </div>
                   ) : buildModalTab === 'code' ? (() => {
-                    const ctx = (expandedBuild.build.buildContext || 'backend') as string
-                    const snippets = CODE_SNIPPETS[ctx] || CODE_SNIPPETS.backend
+                    const buildCode = expandedBuild.build.code
+                    const buildPlan = expandedBuild.build.plan
+                    const isRunning = expandedBuild.build.status === 'running'
                     return (
                       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px' }}>
-                        <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
-                          <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 12 }}>CODE CHANGES</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            {snippets.map((s, si) => (
-                              <div key={si} style={{ background: '#0a0c10', border: `1px solid ${c.border}`, borderRadius: 8, overflow: 'hidden' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: `1px solid ${c.border}`, background: '#0e1116' }}>
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                                  <span style={{ fontSize: 12, color: '#f59e0b', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600 }}>{s.file}</span>
-                                </div>
-                                <div style={{ padding: '10px 12px', fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 12, color: '#b0b0b0', lineHeight: 1.7 }}>
-                                  {renderCodeLine(s.code, true)}
-                                </div>
-                              </div>
-                            ))}
+                        {buildCode ? (
+                          <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden', marginBottom: 14 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: `1px solid ${c.border}`, background: '#0e1116' }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                              <span style={{ fontSize: 12, color: '#f59e0b', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600, flex: 1 }}>{expandedBuild.build.title}.ts</span>
+                              <button
+                                onClick={() => navigator.clipboard.writeText(buildCode)}
+                                style={{ background: 'transparent', border: `1px solid ${c.border}`, borderRadius: 5, padding: '2px 8px', fontSize: 10, color: c.muted, cursor: 'pointer' }}
+                              >Copy</button>
+                            </div>
+                            <div style={{ background: '#0a0c10', padding: '10px 12px', fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 12, color: '#b0b0b0', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                              {buildCode}
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 32, marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: c.muted }}>
+                            {isRunning && <div style={{ width: 20, height: 20, borderRadius: 999, border: `2px solid ${sc}`, borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />}
+                            <span style={{ fontSize: 13 }}>{isRunning ? 'Agent is still generating code…' : 'No code generated yet'}</span>
+                          </div>
+                        )}
+                        {buildPlan && (
+                          <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14, marginBottom: 14 }}>
+                            <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>IMPLEMENTATION PLAN</div>
+                            <pre style={{ margin: 0, fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 12, color: '#b0b0b0', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{buildPlan}</pre>
+                          </div>
+                        )}
                         <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
                           <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>BUILD CONTEXT</div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -4753,28 +4892,16 @@ export function Overview() {
                             <div style={{ fontSize: 11, color: c.muted }}>{expandedBuild.build.agentRole}</div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          {[
-                            { phase: 'Analysis', text: `Reading project context and analyzing requirements for "${expandedBuild.build.title}"`, time: `${Math.round(expandedBuild.build.progress * 0.3)}s`, status: 'complete' as const },
-                            { phase: 'Planning', text: `Identified ${(expandedBuild.build.id.charCodeAt(0) % 4) + 2} sub-tasks. Determining optimal execution order and dependencies.`, time: `${Math.round(expandedBuild.build.progress * 0.2)}s`, status: 'complete' as const },
-                            { phase: 'Implementation', text: `Writing code across ${(expandedBuild.build.id.charCodeAt(0) % 5) + 2} files. ${expandedBuild.build.summary}`, time: `${Math.round(expandedBuild.build.progress * 0.7)}s`, status: expandedBuild.build.progress >= 60 ? 'complete' as const : 'running' as const },
-                            { phase: 'Verification', text: 'Running type checks, linting, and validating output against requirements.', time: `${Math.round(expandedBuild.build.progress * 0.4)}s`, status: expandedBuild.build.progress >= 85 ? 'complete' as const : expandedBuild.build.progress >= 60 ? 'running' as const : 'pending' as const },
-                          ].map((step, si) => (
-                            <div key={si} style={{ display: 'flex', gap: 12, padding: '10px 12px', background: '#0a0c10', borderRadius: 8, border: `1px solid ${step.status === 'running' ? `${sc}44` : c.border}` }}>
-                              <div style={{ width: 20, height: 20, borderRadius: 999, background: step.status === 'complete' ? `${sc}20` : step.status === 'running' ? '#f59e0b20' : '#33333320', border: `1px solid ${step.status === 'complete' ? sc : step.status === 'running' ? '#f59e0b' : '#444'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                                {step.status === 'complete' && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={sc} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                                {step.status === 'running' && <div style={{ width: 6, height: 6, borderRadius: 999, background: '#f59e0b', animation: 'subtle-glow 1s ease-in-out infinite' }} />}
-                              </div>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                                  <span style={{ fontSize: 12, fontWeight: 700, color: step.status === 'pending' ? '#555' : c.text }}>{step.phase}</span>
-                                  <span style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{step.time}</span>
-                                </div>
-                                <div style={{ fontSize: 11, color: step.status === 'pending' ? '#555' : c.muted, lineHeight: 1.5 }}>{step.text}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                        {expandedBuild.build.thinkingLog ? (
+                          <div style={{ background: '#0a0c10', borderRadius: 8, padding: '10px 12px', fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 12, color: '#b0b0b0', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 400, overflowY: 'auto' }}>
+                            {expandedBuild.build.thinkingLog}
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0', color: c.muted, fontSize: 12 }}>
+                            {expandedBuild.build.status === 'running' && <div style={{ width: 10, height: 10, borderRadius: 999, background: sc, animation: 'subtle-glow 1s ease-in-out infinite', flexShrink: 0 }} />}
+                            <span>{expandedBuild.build.status === 'running' ? 'Agent thinking in progress…' : 'No thinking log available'}</span>
+                          </div>
+                        )}
                       </div>
                       <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
                         <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>STATUS</div>
