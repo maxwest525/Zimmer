@@ -83,7 +83,25 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
       seenIds.add(server.id);
       const before = prev.get(server.id);
       if (server.status === "connected") {
-        // Recovered (or healthy): allow a future outage to alert again.
+        // Recovered: only notify if we previously alerted that it went down.
+        if (before === "error" && alertedRef.current.has(server.id)) {
+          const brand = resolveMcpBrand(server.name, server.endpoint);
+          toast({
+            title: (
+              <span className="flex items-center gap-2">
+                <CompanyLogo name={brand.label} info={brand.info} size={16} />
+                {`${brand.label} is back online`}
+              </span>
+            ),
+            description: "The connection recovered. Its tools are available again.",
+            action: onViewMcpRef.current ? (
+              <ToastAction altText="View MCP servers" onClick={() => onViewMcpRef.current?.()}>
+                View
+              </ToastAction>
+            ) : undefined,
+          });
+        }
+        // Allow a future outage to alert again.
         alertedRef.current.delete(server.id);
       } else if (
         server.status === "error" &&
