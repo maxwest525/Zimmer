@@ -2337,9 +2337,6 @@ export function Overview() {
     if (promptMode === 'mvp') { enhanceRawInput('mvp'); return }
     createProject(rawInput.trim())
   }, [rawInput, promptMode, openClarifyWizard, enhanceRawInput, createProject])
-    setRawInput('')
-    setReferencedFiles([])
-  }, [rawInput, promptMode, openClarifyWizard, enhanceRawInput])
 
   const handleClarifyAnswer = useCallback((answer: string) => {
     const newHistory = [...clarifyHistory, { question: clarifyQuestion, answer }]
@@ -2348,33 +2345,7 @@ export function Overview() {
     fetchClarifyQuestion(rawInput, newHistory)
   }, [clarifyHistory, clarifyQuestion, rawInput, fetchClarifyQuestion])
 
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: 'p1',
-      name: 'Preview 1',
-      goal: 'Automated trading bot with dashboard, risk controls, and alerts',
-      status: 'running',
-      lifecycle: 'active',
-      builds: [
-        { id: 'core-engine', title: 'Core Engine', summary: 'Strategy loop, execution logic, and order handling', status: 'running', progress: 58, stack: ['Claude', 'Claude Code', 'APIs'], agent: 'System Builder', agentRole: 'Backend Architect', buildContext: 'backend' },
-        { id: 'risk-module', title: 'Risk Module', summary: 'Position sizing, loss limits, and safety rules', status: 'running', progress: 46, stack: ['GPT-4o', 'Claude Code'], agent: 'Risk Agent', agentRole: 'Safety Engineer', dependsOn: ['core-engine'], buildContext: 'backend' },
-        { id: 'dashboard-ui', title: 'Dashboard UI', summary: 'Bot controls, positions, and performance views', status: 'queued', progress: 14, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'UI Agent', agentRole: 'Frontend Designer', dependsOn: ['core-engine', 'risk-module'], buildContext: 'ui' },
-        { id: 'alerts', title: 'Alerts', summary: 'Slack, email, and critical event notifications', status: 'complete', progress: 100, stack: ['Mistral', 'n8n', 'APIs'], agent: 'Ops Agent', agentRole: 'DevOps Engineer', dependsOn: ['core-engine'], buildContext: 'automation' },
-        { id: 'backtester', title: 'Backtester', summary: 'Historical simulation engine and result reporter', status: 'queued', progress: 0, stack: ['Claude', 'Claude Code', 'Gemini'], agent: 'Data Agent', agentRole: 'Data Engineer', dependsOn: ['core-engine'], buildContext: 'backend' },
-      ],
-    },
-    {
-      id: 'p2',
-      name: 'Preview 2',
-      goal: 'Homepage, funnel, API settings, and workflow pages',
-      status: 'running',
-      lifecycle: 'active',
-      builds: [
-        { id: 'homepage', title: 'Homepage', summary: 'Main marketing page and product explanation', status: 'running', progress: 71, stack: ['Claude', 'Lovable', 'Bolt'], agent: 'UI Agent', agentRole: 'Frontend Designer', buildContext: 'ui' },
-        { id: 'api-settings', title: 'API Settings', summary: 'Provider cards, keys, and connection states', status: 'queued', progress: 24, stack: ['Claude', 'Replit', 'Cursor'], agent: 'Settings Agent', agentRole: 'Integration Engineer', dependsOn: ['homepage'], buildContext: 'backend' },
-      ],
-    },
-  ])
+  const [projects, setProjects] = useState<Project[]>([])
 
   useEffect(() => {
     fetch('/api/projects')
@@ -2415,70 +2386,8 @@ export function Overview() {
     }
   }, [selectedTenantId, projects, selectedProjectId])
 
-  // Live progress simulation
-  useEffect(() => {
-    const t = setInterval(() => {
-      setProjects(cur => cur.map(project => {
-        const builds = project.builds.map(b => {
-          if (b.status !== 'running') return b
-          const next = Math.min(b.progress + Math.floor(Math.random() * 7) + 1, 100)
-          return { ...b, progress: next, status: (next >= 100 ? 'complete' : 'running') as Status }
-        })
-        const hasRunning = builds.some(b => b.status === 'running')
-        const firstQueued = builds.findIndex(b => b.status === 'queued')
-        if (!hasRunning && firstQueued !== -1) {
-          builds[firstQueued] = { ...builds[firstQueued], status: 'running', progress: Math.max(builds[firstQueued].progress, 12) }
-        }
-        const overall: Status = builds.every(b => b.status === 'complete') ? 'complete'
-          : builds.some(b => b.status === 'running') ? 'running'
-          : builds.some(b => b.status === 'queued') ? 'queued'
-          : project.status
-        return { ...project, status: overall, builds }
-      }))
-    }, 1800)
-    return () => clearInterval(t)
-  }, [])
 
   const agentResponses: Record<string, string[]> = {
-    'core-engine': [
-      'Understood. I\'ll update the strategy loop to handle that. Give me a moment to refactor the dispatch layer.',
-      'Good call. I\'ve added that to the engine config. The change will propagate to all downstream modules.',
-      'Working on it now. I\'ll push the update once the type checks pass.',
-    ],
-    'risk-module': [
-      'Adjusting the risk parameters now. I\'ll run a backtest simulation to validate the change.',
-      'That makes sense from a risk perspective. Updating the position sizing formula.',
-      'Noted. I\'ll tighten the safety constraints and add an alert threshold.',
-    ],
-    'dashboard-ui': [
-      'I\'ll update the layout to reflect that. Should have a preview ready in a minute.',
-      'Good feedback. Tweaking the component hierarchy and re-rendering the chart panel.',
-      'On it. I\'ll adjust the color scheme and spacing to match your vision.',
-    ],
-    'alerts': [
-      'Adding that notification channel now. I\'ll wire it into the existing n8n workflow.',
-      'Done. The alert trigger is configured and will fire on the conditions you specified.',
-    ],
-    'backtester': [
-      'I\'ll incorporate that into the simulation parameters once the engine stabilizes.',
-      'Noted. That will be part of the backtester\'s configuration panel.',
-    ],
-    'homepage': [
-      'Great idea. I\'ll update the hero section and push a new preview.',
-      'Adjusting the copy and layout now. The feature cards will reflect this.',
-    ],
-    'api-settings': [
-      'I\'ll add that provider to the settings panel with a test connection button.',
-      'Updating the API configuration flow. Give me a moment.',
-    ],
-    'crawler': [
-      'Adjusting the crawl pipeline. I\'ll add that to the retry logic.',
-      'Good point. I\'ll update the rate limiter to handle that edge case.',
-    ],
-    'scheduler': [
-      'I\'ll configure the schedule once the crawler pipeline is ready.',
-      'Noted. That will be part of the export workflow configuration.',
-    ],
   }
 
   const sendChatMessage = async (buildId: string) => {
@@ -2860,7 +2769,6 @@ export function Overview() {
               { label: 'Integrations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>, view: 'integrations' as const, path: '' },
               { label: 'Current Projects', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, view: 'currentProjects' as const, path: '' },
               { label: 'Published', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>, view: 'published' as const, path: '' },
-            ] as Array<{ label: string; icon: React.ReactNode; view?: string; path?: string }>).map(item => {
             ] as NavItem[]).map(item => {
               const active = item.view ? activeView === item.view : false
               const clickable = !!item.view || !!item.path
