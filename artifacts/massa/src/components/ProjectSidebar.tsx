@@ -298,7 +298,7 @@ export function ProjectSidebar({
             <>
               <span className="flex-1 text-left">Completed Products</span>
               {completedProducts.length > 0 && (
-                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 rounded-full">
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 rounded-md">
                   {completedProducts.length}
                 </span>
               )}

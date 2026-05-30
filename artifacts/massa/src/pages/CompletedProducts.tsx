@@ -217,13 +217,13 @@ function PublishStep({
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-medium">Publish</span>
           {product.publishStatus === "live" && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-foreground rounded-full">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-foreground rounded-md">
               <span className="w-1.5 h-1.5 bg-foreground rounded-full" />
               Live
             </span>
           )}
           {product.publishStatus === "publishing" && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground rounded-full">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground rounded-md">
               <Loader2 className="w-2.5 h-2.5 animate-spin" />
               Publishing
             </span>
@@ -501,7 +501,7 @@ export function CompletedProducts() {
                   background: activeTab === tab.key ? c.greenSoft : 'rgba(107,114,128,0.12)',
                   color: activeTab === tab.key ? c.green : c.muted,
                   padding: '1px 5px',
-                  borderRadius: 999,
+                  borderRadius: 6,
                 }}>{tabCounts[tab.key]}</span>
               )}
             </button>

@@ -310,7 +310,7 @@ export function ChatView({ projects, selectedBuildId, onSelectBuild, messages, o
                 <div style={{ fontSize: 12, color: c.muted, fontFamily: c.fontSans }}>{activeBuild.build.title} · {activeBuild.project.name}</div>
               </div>
               {activeBuild.build.agentRole && (
-                <span style={{ fontSize: 11, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}44`, padding: '2px 8px', borderRadius: 999, fontWeight: 600, marginLeft: 'auto', fontFamily: c.font }}>{activeBuild.build.agentRole}</span>
+                <span style={{ fontSize: 11, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}44`, padding: '2px 8px', borderRadius: 6, fontWeight: 600, marginLeft: 'auto', fontFamily: c.font }}>{activeBuild.build.agentRole}</span>
               )}
             </div>
 

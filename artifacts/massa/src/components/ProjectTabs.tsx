@@ -47,7 +47,7 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
                 const brand = resolveMcpBrand(s.name, s.endpoint);
                 return <CompanyLogo key={s.id} name={brand.label} info={brand.info} size={14} />;
               })}
-              <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500/20 text-red-400 text-[9px] font-mono leading-none">
+              <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-md bg-red-500/20 text-red-400 text-[9px] font-mono leading-none">
                 {errorCount}
               </span>
             </span>

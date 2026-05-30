@@ -202,7 +202,7 @@ export function InsideMassa() {
 
           {/* HERO */}
           <div style={{ marginBottom: 36 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${c.border}`, background: c.soft, color: c.green, borderRadius: 999, padding: '4px 12px', fontSize: 11, fontWeight: 700, letterSpacing: 1, marginBottom: 14, fontFamily: c.font }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${c.border}`, background: c.soft, color: c.green, borderRadius: 6, padding: '4px 12px', fontSize: 11, fontWeight: 700, letterSpacing: 1, marginBottom: 14, fontFamily: c.font }}>
               INSIDE MASSA
             </div>
             <h1 style={{ margin: '0 0 10px', fontSize: 32, fontWeight: 800, lineHeight: 1.15, fontFamily: c.font, background: `linear-gradient(135deg, ${c.text} 0%, ${c.green} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>One click to install. Everything runs automatically.</h1>
@@ -361,7 +361,7 @@ export function InsideMassa() {
                         fontSize: 11,
                         border: `1px solid ${c.border}`,
                         padding: '2px 7px',
-                        borderRadius: 999,
+                        borderRadius: 6,
                         color: c.muted,
                         background: c.panel,
                         fontWeight: 500,
@@ -479,7 +479,7 @@ export function InsideMassa() {
                           color: c.green,
                           border: `1px solid ${c.border}`,
                           padding: '2px 7px',
-                          borderRadius: 999,
+                          borderRadius: 6,
                           fontWeight: 600,
                           fontFamily: c.font,
                         }}>{u}</span>
@@ -507,7 +507,7 @@ export function InsideMassa() {
                           color: c.green,
                           border: `1px solid ${c.border}`,
                           padding: '2px 7px',
-                          borderRadius: 999,
+                          borderRadius: 6,
                           fontWeight: 600,
                           fontFamily: c.font,
                         }}>{u}</span>

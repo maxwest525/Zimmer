@@ -88,23 +88,23 @@ function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: 
   const pad = size === 'lg' ? '5px 12px' : '3px 8px'
   const iconSize = size === 'lg' ? 12 : 10
   if (status === 'running') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#e8eaed', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', padding: pad, borderRadius: 999, fontWeight: 600, boxShadow: '0 0 6px rgba(52,211,153,0.15)' }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#e8eaed', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', padding: pad, borderRadius: 6, fontWeight: 600, boxShadow: '0 0 6px rgba(52,211,153,0.15)' }}>
       <span style={{ display: 'inline-flex', flexShrink: 0, color: '#34d399' }}>{getPhaseIcon('building', iconSize)}</span>
       Building
     </span>
   )
   if (status === 'queued') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f59e0b', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f59e0b', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', padding: pad, borderRadius: 6, fontWeight: 600 }}>
       <span style={{ display: 'inline-flex', flexShrink: 0, color: '#f59e0b' }}>{getPhaseIcon('queued', iconSize)}</span> Pending
     </span>
   )
   if (status === 'complete') return null
   if (status === 'failed') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f87171', background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.25)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#f87171', background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.25)', padding: pad, borderRadius: 6, fontWeight: 600 }}>
       <span style={{ display: 'inline-flex', flexShrink: 0, color: '#f87171' }}>{getActionIcon('fix-error', iconSize)}</span> Failed
     </span>
   )
-  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#9ca3af', background: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', padding: pad, borderRadius: 999, fontWeight: 600 }}>
+  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#9ca3af', background: 'rgba(107,114,128,0.08)', border: '1px solid rgba(107,114,128,0.15)', padding: pad, borderRadius: 6, fontWeight: 600 }}>
     <span style={{ display: 'inline-flex', flexShrink: 0, color: '#9ca3af' }}>{getPhaseIcon('queued', iconSize)}</span> Idle
   </span>
 }
@@ -1240,7 +1240,7 @@ function MarketingView({ onBack }: { onBack: () => void }) {
                   <div style={{ width: 38, height: 38, borderRadius: 10, background: `${engineStatusColors[eng.status]}18`, border: `1px solid ${engineStatusColors[eng.status]}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: engineStatusColors[eng.status], fontWeight: 800, fontSize: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>{eng.name.charAt(0)}</div>
                   <span style={{ color: c.text, fontWeight: 700, fontSize: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>{eng.name}</span>
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: engineStatusColors[eng.status], background: `${engineStatusColors[eng.status]}12`, padding: '4px 10px', borderRadius: 999, fontFamily: 'Inter, system-ui, sans-serif' }}>{engineStatusLabels[eng.status]}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: engineStatusColors[eng.status], background: `${engineStatusColors[eng.status]}12`, padding: '4px 10px', borderRadius: 6, fontFamily: 'Inter, system-ui, sans-serif' }}>{engineStatusLabels[eng.status]}</span>
               </div>
               <div style={{ color: c.muted, fontSize: 13, lineHeight: 1.55, fontFamily: 'Inter, system-ui, sans-serif' }}>{eng.tagline}</div>
               {eng.name === 'Autonomous Loop' && (
@@ -1321,7 +1321,7 @@ function MarketingView({ onBack }: { onBack: () => void }) {
                       <span style={{ fontSize: 18 }}>{categoryIcons[cat.name]}</span>
                       <span style={{ color: c.text, fontWeight: 700, fontSize: 13, fontFamily: 'Inter, system-ui, sans-serif' }}>{cat.name}</span>
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: statusColors[cat.status], background: `${statusColors[cat.status]}12`, padding: '3px 8px', borderRadius: 999, fontFamily: 'Inter, system-ui, sans-serif' }}>{statusLabels[cat.status]}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: statusColors[cat.status], background: `${statusColors[cat.status]}12`, padding: '3px 8px', borderRadius: 6, fontFamily: 'Inter, system-ui, sans-serif' }}>{statusLabels[cat.status]}</span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {cat.integrations.map(integ => (
@@ -2629,7 +2629,7 @@ export function Overview() {
                 {referencedFiles.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 14px 10px 32px' }}>
                     {referencedFiles.map(f => (
-                      <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)', color: '#34d399', borderRadius: 999, padding: '3px 6px 3px 10px', fontSize: 11, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                      <span key={f.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.25)', color: '#34d399', borderRadius: 6, padding: '3px 6px 3px 10px', fontSize: 11, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
                         @{f.name}
                         <button onClick={() => toggleReference(f)} title="Remove reference" style={{ background: 'transparent', border: 'none', color: '#34d399', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', opacity: 0.7 }}>
@@ -2656,7 +2656,7 @@ export function Overview() {
                           }}
                           onMouseEnter={e => { e.currentTarget.style.background = '#141e18'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.4)'; e.currentTarget.style.color = '#34d399' }}
                           onMouseLeave={e => { e.currentTarget.style.background = '#0c0f14'; e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = '#d1d5db' }}
-                          style={{ background: '#0c0f14', border: `1px solid ${c.border}`, borderRadius: 999, padding: '4px 12px', fontSize: 11, color: '#d1d5db', cursor: 'pointer', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s ease', whiteSpace: 'nowrap', animation: `suggestion-slide-in 0.2s ease ${i * 0.04}s both` }}>
+                          style={{ background: '#0c0f14', border: `1px solid ${c.border}`, borderRadius: 6, padding: '4px 12px', fontSize: 11, color: '#d1d5db', cursor: 'pointer', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.15s ease', whiteSpace: 'nowrap', animation: `suggestion-slide-in 0.2s ease ${i * 0.04}s both` }}>
                           {word}
                         </button>
                       ))
@@ -2872,7 +2872,7 @@ export function Overview() {
                                 onClick={e => { e.stopPropagation(); setDismissedSuggestions(prev => new Set(prev).add(s)) }}
                                 onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.1)' }}
                                 onMouseLeave={e => { e.currentTarget.style.color = '#4b5563'; e.currentTarget.style.background = 'transparent' }}
-                                style={{ background: 'transparent', border: 'none', color: '#4b5563', cursor: 'pointer', padding: '1px 3px', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s ease', lineHeight: 1, marginTop: 2 }}
+                                style={{ background: 'transparent', border: 'none', color: '#4b5563', cursor: 'pointer', padding: '1px 3px', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s ease', lineHeight: 1, marginTop: 2 }}
                               >
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                               </button>
@@ -3309,7 +3309,7 @@ export function Overview() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: 0.1, color: c.text }}>{project.name}</div>
-                          {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 999 }}>Active</span>}
+                          {isSel && <span style={{ fontSize: 10, fontWeight: 700, color: c.green, background: c.greenSoft, border: `1px solid ${c.green}`, padding: '2px 6px', borderRadius: 6 }}>Active</span>}
                           <span style={{ fontSize: 10, color: c.muted }}>{project.builds.length} builds · {project.builds.filter(b => b.status === 'complete').length} done</span>
                         </div>
                         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
@@ -4472,7 +4472,7 @@ export function Overview() {
                         <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 14 }}>
                           <div style={{ fontSize: 10, color: c.muted, fontWeight: 700, letterSpacing: 0.8, marginBottom: 10 }}>STACK</div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                            {expandedBuild.build.stack.map(s => <ModelTooltip key={s} text={getModelReason(s, expandedBuild.build.buildContext)}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.border)}44`, padding: '4px 10px', borderRadius: 999, color: '#ffffff', background: SKILL_COLORS[s] || c.green, cursor: 'default' }}><InlineCompanyLogo name={s} size={14} />{s}</span></ModelTooltip>)}
+                            {expandedBuild.build.stack.map(s => <ModelTooltip key={s} text={getModelReason(s, expandedBuild.build.buildContext)}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, border: `1px solid ${(SKILL_COLORS[s] || c.green)}44`, padding: '4px 10px', borderRadius: 6, color: SKILL_COLORS[s] || c.green, background: `${SKILL_COLORS[s] || c.green}1a`, cursor: 'default' }}><InlineCompanyLogo name={s} size={14} />{s}</span></ModelTooltip>)}
                           </div>
                         </div>
                       </div>
