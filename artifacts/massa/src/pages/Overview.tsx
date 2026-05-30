@@ -1881,12 +1881,81 @@ export function Overview() {
     return () => { aborted = true }
   }, [])
 
+  const createProject = useCallback(async (prompt: string, clarifications?: {question: string; answer: string}[]) => {
+    setRawInput('')
+    setShowClarifyModal(false)
+    setClarifyHistory([])
+    setClarifyDone(false)
+    setClarifySummary('')
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, clarifications: clarifications || [], model: selectedModel }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.project) return
+      const p = data.project
+      const newProject: Project = {
+        id: String(p.id),
+        name: p.name,
+        goal: p.goal,
+        status: 'running',
+        lifecycle: 'active',
+        builds: (p.builds || []).map((b: { id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[] }) => ({
+          id: String(b.id),
+          title: b.title,
+          summary: b.summary,
+          status: (b.status === 'completed' ? 'complete' : b.status === 'in_progress' ? 'running' : b.status) as Status,
+          progress: b.progress,
+          stack: b.stack || [],
+          agent: b.agent,
+          agentRole: b.agentRole,
+          dependsOn: b.dependsOn || [],
+        })),
+      }
+      setProjects(prev => [newProject, ...prev])
+      setSelectedProjectId(String(p.id))
+
+      // Poll for build completion every 5 seconds
+      const pollInterval = setInterval(async () => {
+        try {
+          const r = await fetch(`/api/projects/${p.id}`)
+          const d = await r.json()
+          if (!d.project) return
+          const updated = d.project
+          setProjects(prev => prev.map(proj => {
+            if (proj.id !== String(updated.id)) return proj
+            const updatedBuilds = (updated.builds || []).map((b: { id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[] }) => ({
+              id: String(b.id),
+              title: b.title,
+              summary: b.summary,
+              status: (b.status === 'completed' ? 'complete' : b.status === 'in_progress' ? 'running' : b.status) as Status,
+              progress: b.progress,
+              stack: b.stack || [],
+              agent: b.agent,
+              agentRole: b.agentRole,
+              dependsOn: b.dependsOn || [],
+            }))
+            const allDone = updatedBuilds.every((b: { status: Status }) => b.status === 'complete' || b.status === 'failed')
+            if (allDone) clearInterval(pollInterval)
+            return {
+              ...proj,
+              status: (updated.status === 'completed' ? 'complete' : updated.status === 'in_progress' ? 'running' : updated.status) as Status,
+              builds: updatedBuilds,
+            }
+          }))
+        } catch { /* ignore */ }
+      }, 5000)
+    } catch { /* ignore */ }
+  }, [selectedModel])
+
   const handleExecute = useCallback(() => {
     if (rawInput.trim().length === 0) return
     if (promptMode === 'nebulous') { openClarifyWizard(); return }
     if (promptMode === 'mvp') { enhanceRawInput('mvp'); return }
-    setRawInput('')
-  }, [rawInput, promptMode, openClarifyWizard, enhanceRawInput])
+    createProject(rawInput.trim())
+  }, [rawInput, promptMode, openClarifyWizard, enhanceRawInput, createProject])
 
   const handleClarifyAnswer = useCallback((answer: string) => {
     const newHistory = [...clarifyHistory, { question: clarifyQuestion, answer }]
@@ -1896,6 +1965,33 @@ export function Overview() {
   }, [clarifyHistory, clarifyQuestion, rawInput, fetchClarifyQuestion])
 
   const [projects, setProjects] = useState<Project[]>([])
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(d => {
+        if (!Array.isArray(d.projects)) return
+        setProjects(d.projects.map((p: { id: number; name: string; goal: string; status: string; lifecycle?: string; builds?: Array<{ id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[] }> }) => ({
+          id: String(p.id),
+          name: p.name,
+          goal: p.goal,
+          status: (p.status === 'completed' ? 'complete' : p.status === 'in_progress' ? 'running' : p.status) as Status,
+          lifecycle: (p.lifecycle || 'active') as Project['lifecycle'],
+          builds: (p.builds || []).map(b => ({
+            id: String(b.id),
+            title: b.title,
+            summary: b.summary,
+            status: (b.status === 'completed' ? 'complete' : b.status === 'in_progress' ? 'running' : b.status) as Status,
+            progress: b.progress,
+            stack: b.stack || [],
+            agent: b.agent,
+            agentRole: b.agentRole,
+            dependsOn: b.dependsOn || [],
+          })),
+        })))
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (selectedTenantId) {
@@ -1972,20 +2068,35 @@ export function Overview() {
     ],
   }
 
-  const sendChatMessage = (buildId: string) => {
+  const sendChatMessage = async (buildId: string) => {
     if (!chatInput.trim()) return
     const now = new Date()
     const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`
     const userMsg = { id: `u-${Date.now()}`, role: 'user' as const, content: chatInput, time }
     setChatMessages(prev => ({ ...prev, [buildId]: [...(prev[buildId] || []), userMsg] }))
+    const msgText = chatInput
     setChatInput('')
-    setTimeout(() => {
-      const responses = agentResponses[buildId] || ['Understood. Working on that now.']
-      const response = responses[Math.floor(Math.random() * responses.length)]
+
+    // Find which project owns this build
+    const ownerProject = projects.find(p => p.builds.some(b => b.id === buildId))
+    if (!ownerProject) return
+
+    try {
+      const res = await fetch(`/api/projects/${ownerProject.id}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msgText, buildId, model: selectedModel }),
+      })
+      const data = await res.json()
+      const response = data.message || 'Understood. Working on that now.'
       const rNow = new Date()
       const rTime = `${String(rNow.getHours()).padStart(2,'0')}:${String(rNow.getMinutes()).padStart(2,'0')}:${String(rNow.getSeconds()).padStart(2,'0')}`
       setChatMessages(prev => ({ ...prev, [buildId]: [...(prev[buildId] || []), { id: `a-${Date.now()}`, role: 'agent', content: response, time: rTime }] }))
-    }, 800 + Math.random() * 1200)
+    } catch {
+      const rNow = new Date()
+      const rTime = `${String(rNow.getHours()).padStart(2,'0')}:${String(rNow.getMinutes()).padStart(2,'0')}:${String(rNow.getSeconds()).padStart(2,'0')}`
+      setChatMessages(prev => ({ ...prev, [buildId]: [...(prev[buildId] || []), { id: `a-${Date.now()}`, role: 'agent', content: 'Understood. Working on that now.', time: rTime }] }))
+    }
   }
 
   useEffect(() => {
@@ -4749,7 +4860,7 @@ export function Overview() {
                     </div>
                   )}
                   <button
-                    onClick={() => setShowClarifyModal(false)}
+                    onClick={() => createProject(rawInput.trim(), clarifyHistory)}
                     onMouseEnter={e => { e.currentTarget.style.background = '#141e14'; e.currentTarget.style.boxShadow = '0 0 20px rgba(52,211,153,0.15)' }}
                     onMouseLeave={e => { e.currentTarget.style.background = '#0c1210'; e.currentTarget.style.boxShadow = 'none' }}
                     style={{ width: '100%', background: '#0c1210', color: '#34d399', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 8, padding: '10px 0', fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: '"JetBrains Mono", Menlo, monospace', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
