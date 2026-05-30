@@ -717,27 +717,6 @@ function PreviewThumbnail({ buildId, buildType, sc, size = 'normal' }: { buildId
   )
 }
 
-function Ticker<T extends { key: string }>({ lines, render }: { lines: T[]; render: (item: T) => React.ReactNode }) {
-  const [idx, setIdx] = useState(0)
-  useEffect(() => {
-    if (lines.length <= 1) return
-    const t = setInterval(() => setIdx(i => (i + 1) % lines.length), 3200)
-    return () => clearInterval(t)
-  }, [lines.length])
-  if (lines.length === 0) return null
-  return <>{render(lines[idx % lines.length])}</>
-}
-
-function getThinkingLines(builds: Build[]): { key: string; agent: string; text: string }[] {
-  return builds
-    .filter(b => b.status === 'running')
-    .map(b => ({
-      key: b.id,
-      agent: b.agent,
-      text: getInlineStatus(b),
-    }))
-}
-
 const CODE_SNIPPETS: Record<string, { file: string; code: string }[]> = {
   backend: [
     { file: 'src/api/client.ts:88', code: 'const res = await fetch(`${B...' },
@@ -753,15 +732,6 @@ const CODE_SNIPPETS: Record<string, { file: string; code: string }[]> = {
     { file: 'src/workflows/notify.ts:15', code: 'await slack.send({ channel, text: alert })' },
     { file: 'src/jobs/scheduler.ts:22', code: 'cron.schedule("0 */6 * * *", async () => {' },
   ],
-}
-
-function getCodeStreamLines(builds: Build[]): { key: string; file: string; code: string }[] {
-  return builds.map(b => {
-    const ctx = (b.buildContext || 'backend') as string
-    const snippets = CODE_SNIPPETS[ctx] || CODE_SNIPPETS.backend
-    const snippet = snippets[Math.abs(b.id.charCodeAt(0)) % snippets.length]
-    return { key: b.id, file: snippet.file, code: snippet.code }
-  })
 }
 
 function getInlineStatus(build: { id: string; status: Status; progress: number; title: string; stack: string[] }): string {
@@ -2981,8 +2951,6 @@ export function Overview() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
             {filteredProjects.map((project, pi) => {
               const isSel = selectedProjectId === project.id
-              const thinkingLines = getThinkingLines(project.builds)
-              const codeStreamLines = getCodeStreamLines(project.builds)
               const isPendingOpen = pendingDropdown === project.id
               const allBuilds = project.builds
 
@@ -3321,26 +3289,6 @@ export function Overview() {
                             </div>
                           )
                         })()}
-
-                        {thinkingLines.length > 0 && (
-                          <Ticker lines={thinkingLines} render={(line) => (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 4 }}>
-                              <span style={{ display: 'inline-flex', flexShrink: 0, color: '#a78bfa' }}><ThinkingIcon size={10} /></span>
-                              <span style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.agent}</span>
-                              <span style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.text}</span>
-                            </div>
-                          )} />
-                        )}
-
-                        {codeStreamLines.length > 0 && (
-                          <Ticker lines={codeStreamLines} render={(line) => (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: '#080808', borderRadius: 4, border: `1px solid ${c.border}`, overflow: 'hidden', marginBottom: 6 }}>
-                              <span style={{ display: 'inline-flex', flexShrink: 0, color: '#34d399' }}><BuildingIcon size={10} /></span>
-                              <span style={{ fontSize: 10, color: '#f59e0b88', fontFamily: '"JetBrains Mono", Menlo, monospace', flexShrink: 0 }}>{line.file}</span>
-                              <span style={{ fontSize: 10, color: '#444', fontFamily: '"JetBrains Mono", Menlo, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{line.code}</span>
-                            </div>
-                          )} />
-                        )}
 
                       </div>
 
