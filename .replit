@@ -1,5 +1,17 @@
 modules = ["nodejs-24", "python-3.11"]
 
+[[ports]]
+localPort = 23220
+externalPort = 80
+
+[[ports]]
+localPort = 8080
+externalPort = 3000
+
+[[ports]]
+localPort = 8081
+externalPort = 3001
+
 [[artifacts]]
 id = "artifacts/api-server"
 
