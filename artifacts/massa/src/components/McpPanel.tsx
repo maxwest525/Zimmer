@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useMcp, type McpServer, type McpStatusEvent } from "@/contexts/McpContext";
-import { CompanyLogo } from "@/components/CompanyLogo";
-import { resolveMcpBrand } from "@/lib/logos";
+import { CompanyLogo, preloadLogo } from "@/components/CompanyLogo";
+import { resolveMcpBrand, CURATED_MCP_CONNECTORS } from "@/lib/logos";
 
 function timeAgo(iso: string): string {
   const then = new Date(iso).getTime();
@@ -64,6 +64,16 @@ export function McpPanel() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [openTool, setOpenTool] = useState<string | null>(null);
   const [toolRuns, setToolRuns] = useState<Record<string, ToolRunState>>({});
+
+  // When the Add Server form opens, pre-warm the curated connectors' logos so
+  // their brand images render instantly without a Clearbit round-trip or a
+  // fallback flash the first time the picker is shown.
+  useEffect(() => {
+    if (!showForm) return;
+    for (const connector of CURATED_MCP_CONNECTORS) {
+      preloadLogo(resolveMcpBrand(connector).info);
+    }
+  }, [showForm]);
 
   const toolKey = (serverId: number, toolName: string) => `${serverId}:${toolName}`;
 
