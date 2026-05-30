@@ -23,6 +23,70 @@ const N8N_FALLBACK = toDataUrl(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a0b08"/><circle cx="6" cy="6" r="2.5" fill="#ff6d5a"/><circle cx="18" cy="6" r="2.5" fill="#ff6d5a"/><circle cx="6" cy="18" r="2.5" fill="#ff6d5a"/><circle cx="18" cy="18" r="2.5" fill="#ff6d5a"/><line x1="6" y1="6" x2="18" y2="6" stroke="#ff6d5a" stroke-width="1.5"/><line x1="6" y1="18" x2="18" y2="18" stroke="#ff6d5a" stroke-width="1.5"/><line x1="6" y1="6" x2="6" y2="18" stroke="#ff6d5a" stroke-width="1.5"/><line x1="18" y1="6" x2="18" y2="18" stroke="#ff6d5a" stroke-width="1.5"/></svg>`
 )
 
+const GITHUB_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0d1117"/><path fill="#e6edf3" d="M12 4a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.23 1.87.87 2.33.67.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.83-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.22 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.52.56.83 1.28.83 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 12 4z"/></svg>`
+)
+
+const GITLAB_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a0f0a"/><path fill="#fc6d26" d="M12 20.5 4.3 11h15.4z"/><path fill="#e24329" d="M4.3 11 6 5l2 6zM19.7 11 18 5l-2 6z"/></svg>`
+)
+
+const SLACK_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a1019"/><path fill="#36c5f0" d="M9.5 12a1.5 1.5 0 1 1-1.5-1.5h1.5zm.8 0a1.5 1.5 0 0 1 3 0v3.8a1.5 1.5 0 0 1-3 0z"/><path fill="#2eb67d" d="M12 9.5A1.5 1.5 0 1 1 13.5 8v1.5zm0 .8a1.5 1.5 0 0 1 0 3H8.2a1.5 1.5 0 0 1 0-3z"/><path fill="#ecb22e" d="M14.5 12A1.5 1.5 0 1 1 16 13.5h-1.5zm-.8 0a1.5 1.5 0 0 1-3 0V8.2a1.5 1.5 0 0 1 3 0z"/><path fill="#e01e5a" d="M12 14.5A1.5 1.5 0 1 1 10.5 16v-1.5zm0-.8a1.5 1.5 0 0 1 0-3h3.8a1.5 1.5 0 0 1 0 3z"/></svg>`
+)
+
+const NOTION_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#ffffff"/><path d="M8 17V7l8 10V7" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+)
+
+const LINEAR_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0d0e16"/><path fill="#5e6ad2" d="M5 14.5 9.5 19A7 7 0 0 1 5 14.5zm-.4-2.2A7 7 0 0 1 11.7 4.6L19.4 12.3A7 7 0 0 1 11.7 19.4zM6 8.6 15.4 18a7 7 0 0 0 1.4-1L7 7.2A7 7 0 0 0 6 8.6z"/></svg>`
+)
+
+const STRIPE_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#635bff"/><path fill="#ffffff" d="M11.5 9.6c0-.5.4-.7 1-.7.9 0 2 .3 2.9.8V6.9a7.4 7.4 0 0 0-2.9-.5c-2.4 0-4 1.2-4 3.3 0 3.2 4.4 2.7 4.4 4.1 0 .5-.5.7-1.1.7-1 0-2.3-.4-3.3-1v2.6c1.1.5 2.2.7 3.3.7 2.5 0 4.1-1.2 4.1-3.3 0-3.5-4.4-2.9-4.4-4.2z"/></svg>`
+)
+
+const VERCEL_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#000000"/><path fill="#ffffff" d="M12 6 19 18H5z"/></svg>`
+)
+
+const SUPABASE_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0d1f17"/><path fill="#3ecf8e" d="M13 3 5 13.5a.8.8 0 0 0 .6 1.3H11v6.2c0 .8 1 1.1 1.5.5L19 10.5a.8.8 0 0 0-.6-1.3H13V3.5c0-.8-1-1.1-1.5-.5z"/></svg>`
+)
+
+const CLOUDFLARE_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a1206"/><path fill="#f6821f" d="M16.5 16H7a3 3 0 0 1 0-6 4.5 4.5 0 0 1 8.6-1.3A3.2 3.2 0 0 1 16.5 16z"/></svg>`
+)
+
+const MONGODB_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#06140d"/><path fill="#4faa41" d="M12 3.5c1.8 2.8 3.8 4.8 3.8 8.6 0 3.7-1.9 5.7-3.3 6.7l-.5 1.7-.5-1.7c-1.4-1-3.3-3-3.3-6.7 0-3.8 2-5.8 3.8-8.6z"/></svg>`
+)
+
+const DISCORD_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#5865f2"/><path fill="#ffffff" d="M16.5 8a10 10 0 0 0-2.5-.8l-.3.6a8.5 8.5 0 0 0-3.4 0L10 7.2A10 10 0 0 0 7.5 8C5.8 10.5 5.3 13 5.5 15.4A10 10 0 0 0 8.6 17l.6-1a6 6 0 0 1-1-.5l.2-.2a7 7 0 0 0 6.2 0l.2.2a6 6 0 0 1-1 .5l.6 1a10 10 0 0 0 3.1-1.6c.3-2.8-.4-5.3-2-7.4zM9.8 14c-.6 0-1.1-.6-1.1-1.2s.5-1.2 1.1-1.2 1.1.6 1.1 1.2-.5 1.2-1.1 1.2zm4.4 0c-.6 0-1.1-.6-1.1-1.2s.5-1.2 1.1-1.2 1.1.6 1.1 1.2-.5 1.2-1.1 1.2z"/></svg>`
+)
+
+const SENTRY_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a0f1a"/><path fill="#a55eea" d="M12 5a1.2 1.2 0 0 1 1 .6l6 10.4a1.2 1.2 0 0 1-1 1.8h-2.4a7 7 0 0 0-4.2-6.3l1.2-2a9.3 9.3 0 0 1 5 6.3H17L12 7l-2 3.5 1 .6-2.5 4.3H6L11 6.6a1.2 1.2 0 0 1 1-.6z"/></svg>`
+)
+
+const HUGGINGFACE_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a1500"/><circle cx="12" cy="13" r="6" fill="#ffd21e"/><circle cx="10" cy="12" r="1" fill="#3a2c00"/><circle cx="14" cy="12" r="1" fill="#3a2c00"/><path d="M9.5 15a3 3 0 0 0 5 0" fill="none" stroke="#3a2c00" stroke-width="1.2" stroke-linecap="round"/></svg>`
+)
+
+const BRAVE_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#1a0a04"/><path fill="#fb542b" d="M12 4l4.5 1.8L18 8l-.8 5.5L12 19l-5.2-5.5L6 8l1.5-2.2z"/><path fill="#fff" d="M12 9l1.8 1.2-1.8 3.2L10.2 10z" opacity=".85"/></svg>`
+)
+
+const POSTGRES_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#0a1525"/><path fill="#5896c8" d="M12 4c4 0 6.5 1.6 6.5 5 0 2.8-1.6 4.7-3.6 4.7-.8 0-1.4-.2-1.9-.6.3 2.3.6 3.6.6 4.7 0 1.2-.7 2-1.9 2-2.7 0-4.7-3.6-4.7-8.5C7 6.2 8.7 4 12 4z"/><circle cx="14" cy="9.5" r="1" fill="#0a1525"/></svg>`
+)
+
+const DOCKER_FALLBACK = toDataUrl(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#06121a"/><g fill="#2496ed"><rect x="6" y="11" width="2.4" height="2.4"/><rect x="9" y="11" width="2.4" height="2.4"/><rect x="12" y="11" width="2.4" height="2.4"/><rect x="9" y="8.4" width="2.4" height="2.4"/><rect x="12" y="8.4" width="2.4" height="2.4"/></g><path fill="#2496ed" d="M19 11.2c-.5-.3-1.6-.4-2.4-.2-.1-.8-.6-1.5-1.3-2l-.4-.3-.3.4c-.5.7-.6 1.6-.3 2.3-1 .4-2 .4-7 .4-.2 1.7.3 3.4 1.5 4.5 1.2 1 3 1.3 4.8.7 2.4-.8 3.7-2.5 4.4-4.4.6 0 1.4 0 1.8-.9z"/></svg>`
+)
+
 export const COMPANY_LOGOS: Record<string, LogoInfo> = {
   'Claude': {
     url: 'https://logo.clearbit.com/anthropic.com',
@@ -170,6 +234,75 @@ export const COMPANY_LOGOS: Record<string, LogoInfo> = {
   'VWO': { url: 'https://logo.clearbit.com/vwo.com', label: 'VWO' },
   'Unbounce': { url: 'https://logo.clearbit.com/unbounce.com', label: 'Unbounce' },
   'Crazy Egg': { url: 'https://logo.clearbit.com/crazyegg.com', label: 'Crazy Egg' },
+
+  // --- Popular MCP connectors (curated icons + inline SVG fallbacks) ---
+  'GitHub': { url: 'https://logo.clearbit.com/github.com', fallbackUrl: GITHUB_FALLBACK, label: 'GitHub' },
+  'GitLab': { url: 'https://logo.clearbit.com/gitlab.com', fallbackUrl: GITLAB_FALLBACK, label: 'GitLab' },
+  'Slack': { url: 'https://logo.clearbit.com/slack.com', fallbackUrl: SLACK_FALLBACK, label: 'Slack' },
+  'Notion': { url: 'https://logo.clearbit.com/notion.so', fallbackUrl: NOTION_FALLBACK, label: 'Notion' },
+  'Linear': { url: 'https://logo.clearbit.com/linear.app', fallbackUrl: LINEAR_FALLBACK, label: 'Linear' },
+  'Stripe': { url: 'https://logo.clearbit.com/stripe.com', fallbackUrl: STRIPE_FALLBACK, label: 'Stripe' },
+  'Sentry': { url: 'https://logo.clearbit.com/sentry.io', fallbackUrl: SENTRY_FALLBACK, label: 'Sentry' },
+  'Cloudflare': { url: 'https://logo.clearbit.com/cloudflare.com', fallbackUrl: CLOUDFLARE_FALLBACK, label: 'Cloudflare' },
+  'Supabase': { url: 'https://logo.clearbit.com/supabase.com', fallbackUrl: SUPABASE_FALLBACK, label: 'Supabase' },
+  'Vercel': { url: 'https://logo.clearbit.com/vercel.com', fallbackUrl: VERCEL_FALLBACK, label: 'Vercel' },
+  'MongoDB': { url: 'https://logo.clearbit.com/mongodb.com', fallbackUrl: MONGODB_FALLBACK, label: 'MongoDB' },
+  'Discord': { url: 'https://logo.clearbit.com/discord.com', fallbackUrl: DISCORD_FALLBACK, label: 'Discord' },
+  'Hugging Face': { url: 'https://logo.clearbit.com/huggingface.co', fallbackUrl: HUGGINGFACE_FALLBACK, label: 'Hugging Face' },
+  'Brave Search': { url: 'https://logo.clearbit.com/brave.com', fallbackUrl: BRAVE_FALLBACK, label: 'Brave Search' },
+  'PostgreSQL': { url: 'https://logo.clearbit.com/postgresql.org', fallbackUrl: POSTGRES_FALLBACK, label: 'PostgreSQL' },
+  'Postgres': { url: 'https://logo.clearbit.com/postgresql.org', fallbackUrl: POSTGRES_FALLBACK, label: 'PostgreSQL' },
+  'Docker': { url: 'https://logo.clearbit.com/docker.com', fallbackUrl: DOCKER_FALLBACK, label: 'Docker' },
+
+  // --- Popular MCP connectors (Clearbit only) ---
+  'Atlassian': { url: 'https://logo.clearbit.com/atlassian.com', label: 'Atlassian' },
+  'Jira': { url: 'https://logo.clearbit.com/atlassian.com', label: 'Jira' },
+  'Confluence': { url: 'https://logo.clearbit.com/atlassian.com', label: 'Confluence' },
+  'Asana': { url: 'https://logo.clearbit.com/asana.com', label: 'Asana' },
+  'Trello': { url: 'https://logo.clearbit.com/trello.com', label: 'Trello' },
+  'Airtable': { url: 'https://logo.clearbit.com/airtable.com', label: 'Airtable' },
+  'Shopify': { url: 'https://logo.clearbit.com/shopify.com', label: 'Shopify' },
+  'PayPal': { url: 'https://logo.clearbit.com/paypal.com', label: 'PayPal' },
+  'Square': { url: 'https://logo.clearbit.com/squareup.com', label: 'Square' },
+  'Zapier': { url: 'https://logo.clearbit.com/zapier.com', label: 'Zapier' },
+  'Intercom': { url: 'https://logo.clearbit.com/intercom.com', label: 'Intercom' },
+  'Zendesk': { url: 'https://logo.clearbit.com/zendesk.com', label: 'Zendesk' },
+  'Twilio': { url: 'https://logo.clearbit.com/twilio.com', label: 'Twilio' },
+  'Snowflake': { url: 'https://logo.clearbit.com/snowflake.com', label: 'Snowflake' },
+  'Databricks': { url: 'https://logo.clearbit.com/databricks.com', label: 'Databricks' },
+  'Netlify': { url: 'https://logo.clearbit.com/netlify.com', label: 'Netlify' },
+  'Neon': { url: 'https://logo.clearbit.com/neon.tech', label: 'Neon' },
+  'Prisma': { url: 'https://logo.clearbit.com/prisma.io', label: 'Prisma' },
+  'Redis': { url: 'https://logo.clearbit.com/redis.io', label: 'Redis' },
+  'Elasticsearch': { url: 'https://logo.clearbit.com/elastic.co', label: 'Elastic' },
+  'AWS': { url: 'https://logo.clearbit.com/aws.amazon.com', label: 'AWS' },
+  'Datadog': { url: 'https://logo.clearbit.com/datadoghq.com', label: 'Datadog' },
+  'Grafana': { url: 'https://logo.clearbit.com/grafana.com', label: 'Grafana' },
+  'Salesforce': { url: 'https://logo.clearbit.com/salesforce.com', label: 'Salesforce' },
+  'Dropbox': { url: 'https://logo.clearbit.com/dropbox.com', label: 'Dropbox' },
+  'Box': { url: 'https://logo.clearbit.com/box.com', label: 'Box' },
+  'Google Drive': { url: 'https://logo.clearbit.com/google.com', label: 'Google Drive' },
+  'Gmail': { url: 'https://logo.clearbit.com/google.com', label: 'Gmail' },
+  'Google Calendar': { url: 'https://logo.clearbit.com/google.com', label: 'Google Calendar' },
+  'Google Sheets': { url: 'https://logo.clearbit.com/google.com', label: 'Google Sheets' },
+  'Google Docs': { url: 'https://logo.clearbit.com/google.com', label: 'Google Docs' },
+  'Google Maps': { url: 'https://logo.clearbit.com/google.com', label: 'Google Maps' },
+  'YouTube': { url: 'https://logo.clearbit.com/youtube.com', label: 'YouTube' },
+  'Microsoft Teams': { url: 'https://logo.clearbit.com/microsoft.com', label: 'Microsoft Teams' },
+  'Outlook': { url: 'https://logo.clearbit.com/microsoft.com', label: 'Outlook' },
+  'OneDrive': { url: 'https://logo.clearbit.com/microsoft.com', label: 'OneDrive' },
+  'Spotify': { url: 'https://logo.clearbit.com/spotify.com', label: 'Spotify' },
+  'Reddit': { url: 'https://logo.clearbit.com/reddit.com', label: 'Reddit' },
+  'Exa': { url: 'https://logo.clearbit.com/exa.ai', label: 'Exa' },
+  'Firecrawl': { url: 'https://logo.clearbit.com/firecrawl.dev', label: 'Firecrawl' },
+  'Apify': { url: 'https://logo.clearbit.com/apify.com', label: 'Apify' },
+  'Browserbase': { url: 'https://logo.clearbit.com/browserbase.com', label: 'Browserbase' },
+  'Playwright': { url: 'https://logo.clearbit.com/playwright.dev', label: 'Playwright' },
+  'Fly.io': { url: 'https://logo.clearbit.com/fly.io', label: 'Fly.io' },
+  'Render': { url: 'https://logo.clearbit.com/render.com', label: 'Render' },
+  'Railway': { url: 'https://logo.clearbit.com/railway.app', label: 'Railway' },
+  'DigitalOcean': { url: 'https://logo.clearbit.com/digitalocean.com', label: 'DigitalOcean' },
+  'Heroku': { url: 'https://logo.clearbit.com/heroku.com', label: 'Heroku' },
 }
 
 export function getLogoInfo(name: string): LogoInfo | null {
