@@ -6,6 +6,7 @@ import videoRouter from "./video";
 import skillsRouter from "./skills";
 import mcpRouter from "./mcp";
 import projectsRouter from "./projects";
+import workflowsRouter from "./workflows";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(videoRouter);
 router.use(skillsRouter);
 router.use(mcpRouter);
 router.use(projectsRouter);
+router.use(workflowsRouter);
 
 export default router;

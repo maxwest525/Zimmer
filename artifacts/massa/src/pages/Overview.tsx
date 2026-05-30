@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react'
 import { useLocation } from 'wouter'
 import { InlineCompanyLogo, CompanyLogo } from '@/components/CompanyLogo'
 import { NodeGraph } from '@/components/NodeGraph'
@@ -12,6 +12,9 @@ import { TenantSelector } from '@/components/TenantSelector'
 import { useTenant } from '@/contexts/TenantContext'
 import { useProjects } from '@/contexts/ProjectContext'
 import { getPhaseIcon, getActionIcon, getTabIcon, ThinkingIcon, BuildingIcon } from '@/lib/actionIcons'
+import type { WorkflowNode } from '@/components/WorkflowCanvas'
+import type { Edge } from '@xyflow/react'
+const WorkflowCanvas = lazy(() => import('@/components/WorkflowCanvas').then(m => ({ default: m.WorkflowCanvas })))
 
 type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
@@ -1030,12 +1033,54 @@ function AutomationsView({ onBack }: { onBack: () => void }) {
 
 function MarketingView({ onBack }: { onBack: () => void }) {
   const c = { border: '#1e2530', muted: '#9ca3af', green: '#34d399' }
+  type MarketingTab = 'engines' | 'workflow' | 'templates'
+  const [activeTab, setActiveTab] = useState<MarketingTab>('engines')
+  const [workflowNodes, setWorkflowNodes] = useState<WorkflowNode[]>([])
+  const [workflowEdges, setWorkflowEdges] = useState<Edge[]>([])
+  const [workflowTitle, setWorkflowTitle] = useState('My Marketing Loop')
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
+  const [templates, setTemplates] = useState<{ id: string; title: string; description: string; category: string; nodes: WorkflowNode[]; edges: Edge[] }[]>([])
+
+  useEffect(() => {
+    fetch('/api/workflows/templates').then(r => r.json()).then(d => { if (d.templates) setTemplates(d.templates) }).catch(() => {})
+  }, [])
 
   const loopInputRef = useRef<HTMLInputElement | null>(null)
   const docInputRef = useRef<HTMLInputElement | null>(null)
   const [loopImage, setLoopImage] = useState<string | null>(null)
   const [documents, setDocuments] = useState<{ name: string; size: string }[]>([])
   const [integrationsOpen, setIntegrationsOpen] = useState(false)
+
+  const analyzeLoopImage = async (dataUrl: string) => {
+    setAnalyzing(true)
+    setAnalyzeError(null)
+    try {
+      const res = await fetch('/api/workflows/analyze-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: dataUrl, mimeType: 'image/png' }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.workflow) throw new Error(data.error || 'Analysis failed')
+      const wf = data.workflow
+      setWorkflowTitle(wf.title || 'Analyzed Loop')
+      setWorkflowNodes((wf.nodes || []).map((n: { id: string; type: string; label: string; subtitle?: string; position: { x: number; y: number } }) => ({
+        id: n.id, type: 'workflowNode',
+        position: n.position,
+        data: { label: n.label, subtitle: n.subtitle, type: n.type as WorkflowNode['data']['type'], status: 'idle' as const },
+      })))
+      setWorkflowEdges((wf.edges || []).map((e: { id: string; source: string; target: string; label?: string }) => ({
+        id: e.id, source: e.source, target: e.target, label: e.label,
+        animated: true, style: { stroke: '#34d399', strokeWidth: 2 },
+      })))
+      setActiveTab('workflow')
+    } catch (err) {
+      setAnalyzeError(err instanceof Error ? err.message : 'Failed to analyze image')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`
@@ -1047,7 +1092,11 @@ function MarketingView({ onBack }: { onBack: () => void }) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = () => setLoopImage(typeof reader.result === 'string' ? reader.result : null)
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === 'string' ? reader.result : null
+      setLoopImage(dataUrl)
+      if (dataUrl) analyzeLoopImage(dataUrl)
+    }
     reader.readAsDataURL(file)
     e.target.value = ''
   }
@@ -1256,6 +1305,78 @@ function MarketingView({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
+        {/* Tab nav */}
+        <div style={{ display: 'flex', gap: 4, marginBottom: 28, background: 'rgba(255,255,255,0.03)', padding: 4, borderRadius: 10, border: `1px solid ${c.border}`, width: 'fit-content' }}>
+          {([['engines', 'Engines'], ['workflow', 'Workflow Builder'], ['templates', 'Templates']] as [MarketingTab, string][]).map(([tab, label]) => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '7px 16px', borderRadius: 7, border: 'none', background: activeTab === tab ? '#1a2030' : 'transparent', color: activeTab === tab ? '#f0f0f0' : c.muted, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif', transition: 'all 0.15s' }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Workflow Builder tab */}
+        {activeTab === 'workflow' && (
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <input
+                value={workflowTitle}
+                onChange={e => setWorkflowTitle(e.target.value)}
+                style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: `1px solid ${c.border}`, borderRadius: 8, padding: '8px 12px', color: '#f0f0f0', fontSize: 14, fontWeight: 700, fontFamily: 'Inter, system-ui, sans-serif', outline: 'none' }}
+              />
+              <button
+                onClick={() => { setWorkflowNodes([]); setWorkflowEdges([]) }}
+                style={{ padding: '8px 14px', background: 'transparent', border: `1px solid ${c.border}`, borderRadius: 8, color: c.muted, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}
+              >Clear</button>
+            </div>
+            <div style={{ height: 520 }}>
+              <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: c.muted, fontSize: 13 }}>Loading canvas…</div>}>
+                <WorkflowCanvas
+                  nodes={workflowNodes}
+                  edges={workflowEdges}
+                  title={workflowTitle}
+                  onWorkflowChange={(n, e) => { setWorkflowNodes(n); setWorkflowEdges(e) }}
+                  onSave={async (n: WorkflowNode[], e: Edge[]) => {
+                    await fetch('/api/workflows/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: workflowTitle, nodes: n, edges: e }) })
+                  }}
+                  onRunNow={() => {}}
+                />
+              </Suspense>
+            </div>
+          </div>
+        )}
+
+        {/* Templates tab */}
+        {activeTab === 'templates' && (
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
+              {templates.map(t => (
+                <div key={t.id} style={{ background: 'rgba(52,211,153,0.03)', border: `1px solid ${c.border}`, borderRadius: 14, padding: 20, cursor: 'pointer', transition: 'border-color 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(52,211,153,0.4)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = c.border }}
+                  onClick={() => {
+                    setWorkflowTitle(t.title)
+                    setWorkflowNodes(t.nodes as WorkflowNode[])
+                    setWorkflowEdges(t.edges)
+                    setActiveTab('workflow')
+                  }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.2, color: c.green, fontFamily: 'Inter, system-ui, sans-serif' }}>{t.category.toUpperCase()}</span>
+                    <span style={{ fontSize: 11, color: c.muted, fontFamily: 'Inter, system-ui, sans-serif' }}>{t.nodes.length} nodes</span>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: '#f0f0f0', marginBottom: 8, fontFamily: 'Inter, system-ui, sans-serif' }}>{t.title}</div>
+                  <div style={{ fontSize: 12, color: c.muted, lineHeight: 1.5, fontFamily: 'Inter, system-ui, sans-serif' }}>{t.description}</div>
+                  <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 6, color: c.green, fontSize: 12, fontWeight: 600, fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    <span>Use template</span><span>→</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Engines tab */}
+        {activeTab === 'engines' && <>
+
         {/* PRIMARY: Marketing Engines */}
         <div style={{ fontSize: 11, letterSpacing: 1.2, color: c.muted, fontWeight: 700, marginBottom: 16, fontFamily: 'Inter, system-ui, sans-serif' }}>MARKETING ENGINES</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14, marginBottom: 32 }}>
@@ -1283,9 +1404,9 @@ function MarketingView({ onBack }: { onBack: () => void }) {
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => loopInputRef.current?.click()} style={{ width: '100%', border: `1px dashed ${c.green}66`, background: 'rgba(52,211,153,0.04)', borderRadius: 10, padding: '18px 14px', cursor: 'pointer', color: c.green, fontSize: 13, fontWeight: 600, fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'center' }}>
-                      Upload loop diagram
-                      <div style={{ color: c.muted, fontSize: 11, fontWeight: 500, marginTop: 4 }}>PNG, JPG or screenshot of your autonomous loop</div>
+                    <button onClick={() => loopInputRef.current?.click()} disabled={analyzing} style={{ width: '100%', border: `1px dashed ${c.green}66`, background: 'rgba(52,211,153,0.04)', borderRadius: 10, padding: '18px 14px', cursor: analyzing ? 'default' : 'pointer', color: c.green, fontSize: 13, fontWeight: 600, fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'center', opacity: analyzing ? 0.7 : 1 }}>
+                      {analyzing ? '✦ Analyzing with Claude vision…' : 'Upload loop diagram'}
+                      <div style={{ color: c.muted, fontSize: 11, fontWeight: 500, marginTop: 4 }}>{analyzing ? 'Building your workflow canvas…' : 'PNG, JPG or screenshot — MASSA builds the workflow automatically'}</div>
                     </button>
                   )}
                 </div>
@@ -1362,6 +1483,10 @@ function MarketingView({ onBack }: { onBack: () => void }) {
             </div>
           </div>
         )}
+        {/* end engines tab */}
+        {analyzeError && <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 8, color: '#f87171', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>{analyzeError}</div>}
+        {analyzing && <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(52,211,153,0.08)', border: `1px solid ${c.green}33`, borderRadius: 8, color: c.green, fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>✦ Analyzing loop diagram with Claude vision…</div>}
+        </>}
       </div>
     </div>
   )
