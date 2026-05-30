@@ -2347,8 +2347,6 @@ export function Overview() {
     }
   }, [feedEntries, feedHovered])
 
-  // Code stream
-  type CodeLine = { id: number; kind: 'code' | 'qa'; content: string; file?: string; lineNo?: number; qa?: 'pass' | 'warn'; projectId?: string }
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
   const [dismissedActionKeys, setDismissedActionKeys] = useState<Set<string>>(() => {
     try {
@@ -2462,72 +2460,6 @@ export function Overview() {
       {extra}
     </div>
   )
-  const [codeLines, setCodeLines] = useState<CodeLine[]>([])
-  const [codeHovered, setCodeHovered] = useState(false)
-  const codeRef = useRef<HTMLDivElement>(null)
-  const codeCounter = useRef(0)
-
-  const CODE_POOL = [
-    { file: 'src/engine/strategy.ts', line: 42, code: 'async function evaluateSignal(ctx: Context): Promise<Signal> {', projectId: 'p1' },
-    { file: 'src/engine/strategy.ts', line: 43, code: '  const price = await ctx.market.getLatestPrice(ctx.symbol)', projectId: 'p1' },
-    { file: 'src/risk/limits.ts', line: 17, code: 'if (exposure > MAX_EXPOSURE) throw new RiskError("limit exceeded")', projectId: 'p1' },
-    { file: 'src/api/client.ts', line: 88, code: 'const res = await fetch(`${BASE_URL}/v1/orders`, { method: "POST", body })', projectId: 'p1' },
-    { file: 'src/db/schema.ts', line: 5, code: 'export const orders = pgTable("orders", { id: serial("id").primaryKey(),', projectId: 'p1' },
-    { file: 'src/ui/Dashboard.tsx', line: 14, code: 'const { data, isLoading } = useQuery(["positions"], fetchPositions)', projectId: 'p1' },
-    { file: 'src/ui/Dashboard.tsx', line: 31, code: '  return <Chart series={data?.series ?? []} height={320} />', projectId: 'p1' },
-    { file: 'src/pages/Homepage.tsx', line: 6, code: 'cron.schedule("0 9 * * 1-5", () => runDailyExport())', projectId: 'p2' },
-    { file: 'src/pages/ApiSettings.tsx', line: 12, code: 'const providers = await fetchProviders()', projectId: 'p2' },
-    { file: 'src/engine/backtest.ts', line: 77, code: 'const equity = positions.reduce((s, p) => s + p.unrealised, initialCapital)', projectId: 'p1' },
-    { file: 'src/engine/order.ts', line: 55, code: 'export type Order = { id: string; side: "buy" | "sell"; qty: number }', projectId: 'p1' },
-  ]
-  const QA_POOL = [
-    { qa: 'pass' as const, content: '✓ Unit test passed: strategy.evaluateSignal', projectId: 'p1' },
-    { qa: 'pass' as const, content: '✓ Type check: src/engine/order.ts — no errors', projectId: 'p1' },
-    { qa: 'pass' as const, content: '✓ Code review: logic approved by QA agent', projectId: 'p1' },
-    { qa: 'pass' as const, content: '✓ Lint: 0 warnings, 0 errors', projectId: 'p2' },
-    { qa: 'warn' as const, content: '⚠ Type mismatch on line 42 — Signal | undefined', projectId: 'p1' },
-    { qa: 'warn' as const, content: '⚠ Unused import: Logger in risk/limits.ts', projectId: 'p1' },
-    { qa: 'pass' as const, content: '✓ Integration test: /v1/orders endpoint — 200 OK', projectId: 'p1' },
-    { qa: 'pass' as const, content: '✓ Schema migration dry-run succeeded', projectId: 'p2' },
-    { qa: 'pass' as const, content: '✓ Snapshot test: Dashboard renders correctly', projectId: 'p1' },
-  ]
-
-  useEffect(() => {
-    const tick = () => {
-      const runningProjectIds = projectsRef.current
-        .filter(p => p.builds.some(b => b.status === 'running'))
-        .map(p => p.id)
-      if (runningProjectIds.length === 0) {
-        setCodeLines(prev => (prev.length === 0 ? prev : []))
-        return
-      }
-      codeCounter.current += 1
-      const isQA = Math.random() < 0.3
-      let entry: CodeLine
-      if (isQA) {
-        const pool = QA_POOL.filter(q => runningProjectIds.includes(q.projectId))
-        const src = pool.length > 0 ? pool : QA_POOL
-        const q = src[Math.floor(Math.random() * src.length)]
-        entry = { id: codeCounter.current, kind: 'qa', content: q.content, qa: q.qa, projectId: q.projectId }
-      } else {
-        const pool = CODE_POOL.filter(c => runningProjectIds.includes(c.projectId))
-        const src = pool.length > 0 ? pool : CODE_POOL
-        const c = src[Math.floor(Math.random() * src.length)]
-        entry = { id: codeCounter.current, kind: 'code', content: c.code, file: c.file, lineNo: c.line, projectId: c.projectId }
-      }
-      setCodeLines(prev => [...prev.slice(-79), entry])
-    }
-    tick()
-    const t = setInterval(tick, 900)
-    return () => clearInterval(t)
-  }, [])
-
-  useEffect(() => {
-    if (!codeHovered && codeRef.current) {
-      codeRef.current.scrollTop = codeRef.current.scrollHeight
-    }
-  }, [codeLines, codeHovered])
-
   // Drag handlers
   const handleDragStart = (buildId: string, projectId: string) => setDraggedBuild({ buildId, projectId })
   const handleDragOver = (e: React.DragEvent, buildId: string) => { e.preventDefault(); setDragOverId(buildId) }
@@ -3569,7 +3501,6 @@ export function Overview() {
               {[
                 { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>, label: 'Ready Builds', color: '#ffffff' },
                 { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, label: 'Action Required', color: '#ffffff' },
-                { icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>, label: 'Code Stream', color: '#ffffff' },
               ].map(item => (
                 <div
                   key={item.label}
@@ -4076,68 +4007,6 @@ export function Overview() {
             )
           })()}
 
-          {/* Code Stream + Build Activity */}
-          <div style={{ border: `1px solid ${c.border}`, borderRadius: 4, display: 'flex', flexDirection: 'column', flex: 'none', maxHeight: collapsedSections.codeStream ? 'none' : 260, minHeight: 0, background: c.bg, marginTop: 8 }}>
-            <div style={{ padding: '8px 12px 6px', borderBottom: collapsedSections.codeStream ? 'none' : `1px solid ${c.border}` }}>
-              {sectionHeader('CODE STREAM', 'codeStream', <span style={{ width: 6, height: 6, borderRadius: 999, background: '#34d399', display: 'inline-block', boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />)}
-            </div>
-            {!collapsedSections.codeStream && (
-              <div
-                ref={codeRef}
-                onMouseEnter={() => setCodeHovered(true)}
-                onMouseLeave={() => setCodeHovered(false)}
-                style={{ flex: 1, overflowY: 'auto', background: isDark ? c.panel : c.text, padding: '8px 0 4px', fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace', fontSize: 11, scrollBehavior: 'smooth', minHeight: 0 }}
-              >
-                <div style={{ position: 'sticky', top: 0, left: 0, right: 0, height: 28, background: `linear-gradient(to bottom, ${isDark ? c.panel : c.text} 0%, transparent 100%)`, pointerEvents: 'none', zIndex: 1 }} />
-                {feedEntries.length > 0 && feedEntries.filter(entry => {
-                  if (!selectedTenantId) return true
-                  const tenantProject = filteredProjects[0]
-                  return tenantProject && entry.buildName.startsWith(tenantProject.name + ' / ')
-                }).slice(0, 3).map(entry => {
-                  const pm = PHASE_META[entry.phase]
-                  return (
-                    <div key={`feed-${entry.id}`} style={{ padding: '5px 12px', borderBottom: `1px solid ${c.border}33`, fontFamily: 'inherit', lineHeight: 1.6 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.buildName}</div>
-                      <div style={{ fontSize: 10, color: c.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.agent} — {entry.status}</div>
-                      <div style={{ fontSize: 10, color: pm.color, fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ display: 'inline-flex', flexShrink: 0 }}>{pm.icon(10)}</span>{entry.time} - {pm.label}</div>
-                    </div>
-                  )
-                })}
-                {(() => {
-                  const visibleCode = codeLines.filter(line => !selectedTenantId || line.projectId === selectedTenantId)
-                  const visibleFeed = feedEntries.filter(entry => {
-                    if (!selectedTenantId) return true
-                    const tenantProject = filteredProjects[0]
-                    return tenantProject && entry.buildName.startsWith(tenantProject.name + ' / ')
-                  })
-                  if (visibleCode.length === 0 && visibleFeed.length === 0) {
-                    return (
-                      <div style={{ padding: '18px 12px', color: isDark ? '#5b6470' : '#9aa0a8', fontFamily: 'inherit', fontSize: 11, lineHeight: 1.6 }}>
-                        <span style={{ opacity: 0.7 }}>// no active builds — stream idle</span>
-                      </div>
-                    )
-                  }
-                  return null
-                })()}
-                {codeLines.filter(line => !selectedTenantId || line.projectId === selectedTenantId).map(line => {
-                  if (line.kind === 'qa') {
-                    const isPass = line.qa === 'pass'
-                    return (
-                      <div key={line.id} style={{ padding: '3px 12px', color: isPass ? '#4ade80' : '#f59e0b', lineHeight: 1.5 }}>
-                        {line.content}
-                      </div>
-                    )
-                  }
-                  return (
-                    <div key={line.id} style={{ padding: '2px 12px', lineHeight: 1.5 }}>
-                      <span style={{ color: isDark ? '#888' : '#aaa' }}>{line.file}:{line.lineNo} </span>
-                      {renderCodeLine(line.content, isDark)}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
         </>}
         </div>
         </>}
