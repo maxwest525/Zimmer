@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useMcp } from "@/contexts/McpContext";
+import { CompanyLogo } from "@/components/CompanyLogo";
+import { resolveMcpBrand } from "@/lib/logos";
 
 type Tab = "canvas" | "builds" | "history" | "knowledge" | "mcp";
 
@@ -17,7 +19,8 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
-  const { errorCount } = useMcp();
+  const { errorCount, servers } = useMcp();
+  const offlineServers = servers.filter((s) => s.status === "error");
   return (
     <div className="flex items-center gap-0 px-6 pt-0 pb-0 border-b border-border shrink-0 bg-background">
       {TABS.map((tab) => (
@@ -35,10 +38,18 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
           {tab.label}
           {tab.id === "mcp" && errorCount > 0 && (
             <span
-              title={`${errorCount} server${errorCount !== 1 ? "s" : ""} offline`}
-              className="ml-1.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500/20 text-red-400 text-[9px] font-mono leading-none align-middle"
+              title={`Offline: ${offlineServers
+                .map((s) => resolveMcpBrand(s.name, s.endpoint).label)
+                .join(", ")}`}
+              className="ml-1.5 inline-flex items-center gap-1 align-middle"
             >
-              {errorCount}
+              {offlineServers.slice(0, 3).map((s) => {
+                const brand = resolveMcpBrand(s.name, s.endpoint);
+                return <CompanyLogo key={s.id} name={brand.label} info={brand.info} size={14} />;
+              })}
+              <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500/20 text-red-400 text-[9px] font-mono leading-none">
+                {errorCount}
+              </span>
             </span>
           )}
         </button>

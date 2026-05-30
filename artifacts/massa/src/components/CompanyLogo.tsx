@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getLogoInfo } from '@/lib/logos'
+import { getLogoInfo, type LogoInfo } from '@/lib/logos'
 
 interface DualCompanyLogoProps {
   names: string[]
@@ -30,11 +30,12 @@ interface CompanyLogoProps {
   size?: number
   style?: React.CSSProperties
   accentColor?: string
+  info?: LogoInfo | null
 }
 
-export function CompanyLogo({ name, size = 28, style, accentColor }: CompanyLogoProps) {
+export function CompanyLogo({ name, size = 28, style, accentColor, info: infoOverride }: CompanyLogoProps) {
   const [stage, setStage] = useState<FallbackStage>('primary')
-  const info = getLogoInfo(name)
+  const info = infoOverride !== undefined ? infoOverride : getLogoInfo(name)
 
   if (!info || stage === 'text') {
     const iconColor = accentColor ?? '#888'

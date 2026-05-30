@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useMcp, type McpServer, type McpStatusEvent } from "@/contexts/McpContext";
+import { CompanyLogo } from "@/components/CompanyLogo";
+import { resolveMcpBrand } from "@/lib/logos";
 
 function timeAgo(iso: string): string {
   const then = new Date(iso).getTime();
@@ -282,13 +284,22 @@ export function McpPanel() {
             const isExpanded = expandedId === server.id;
             const tools = server.tools ?? [];
             const canExpand = server.status === "connected" && tools.length > 0;
+            const brand = resolveMcpBrand(server.name, server.endpoint);
             return (
               <div
                 key={server.id}
                 className="rounded-md bg-card border border-border hover:border-border transition-colors"
               >
                 <div className="flex items-center gap-3 px-3 py-2.5">
-                  <span className={cn("w-2 h-2 rounded-full shrink-0", status.dot)} />
+                  <span className="relative shrink-0" title={status.label}>
+                    <CompanyLogo name={brand.label} info={brand.info} size={24} />
+                    <span
+                      className={cn(
+                        "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-card",
+                        status.dot,
+                      )}
+                    />
+                  </span>
                   <button
                     onClick={() => canExpand && setExpandedId(isExpanded ? null : server.id)}
                     className={cn(
@@ -297,7 +308,7 @@ export function McpPanel() {
                     )}
                   >
                     <p className="text-xs font-mono text-foreground truncate flex items-center gap-1.5">
-                      {server.name}
+                      {brand.label}
                       {server.hasAuthToken && (
                         <span title="Authenticated" className="text-muted-foreground">🔒</span>
                       )}

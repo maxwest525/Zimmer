@@ -9,6 +9,8 @@ import {
 } from "react";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { CompanyLogo } from "@/components/CompanyLogo";
+import { resolveMcpBrand } from "@/lib/logos";
 
 export interface McpTool {
   name: string;
@@ -89,9 +91,15 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
         !alertedRef.current.has(server.id)
       ) {
         alertedRef.current.add(server.id);
+        const brand = resolveMcpBrand(server.name, server.endpoint);
         toast({
           variant: "destructive",
-          title: `${server.name} went offline`,
+          title: (
+            <span className="flex items-center gap-2">
+              <CompanyLogo name={brand.label} info={brand.info} size={16} />
+              {`${brand.label} went offline`}
+            </span>
+          ),
           description:
             server.lastError?.trim() ||
             "The connection check failed. Tools from this server are unavailable.",

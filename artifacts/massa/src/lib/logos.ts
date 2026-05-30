@@ -175,3 +175,46 @@ export const COMPANY_LOGOS: Record<string, LogoInfo> = {
 export function getLogoInfo(name: string): LogoInfo | null {
   return COMPANY_LOGOS[name] ?? null
 }
+
+const MULTI_PART_TLDS = new Set([
+  'co.uk', 'org.uk', 'me.uk', 'gov.uk', 'ac.uk',
+  'com.au', 'net.au', 'org.au',
+  'co.jp', 'co.nz', 'co.in', 'co.za',
+  'com.br', 'com.mx', 'com.sg', 'com.tr',
+])
+
+export function getLogoInfoByDomain(domain: string): LogoInfo {
+  const clean = domain.replace(/^www\./i, '')
+  const parts = clean.split('.')
+  let registrable = clean
+  if (parts.length > 2) {
+    const lastTwo = parts.slice(-2).join('.')
+    registrable = MULTI_PART_TLDS.has(lastTwo) ? parts.slice(-3).join('.') : lastTwo
+  }
+  const base = registrable.split('.')[0] || registrable
+  const label = base.charAt(0).toUpperCase() + base.slice(1)
+  return {
+    url: `https://logo.clearbit.com/${registrable}`,
+    label,
+  }
+}
+
+export interface ResolvedBrand {
+  info: LogoInfo | null
+  label: string
+}
+
+export function resolveMcpBrand(name: string, endpoint?: string | null): ResolvedBrand {
+  const trimmed = (name ?? '').trim()
+  const byName = getLogoInfo(trimmed)
+  if (byName) return { info: byName, label: byName.label }
+  if (endpoint) {
+    try {
+      const host = new URL(endpoint).hostname
+      if (host) return { info: getLogoInfoByDomain(host), label: trimmed || host }
+    } catch {
+      // invalid endpoint URL; fall through to no-brand
+    }
+  }
+  return { info: null, label: trimmed || 'Unknown server' }
+}
