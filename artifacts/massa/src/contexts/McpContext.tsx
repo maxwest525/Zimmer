@@ -9,7 +9,7 @@ import {
 } from "react";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyLogo, preloadLogo } from "@/components/CompanyLogo";
 import { resolveMcpBrand } from "@/lib/logos";
 
 export interface McpTool {
@@ -69,6 +69,16 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
   const alertedRef = useRef<Set<number>>(new Set());
   const onViewMcpRef = useRef(onViewMcp);
   onViewMcpRef.current = onViewMcp;
+
+  // Warm the brand logo cache for the saved servers so the first on-screen
+  // render shows the real image instantly instead of waiting on a Clearbit
+  // round-trip (and flashing the placeholder) the first time each is seen.
+  const preloadLogos = useCallback((list: McpServer[]) => {
+    for (const s of list) {
+      const brand = resolveMcpBrand(s.name, s.endpoint);
+      preloadLogo(brand.info);
+    }
+  }, []);
 
   const seedStatuses = useCallback((list: McpServer[]) => {
     const next = new Map<number, McpServer["status"]>();
@@ -145,6 +155,8 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
       if (!res.ok) throw new Error("Failed to load servers");
       const data: McpServer[] = await res.json();
       setServers(data);
+      // Warm logo cache before the panel paints so brand images pop in instantly.
+      preloadLogos(data);
       // Seed baseline without alerting on first load.
       seedStatuses(data);
     } catch {
@@ -152,7 +164,7 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
     } finally {
       setLoading(false);
     }
-  }, [seedStatuses]);
+  }, [seedStatuses, preloadLogos]);
 
   const refreshInFlight = useRef(false);
   const refreshServers = useCallback(async () => {
