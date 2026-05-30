@@ -2356,7 +2356,7 @@ export function Overview() {
                 onMouseLeave={e => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#1e2330' }}
               ><span style={{ display: 'inline-block', transform: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>»</span></button>
             </div>
-            {[
+            {([
               { label: 'Dashboard', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, view: 'dashboard' as const, path: '' },
               { label: 'Chats', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, view: 'chats' as const, path: '' },
               { label: 'Ideas', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>, view: 'ideas' as const, path: '' },
@@ -2370,12 +2370,12 @@ export function Overview() {
               { label: 'Integrations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>, view: 'integrations' as const, path: '' },
               { label: 'Current Projects', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, view: 'currentProjects' as const, path: '' },
               { label: 'Published', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>, view: 'published' as const, path: '' },
-            ].map(item => {
+            ] as Array<{ label: string; icon: React.ReactNode; view?: string; path?: string }>).map(item => {
               const active = item.view ? activeView === item.view : false
-              const clickable = item.view !== null || item.path !== ''
+              const clickable = !!item.view || !!item.path
               return (
                 <div key={item.label} onClick={() => {
-                  if (item.view) { setActiveView(item.view); setChatOriginBuildId(null) }
+                  if (item.view) { setActiveView(item.view as Parameters<typeof setActiveView>[0]); setChatOriginBuildId(null) }
                   else if (item.path) { navigate(item.path) }
                 }} title={(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? item.label : undefined} style={{ padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '8px 0' : '10px 10px', borderRadius: 0, marginBottom: 0, background: active ? 'rgba(52,211,153,0.04)' : 'transparent', color: active ? '#34d399' : '#9ca3af', borderLeft: active ? '2px solid #34d399' : '2px solid transparent', borderRight: active ? '1px solid #252a35' : '1px solid transparent', fontSize: 12, fontWeight: active ? 600 : 500, cursor: clickable ? 'pointer' : 'default', transition: 'all 0.12s ease', fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.02em', borderBottom: '1px solid #1e2330', textAlign: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, whiteSpace: 'nowrap', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? 'center' : undefined, gap: 8 }}>
                   {(isDesktop ? leftNavCollapsed : !mobileNavOpen) ? (

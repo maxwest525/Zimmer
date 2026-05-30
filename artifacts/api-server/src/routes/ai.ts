@@ -1,5 +1,11 @@
 import { Router } from "express";
+import OpenAI from "openai";
 import { complete, MODEL_CATALOG } from "../lib/models.js";
+
+const openai = new OpenAI({
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+});
 
 const router = Router();
 
@@ -36,9 +42,9 @@ Return ONLY a JSON array of question strings, nothing else.`,
 
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const suggestions = JSON.parse(cleaned);
-    res.json({ suggestions: Array.isArray(suggestions) ? suggestions.slice(0, 3) : [] });
+    return res.json({ suggestions: Array.isArray(suggestions) ? suggestions.slice(0, 3) : [] });
   } catch {
-    res.json({ suggestions: [] });
+    return res.json({ suggestions: [] });
   }
 });
 
@@ -128,9 +134,9 @@ You may ask at most 1 question total (the caller enforces a hard cap of 2). Focu
 
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const result = JSON.parse(cleaned);
-    res.json(result);
+    return res.json(result);
   } catch {
-    res.json({
+    return res.json({
       question: "What type of application are you building?",
       options: ["Web app", "Mobile app", "API / Backend service", "Full-stack platform"],
       done: false,
@@ -173,9 +179,32 @@ Rules:
       system: mode === "mvp" ? mvpSystem : enhanceSystem,
       user: content.trim(),
     });
-    res.json({ prompt: enhanced || content });
+    return res.json({ prompt: enhanced || content });
   } catch {
-    res.json({ prompt: content });
+    return res.json({ prompt: content });
+  }
+});
+
+router.post("/ai/image", async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
+    return res.status(400).json({ error: "prompt required" });
+  }
+  try {
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: prompt.trim(),
+      n: 1,
+      size: "1024x1024",
+      quality: "standard",
+      response_format: "url",
+    });
+    const url = response.data?.[0]?.url;
+    if (!url) return res.status(500).json({ error: "no image returned" });
+    return res.json({ url });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "image generation failed";
+    return res.status(500).json({ error: msg });
   }
 });
 
