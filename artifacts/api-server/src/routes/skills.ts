@@ -106,6 +106,132 @@ const SKILL_FILE_CANDIDATES = [
   "README.md",
 ];
 
+// --- HyperFX official marketing skills (github.com/hyperfx-ai/marketing-skills) ---
+// These skills run on the Hyper MCP that MASSA is already connected to, so they
+// are surfaced as a first-class, curated catalog rather than via trending search.
+const HFX_OWNER = "hyperfx-ai";
+const HFX_REPO = "marketing-skills";
+const HFX_BRANCH = "main";
+const HFX_RAW = `https://raw.githubusercontent.com/${HFX_OWNER}/${HFX_REPO}/${HFX_BRANCH}`;
+// Strict skill-slug shape: starts alphanumeric, then lowercase/digits/hyphens.
+// Rejects "." / ".." path segments that GH_NAME would otherwise allow.
+const HFX_SLUG = /^[a-z0-9][a-z0-9-]{0,99}$/;
+
+function parseFrontmatter(md: string): Record<string, string> {
+  const m = /^---\s*\n([\s\S]*?)\n---/.exec(md);
+  const out: Record<string, string> = {};
+  if (!m) return out;
+  for (const line of m[1].split("\n")) {
+    const idx = line.indexOf(":");
+    if (idx === -1) continue;
+    const key = line.slice(0, idx).trim();
+    let val = line.slice(idx + 1).trim();
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1);
+    }
+    if (key) out[key] = val;
+  }
+  return out;
+}
+
+type HfxSkill = {
+  slug: string;
+  name: string;
+  description: string;
+  htmlUrl: string;
+};
+
+router.get("/skills/hyperfx", async (_req, res) => {
+  const cacheKey = "hyperfx:catalog";
+  const cached = cacheGet<{ skills: HfxSkill[]; repoUrl: string }>(cacheKey);
+  if (cached) return res.json(cached);
+
+  try {
+    const dirUrl = `${GITHUB_API}/repos/${HFX_OWNER}/${HFX_REPO}/contents/skills?ref=${HFX_BRANCH}`;
+    const dirRes = await fetch(dirUrl, { headers: ghHeaders() });
+    if (!dirRes.ok) {
+      const rateLimited = dirRes.status === 403 || dirRes.status === 429;
+      return res.status(rateLimited ? 429 : 502).json({
+        error: rateLimited ? "github_rate_limited" : "github_list_failed",
+        status: dirRes.status,
+      });
+    }
+    const entries = (await dirRes.json()) as Array<{
+      name: string;
+      type: string;
+    }>;
+    const slugs = entries
+      .filter((e) => e.type === "dir" && HFX_SLUG.test(e.name))
+      .map((e) => e.name)
+      .sort();
+
+    const results = await Promise.all(
+      slugs.map(async (slug): Promise<HfxSkill | null> => {
+        try {
+          const r = await fetch(`${HFX_RAW}/skills/${slug}/SKILL.md`);
+          if (!r.ok) return null;
+          const md = await r.text();
+          const fm = parseFrontmatter(md);
+          return {
+            slug,
+            name: fm.name || slug,
+            description: fm.description || "",
+            htmlUrl: `https://github.com/${HFX_OWNER}/${HFX_REPO}/blob/${HFX_BRANCH}/skills/${slug}/SKILL.md`,
+          };
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    const skills = results.filter((s): s is HfxSkill => s !== null);
+    const payload = {
+      skills,
+      repoUrl: `https://github.com/${HFX_OWNER}/${HFX_REPO}`,
+    };
+    // Only cache a complete snapshot. If any per-skill fetch failed (transient
+    // upstream error / rate-limit), serve what we have but don't persist a
+    // partial catalog that would stick around for an hour.
+    if (skills.length === slugs.length && skills.length > 0) {
+      cacheSet(cacheKey, payload, 60 * 60 * 1000);
+    }
+    return res.json(payload);
+  } catch {
+    return res.status(500).json({ error: "hyperfx_catalog_failed" });
+  }
+});
+
+router.get("/skills/hyperfx/file", async (req, res) => {
+  const skill = String(req.query.skill || "").trim();
+  if (!skill) return res.status(400).json({ error: "skill required" });
+  if (!HFX_SLUG.test(skill)) return res.status(400).json({ error: "invalid skill" });
+
+  const cacheKey = `hyperfx:file:${skill}`;
+  const cached = cacheGet<{ path: string; content: string; htmlUrl: string }>(
+    cacheKey,
+  );
+  if (cached) return res.json(cached);
+
+  try {
+    const r = await fetch(`${HFX_RAW}/skills/${skill}/SKILL.md`);
+    if (r.status === 404) return res.status(404).json({ error: "skill_not_found" });
+    if (!r.ok) return res.status(502).json({ error: "github_fetch_failed" });
+    const content = await r.text();
+    const payload = {
+      path: `skills/${skill}/SKILL.md`,
+      content: content.slice(0, 40000),
+      htmlUrl: `https://github.com/${HFX_OWNER}/${HFX_REPO}/blob/${HFX_BRANCH}/skills/${skill}/SKILL.md`,
+    };
+    cacheSet(cacheKey, payload, 30 * 60 * 1000);
+    return res.json(payload);
+  } catch {
+    return res.status(500).json({ error: "hyperfx_file_failed" });
+  }
+});
+
 router.get("/skills/file", async (req, res) => {
   const owner = String(req.query.owner || "").trim();
   const repo = String(req.query.repo || "").trim();

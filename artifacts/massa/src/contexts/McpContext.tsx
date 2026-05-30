@@ -9,6 +9,8 @@ import {
 } from "react";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { CompanyLogo, preloadLogo } from "@/components/CompanyLogo";
+import { resolveMcpBrand } from "@/lib/logos";
 
 export interface McpTool {
   name: string;
@@ -68,6 +70,16 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
   const onViewMcpRef = useRef(onViewMcp);
   onViewMcpRef.current = onViewMcp;
 
+  // Warm the brand logo cache for the saved servers so the first on-screen
+  // render shows the real image instantly instead of waiting on a Clearbit
+  // round-trip (and flashing the placeholder) the first time each is seen.
+  const preloadLogos = useCallback((list: McpServer[]) => {
+    for (const s of list) {
+      const brand = resolveMcpBrand(s.name, s.endpoint);
+      preloadLogo(brand.info);
+    }
+  }, []);
+
   const seedStatuses = useCallback((list: McpServer[]) => {
     const next = new Map<number, McpServer["status"]>();
     for (const s of list) next.set(s.id, s.status);
@@ -81,7 +93,25 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
       seenIds.add(server.id);
       const before = prev.get(server.id);
       if (server.status === "connected") {
-        // Recovered (or healthy): allow a future outage to alert again.
+        // Recovered: only notify if we previously alerted that it went down.
+        if (before === "error" && alertedRef.current.has(server.id)) {
+          const brand = resolveMcpBrand(server.name, server.endpoint);
+          toast({
+            title: (
+              <span className="flex items-center gap-2">
+                <CompanyLogo name={brand.label} info={brand.info} size={16} />
+                {`${brand.label} is back online`}
+              </span>
+            ),
+            description: "The connection recovered. Its tools are available again.",
+            action: onViewMcpRef.current ? (
+              <ToastAction altText="View MCP servers" onClick={() => onViewMcpRef.current?.()}>
+                View
+              </ToastAction>
+            ) : undefined,
+          });
+        }
+        // Allow a future outage to alert again.
         alertedRef.current.delete(server.id);
       } else if (
         server.status === "error" &&
@@ -89,9 +119,15 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
         !alertedRef.current.has(server.id)
       ) {
         alertedRef.current.add(server.id);
+        const brand = resolveMcpBrand(server.name, server.endpoint);
         toast({
           variant: "destructive",
-          title: `${server.name} went offline`,
+          title: (
+            <span className="flex items-center gap-2">
+              <CompanyLogo name={brand.label} info={brand.info} size={16} />
+              {`${brand.label} went offline`}
+            </span>
+          ),
           description:
             server.lastError?.trim() ||
             "The connection check failed. Tools from this server are unavailable.",
@@ -119,6 +155,8 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
       if (!res.ok) throw new Error("Failed to load servers");
       const data: McpServer[] = await res.json();
       setServers(data);
+      // Warm logo cache before the panel paints so brand images pop in instantly.
+      preloadLogos(data);
       // Seed baseline without alerting on first load.
       seedStatuses(data);
     } catch {
@@ -126,7 +164,7 @@ export function McpProvider({ children, onViewMcp }: McpProviderProps) {
     } finally {
       setLoading(false);
     }
-  }, [seedStatuses]);
+  }, [seedStatuses, preloadLogos]);
 
   const refreshInFlight = useRef(false);
   const refreshServers = useCallback(async () => {

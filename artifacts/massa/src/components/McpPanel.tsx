@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useMcp, type McpServer, type McpStatusEvent } from "@/contexts/McpContext";
+import { CompanyLogo, preloadLogo } from "@/components/CompanyLogo";
+import { resolveMcpBrand, CURATED_MCP_CONNECTORS } from "@/lib/logos";
 
 function timeAgo(iso: string): string {
   const then = new Date(iso).getTime();
@@ -26,7 +28,7 @@ const STATUS_CONFIG: Record<
   { label: string; dot: string; text: string }
 > = {
   connected: { label: "Connected", dot: "bg-emerald-400", text: "text-emerald-400" },
-  disconnected: { label: "Disconnected", dot: "bg-[#7a8294]", text: "text-[#7a8294]" },
+  disconnected: { label: "Disconnected", dot: "bg-muted-foreground", text: "text-muted-foreground" },
   error: { label: "Error", dot: "bg-red-400", text: "text-red-400" },
 };
 
@@ -62,6 +64,16 @@ export function McpPanel() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [openTool, setOpenTool] = useState<string | null>(null);
   const [toolRuns, setToolRuns] = useState<Record<string, ToolRunState>>({});
+
+  // When the Add Server form opens, pre-warm the curated connectors' logos so
+  // their brand images render instantly without a Clearbit round-trip or a
+  // fallback flash the first time the picker is shown.
+  useEffect(() => {
+    if (!showForm) return;
+    for (const connector of CURATED_MCP_CONNECTORS) {
+      preloadLogo(resolveMcpBrand(connector).info);
+    }
+  }, [showForm]);
 
   const toolKey = (serverId: number, toolName: string) => `${serverId}:${toolName}`;
 
@@ -178,14 +190,14 @@ export function McpPanel() {
     <div className="flex flex-col h-full px-6 py-5 gap-5">
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
-          <p className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest">
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
             Model Context Protocol
           </p>
-          <p className="text-xs font-mono text-[#a0a8b8]">
+          <p className="text-xs font-mono text-muted-foreground">
             Connect MCP servers to extend this project with external tools.
           </p>
           {servers.length > 0 && (
-            <p className="text-[10px] font-mono text-[#5a6172]">
+            <p className="text-[10px] font-mono text-muted-foreground/70">
               {refreshing ? "Checking connections…" : "Auto-checks every 30s"}
             </p>
           )}
@@ -195,39 +207,39 @@ export function McpPanel() {
             setShowForm((v) => !v);
             setFormError(null);
           }}
-          className="px-3 py-1.5 text-[10px] font-mono font-medium uppercase tracking-wide rounded-md border border-[#252a35] bg-[#0d1117] text-[#c0c5cf] hover:border-emerald-400/50 hover:text-emerald-400 transition-colors"
+          className="px-3 py-1.5 text-[10px] font-mono font-medium uppercase tracking-wide rounded-md border border-border bg-card text-foreground hover:border-emerald-400/50 hover:text-emerald-400 transition-colors"
         >
           {showForm ? "Cancel" : "+ Add Server"}
         </button>
       </div>
 
       {showForm && (
-        <div className="flex flex-col gap-3 rounded-lg border border-[#252a35] bg-[#0d1117] p-4">
+        <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest">
+            <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
               Server Name
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. GitHub Tools"
-              className="px-3 py-2 text-xs font-mono rounded-md bg-[#0a0d10] border border-[#1a1f2b] text-[#c0c5cf] placeholder:text-[#5a6172] focus:border-emerald-400/50 focus:outline-none transition-colors"
+              className="px-3 py-2 text-xs font-mono rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground/70 focus:border-emerald-400/50 focus:outline-none transition-colors"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest">
+            <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
               Endpoint URL
             </label>
             <input
               value={endpoint}
               onChange={(e) => setEndpoint(e.target.value)}
               placeholder="https://example.com/mcp"
-              className="px-3 py-2 text-xs font-mono rounded-md bg-[#0a0d10] border border-[#1a1f2b] text-[#c0c5cf] placeholder:text-[#5a6172] focus:border-emerald-400/50 focus:outline-none transition-colors"
+              className="px-3 py-2 text-xs font-mono rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground/70 focus:border-emerald-400/50 focus:outline-none transition-colors"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest">
-              Auth Token <span className="text-[#5a6172] normal-case">(optional)</span>
+            <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+              Auth Token <span className="text-muted-foreground/70 normal-case">(optional)</span>
             </label>
             <input
               type="password"
@@ -235,9 +247,9 @@ export function McpPanel() {
               onChange={(e) => setAuthToken(e.target.value)}
               placeholder="API key or Bearer token"
               autoComplete="off"
-              className="px-3 py-2 text-xs font-mono rounded-md bg-[#0a0d10] border border-[#1a1f2b] text-[#c0c5cf] placeholder:text-[#5a6172] focus:border-emerald-400/50 focus:outline-none transition-colors"
+              className="px-3 py-2 text-xs font-mono rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground/70 focus:border-emerald-400/50 focus:outline-none transition-colors"
             />
-            <p className="text-[10px] font-mono text-[#5a6172] leading-relaxed">
+            <p className="text-[10px] font-mono text-muted-foreground/70 leading-relaxed">
               Sent as an Authorization header. Stored securely and never shown again.
             </p>
           </div>
@@ -252,7 +264,7 @@ export function McpPanel() {
             >
               {submitting ? "Connecting…" : "Connect"}
             </button>
-            <span className="text-[10px] font-mono text-[#5a6172]">
+            <span className="text-[10px] font-mono text-muted-foreground/70">
               Streamable HTTP MCP endpoints
             </span>
           </div>
@@ -261,20 +273,20 @@ export function McpPanel() {
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-xs font-mono text-[#7a8294]">Loading servers…</p>
+          <p className="text-xs font-mono text-muted-foreground">Loading servers…</p>
         </div>
       ) : servers.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-[#252a35] bg-[#0d1117]">
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border bg-card">
           <span className="text-2xl opacity-60">⌥</span>
-          <p className="text-xs font-mono text-[#a0a8b8]">No MCP servers connected</p>
-          <p className="text-[10px] font-mono text-[#7a8294] text-center max-w-xs">
+          <p className="text-xs font-mono text-muted-foreground">No MCP servers connected</p>
+          <p className="text-[10px] font-mono text-muted-foreground text-center max-w-xs">
             MCP servers let this project call external tools and data sources.
             Click "Add Server" to connect one.
           </p>
         </div>
       ) : (
         <div className="flex flex-col gap-1 overflow-y-auto flex-1">
-          <p className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest mb-1">
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">
             {servers.length} server{servers.length !== 1 ? "s" : ""}
           </p>
           {servers.map((server) => {
@@ -282,13 +294,22 @@ export function McpPanel() {
             const isExpanded = expandedId === server.id;
             const tools = server.tools ?? [];
             const canExpand = server.status === "connected" && tools.length > 0;
+            const brand = resolveMcpBrand(server.name, server.endpoint);
             return (
               <div
                 key={server.id}
-                className="rounded-md bg-[#0d1117] border border-[#1a1f2b] hover:border-[#252a35] transition-colors"
+                className="rounded-md bg-card border border-border hover:border-border transition-colors"
               >
                 <div className="flex items-center gap-3 px-3 py-2.5">
-                  <span className={cn("w-2 h-2 rounded-full shrink-0", status.dot)} />
+                  <span className="relative shrink-0" title={status.label}>
+                    <CompanyLogo name={brand.label} info={brand.info} size={24} />
+                    <span
+                      className={cn(
+                        "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-card",
+                        status.dot,
+                      )}
+                    />
+                  </span>
                   <button
                     onClick={() => canExpand && setExpandedId(isExpanded ? null : server.id)}
                     className={cn(
@@ -296,17 +317,17 @@ export function McpPanel() {
                       canExpand ? "cursor-pointer" : "cursor-default",
                     )}
                   >
-                    <p className="text-xs font-mono text-[#c0c5cf] truncate flex items-center gap-1.5">
-                      {server.name}
+                    <p className="text-xs font-mono text-foreground truncate flex items-center gap-1.5">
+                      {brand.label}
                       {server.hasAuthToken && (
-                        <span title="Authenticated" className="text-[#7a8294]">🔒</span>
+                        <span title="Authenticated" className="text-muted-foreground">🔒</span>
                       )}
                     </p>
-                    <p className="text-[10px] font-mono text-[#7a8294] truncate">
+                    <p className="text-[10px] font-mono text-muted-foreground truncate">
                       {server.endpoint}
                     </p>
                   </button>
-                  <span className="text-[10px] font-mono text-[#7a8294] shrink-0">
+                  <span className="text-[10px] font-mono text-muted-foreground shrink-0">
                     {server.toolCount} tool{server.toolCount !== 1 ? "s" : ""}
                   </span>
                   <span className={cn("text-[10px] font-mono shrink-0", status.text)}>
@@ -317,14 +338,14 @@ export function McpPanel() {
                       onClick={() => handleConnect(server.id)}
                       disabled={connectingId === server.id}
                       title="Reconnect / refresh tools"
-                      className="px-2 py-1 text-[10px] font-mono rounded border border-[#252a35] text-[#a0a8b8] hover:border-emerald-400/50 hover:text-emerald-400 disabled:opacity-40 transition-colors"
+                      className="px-2 py-1 text-[10px] font-mono rounded border border-border text-muted-foreground hover:border-emerald-400/50 hover:text-emerald-400 disabled:opacity-40 transition-colors"
                     >
                       {connectingId === server.id ? "…" : "↻"}
                     </button>
                     <button
                       onClick={() => handleRemove(server.id)}
                       title="Remove server"
-                      className="px-2 py-1 text-[10px] font-mono rounded border border-[#252a35] text-[#a0a8b8] hover:border-red-400/50 hover:text-red-400 transition-colors"
+                      className="px-2 py-1 text-[10px] font-mono rounded border border-border text-muted-foreground hover:border-red-400/50 hover:text-red-400 transition-colors"
                     >
                       ✕
                     </button>
@@ -341,7 +362,7 @@ export function McpPanel() {
 
                 {server.history.length > 0 && (
                   <div className="px-3 pb-2.5 -mt-0.5 flex flex-col gap-1">
-                    <p className="text-[9px] font-mono text-[#5a6172] uppercase tracking-widest">
+                    <p className="text-[9px] font-mono text-muted-foreground/70 uppercase tracking-widest">
                       Status history
                     </p>
                     {server.history.map((event) => (
@@ -356,7 +377,7 @@ export function McpPanel() {
                               ? "bg-emerald-400"
                               : event.status === "error"
                                 ? "bg-red-400"
-                                : "bg-[#7a8294]",
+                                : "bg-muted-foreground",
                           )}
                         />
                         <span
@@ -366,16 +387,16 @@ export function McpPanel() {
                               ? "text-emerald-400/80"
                               : event.status === "error"
                                 ? "text-red-400/80"
-                                : "text-[#7a8294]",
+                                : "text-muted-foreground",
                           )}
                         >
                           {eventLabel(event)}
                         </span>
-                        <span className="text-[#5a6172] shrink-0">
+                        <span className="text-muted-foreground/70 shrink-0">
                           {timeAgo(event.createdAt)}
                         </span>
                         {event.error && (
-                          <span className="text-[#5a6172] truncate" title={event.error}>
+                          <span className="text-muted-foreground/70 truncate" title={event.error}>
                             — {event.error}
                           </span>
                         )}
@@ -385,7 +406,7 @@ export function McpPanel() {
                 )}
 
                 {isExpanded && canExpand && (
-                  <div className="px-3 pb-3 pt-1 flex flex-col gap-1.5 border-t border-[#1a1f2b]">
+                  <div className="px-3 pb-3 pt-1 flex flex-col gap-1.5 border-t border-border">
                     {tools.map((tool) => {
                       const key = toolKey(server.id, tool.name);
                       const isOpen = openTool === key;
@@ -398,22 +419,22 @@ export function McpPanel() {
                                 {tool.name}
                               </p>
                               {tool.description && (
-                                <p className="text-[10px] font-mono text-[#7a8294] leading-relaxed">
+                                <p className="text-[10px] font-mono text-muted-foreground leading-relaxed">
                                   {tool.description}
                                 </p>
                               )}
                             </div>
                             <button
                               onClick={() => setOpenTool(isOpen ? null : key)}
-                              className="shrink-0 px-2 py-1 text-[10px] font-mono rounded border border-[#252a35] text-[#a0a8b8] hover:border-emerald-400/50 hover:text-emerald-400 transition-colors"
+                              className="shrink-0 px-2 py-1 text-[10px] font-mono rounded border border-border text-muted-foreground hover:border-emerald-400/50 hover:text-emerald-400 transition-colors"
                             >
                               {isOpen ? "Close" : "Run"}
                             </button>
                           </div>
 
                           {isOpen && (
-                            <div className="flex flex-col gap-2 mt-1.5 rounded-md border border-[#1a1f2b] bg-[#0a0d10] p-2.5">
-                              <label className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest">
+                            <div className="flex flex-col gap-2 mt-1.5 rounded-md border border-border bg-background p-2.5">
+                              <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
                                 Arguments (JSON)
                               </label>
                               <textarea
@@ -421,7 +442,7 @@ export function McpPanel() {
                                 onChange={(e) => updateRun(key, { args: e.target.value })}
                                 spellCheck={false}
                                 rows={3}
-                                className="px-2 py-1.5 text-[11px] font-mono rounded bg-[#0d1117] border border-[#1a1f2b] text-[#c0c5cf] focus:border-emerald-400/50 focus:outline-none transition-colors resize-y"
+                                className="px-2 py-1.5 text-[11px] font-mono rounded bg-card border border-border text-foreground focus:border-emerald-400/50 focus:outline-none transition-colors resize-y"
                               />
                               <div className="flex items-center gap-2">
                                 <button
@@ -448,14 +469,14 @@ export function McpPanel() {
                                     {run.result.isError ? "Tool returned an error" : "Result"}
                                   </p>
                                   {run.result.content.length === 0 ? (
-                                    <p className="text-[10px] font-mono text-[#7a8294]">
+                                    <p className="text-[10px] font-mono text-muted-foreground">
                                       (empty result)
                                     </p>
                                   ) : (
                                     run.result.content.map((block, i) => (
                                       <pre
                                         key={i}
-                                        className="text-[10px] font-mono text-[#c0c5cf] whitespace-pre-wrap break-words bg-[#0d1117] border border-[#1a1f2b] rounded p-2 max-h-48 overflow-auto"
+                                        className="text-[10px] font-mono text-foreground whitespace-pre-wrap break-words bg-card border border-border rounded p-2 max-h-48 overflow-auto"
                                       >
                                         {blockToText(block)}
                                       </pre>

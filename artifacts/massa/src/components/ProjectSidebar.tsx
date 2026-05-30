@@ -29,7 +29,7 @@ function StatusIcon({ status, className }: StatusIconProps) {
     return (
       <span
         className={cn(
-          "inline-block w-2 h-2 rounded-full bg-white",
+          "inline-block w-2 h-2 rounded-full bg-foreground",
           className
         )}
       />
@@ -38,7 +38,7 @@ function StatusIcon({ status, className }: StatusIconProps) {
   if (status === "needs-review") {
     return (
       <AlertCircle
-        className={cn("w-3.5 h-3.5 text-white", className)}
+        className={cn("w-3.5 h-3.5 text-foreground", className)}
         strokeWidth={2}
       />
     );
@@ -46,7 +46,7 @@ function StatusIcon({ status, className }: StatusIconProps) {
   if (status === "failed") {
     return (
       <XCircle
-        className={cn("w-3.5 h-3.5 text-white", className)}
+        className={cn("w-3.5 h-3.5 text-foreground", className)}
         strokeWidth={2}
       />
     );
@@ -54,14 +54,14 @@ function StatusIcon({ status, className }: StatusIconProps) {
   if (status === "completed") {
     return (
       <CheckCircle2
-        className={cn("w-3.5 h-3.5 text-white", className)}
+        className={cn("w-3.5 h-3.5 text-foreground", className)}
         strokeWidth={2}
       />
     );
   }
   return (
     <Circle
-      className={cn("w-3.5 h-3.5 text-white", className)}
+      className={cn("w-3.5 h-3.5 text-foreground", className)}
       strokeWidth={2}
     />
   );
@@ -137,7 +137,7 @@ export function ProjectSidebar({
         <button
           onClick={() => setManualCollapsed((c) => (c === null ? !isNarrow : !c))}
           className={cn(
-            "flex items-center justify-center w-6 h-6 rounded hover:bg-accent text-white hover:text-white transition-colors",
+            "flex items-center justify-center w-6 h-6 rounded hover:bg-accent text-foreground hover:text-foreground transition-colors",
             collapsed && "mx-auto"
           )}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -183,7 +183,7 @@ export function ProjectSidebar({
           )}
           title="Image Generator"
         >
-          <ImagePlus className="w-3.5 h-3.5 shrink-0 text-white" />
+          <ImagePlus className="w-3.5 h-3.5 shrink-0 text-foreground" />
           {!collapsed && <span>Image Generator</span>}
         </button>
         <button
@@ -194,7 +194,7 @@ export function ProjectSidebar({
           )}
           title="Video Generator"
         >
-          <Film className="w-3.5 h-3.5 shrink-0 text-white" />
+          <Film className="w-3.5 h-3.5 shrink-0 text-foreground" />
           {!collapsed && <span>Video Generator</span>}
         </button>
         <button
@@ -205,7 +205,7 @@ export function ProjectSidebar({
           )}
           title="Figma"
         >
-          <Layers className="w-3.5 h-3.5 shrink-0 text-white" />
+          <Layers className="w-3.5 h-3.5 shrink-0 text-foreground" />
           {!collapsed && <span>Figma</span>}
         </button>
       </div>
@@ -236,7 +236,7 @@ export function ProjectSidebar({
                     <div className="text-xs font-medium truncate">
                       {project.name}
                     </div>
-                    <div className="text-[10px] text-muted-foreground/70 truncate">
+                    <div className="text-[11px] text-muted-foreground/70 truncate">
                       {statusLabel(project.status)}
                       {project.taskCount > 0 && (
                         <> &middot; {project.taskCount} task{project.taskCount !== 1 ? "s" : ""}</>
@@ -261,7 +261,7 @@ export function ProjectSidebar({
                     className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-accent transition-all cursor-pointer"
                     title="More actions"
                   >
-                    <CheckCircle2 className="w-3 h-3 text-muted-foreground/70 hover:text-white" />
+                    <CheckCircle2 className="w-3 h-3 text-muted-foreground/70 hover:text-foreground" />
                   </span>
                 )}
               </button>
@@ -274,7 +274,7 @@ export function ProjectSidebar({
                     }}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left hover:bg-accent transition-colors"
                   >
-                    <PackageCheck className="w-3.5 h-3.5 text-white" />
+                    <PackageCheck className="w-3.5 h-3.5 text-foreground" />
                     <span>Push to Completed</span>
                   </button>
                 </div>
@@ -293,12 +293,12 @@ export function ProjectSidebar({
           )}
           title="Completed Products"
         >
-          <PackageCheck className="w-3.5 h-3.5 shrink-0 text-white" />
+          <PackageCheck className="w-3.5 h-3.5 shrink-0 text-foreground" />
           {!collapsed && (
             <>
               <span className="flex-1 text-left">Completed Products</span>
               {completedProducts.length > 0 && (
-                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 rounded-full">
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 rounded-md">
                   {completedProducts.length}
                 </span>
               )}

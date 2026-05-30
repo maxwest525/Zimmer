@@ -116,11 +116,11 @@ export function KnowledgePanel({ projectId, files, onAddFiles, onRemoveFile }: K
           "flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-10 cursor-pointer transition-colors",
           isDragging
             ? "border-emerald-400 bg-emerald-400/[0.06]"
-            : "border-[#252a35] bg-[#0d1117] hover:border-[#3a4050] hover:bg-[#0f141c]"
+            : "border-border bg-card hover:border-emerald-500/30 hover:bg-accent/50"
         )}
       >
         <span className="text-2xl opacity-80">↑</span>
-        <p className="text-xs font-mono text-[#a0a8b8] text-center">
+        <p className="text-xs font-mono text-muted-foreground text-center">
           {isDragging ? (
             <span className="text-emerald-400">Drop files here</span>
           ) : (
@@ -130,7 +130,7 @@ export function KnowledgePanel({ projectId, files, onAddFiles, onRemoveFile }: K
             </>
           )}
         </p>
-        <p className="text-[10px] font-mono text-[#7a8294]">
+        <p className="text-[11px] font-mono text-muted-foreground">
           PDF, TXT, MD, images, CSV, JSON, and more
         </p>
         <input
@@ -145,30 +145,30 @@ export function KnowledgePanel({ projectId, files, onAddFiles, onRemoveFile }: K
 
       {files.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-xs font-mono text-[#7a8294]">No files uploaded yet</p>
+          <p className="text-xs font-mono text-muted-foreground">No files uploaded yet</p>
         </div>
       ) : (
         <div className="flex flex-col gap-1 overflow-y-auto flex-1">
-          <p className="text-[10px] font-mono text-[#7a8294] uppercase tracking-widest mb-1">
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">
             {files.length} file{files.length !== 1 ? "s" : ""}
           </p>
           {files.map((file) => (
             <div
               key={file.id}
-              className="flex items-center gap-3 px-3 py-2 rounded-md bg-[#0d1117] border border-[#1a1f2b] hover:border-[#252a35] group transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-md bg-card border border-border hover:border-emerald-500/30 group transition-colors"
             >
               <span className="text-sm w-5 text-center shrink-0 opacity-70">
                 {getTypeIcon(file.type)}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-mono text-[#c0c5cf] truncate">{file.name}</p>
-                <p className="text-[10px] font-mono text-[#7a8294]">
+                <p className="text-xs font-mono text-foreground truncate">{file.name}</p>
+                <p className="text-[11px] font-mono text-muted-foreground">
                   {formatFileSize(file.size)} · {formatDate(file.uploadedAt)}
                 </p>
               </div>
               <button
                 onClick={() => onRemoveFile(projectId, file.id)}
-                className="text-[#7a8294] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-mono px-1"
+                className="text-muted-foreground hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-mono px-1"
                 title="Remove file"
               >
                 ✕

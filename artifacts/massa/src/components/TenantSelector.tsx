@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTenant } from "@/contexts/TenantContext";
+import { useThemeColors } from "@/contexts/ThemeContext";
 import { PROJECTS } from "@/data/mock";
 
 function statusDot(status: string) {
@@ -12,6 +13,7 @@ function statusDot(status: string) {
 
 export function TenantSelector() {
   const { selectedTenantId, setSelectedTenantId } = useTenant();
+  const c = useThemeColors();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -47,7 +49,7 @@ export function TenantSelector() {
           borderRadius: 4,
           padding: "5px 10px 5px 8px",
           cursor: "pointer",
-          color: "#e8eaed",
+          color: c.text,
           fontSize: 11,
           fontWeight: 600,
           fontFamily: '"JetBrains Mono", Menlo, monospace',
@@ -112,8 +114,8 @@ export function TenantSelector() {
             top: "calc(100% + 4px)",
             right: 0,
             minWidth: 200,
-            background: "#0a0d10",
-            border: "1px solid #1e2330",
+            background: c.panel,
+            border: `1px solid ${c.border}`,
             borderRadius: 6,
             boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
             zIndex: 100,
@@ -133,9 +135,9 @@ export function TenantSelector() {
               padding: "8px 12px",
               background: selectedTenantId === null ? "rgba(52,211,153,0.06)" : "transparent",
               border: "none",
-              borderBottom: "1px solid #1e2330",
+              borderBottom: `1px solid ${c.border}`,
               cursor: "pointer",
-              color: selectedTenantId === null ? "#34d399" : "#e8eaed",
+              color: selectedTenantId === null ? c.green : c.text,
               fontSize: 11,
               fontWeight: selectedTenantId === null ? 700 : 500,
               fontFamily: '"JetBrains Mono", Menlo, monospace',
@@ -186,9 +188,9 @@ export function TenantSelector() {
                   padding: "8px 12px",
                   background: isSelected ? "rgba(52,211,153,0.06)" : "transparent",
                   border: "none",
-                  borderBottom: "1px solid #14181e",
+                  borderBottom: `1px solid ${c.borderDim}`,
                   cursor: "pointer",
-                  color: isSelected ? "#34d399" : "#e8eaed",
+                  color: isSelected ? c.green : c.text,
                   fontSize: 11,
                   fontWeight: isSelected ? 700 : 500,
                   fontFamily: '"JetBrains Mono", Menlo, monospace',
@@ -223,7 +225,7 @@ export function TenantSelector() {
                     height="12"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#34d399"
+                    stroke={c.green}
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"

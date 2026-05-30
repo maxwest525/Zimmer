@@ -68,6 +68,8 @@ export function ImageGenerator() {
         <h1 className="text-sm font-semibold tracking-tight">Image Generator</h1>
         <span className="ml-2 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
           DALL·E 3
+        <span className="ml-2 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded-md bg-violet-500/10 text-violet-400 border border-violet-500/20">
+          Coming Soon
         </span>
       </header>
 

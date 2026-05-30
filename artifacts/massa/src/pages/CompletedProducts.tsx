@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useThemeColors } from "@/contexts/ThemeContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { CompletedProduct, ProjectLifecycle } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import {
@@ -15,18 +17,6 @@ import {
   ExternalLink,
   Link2,
 } from "lucide-react";
-
-const c = {
-  bg: '#080a0e',
-  alt: '#0c0f14',
-  border: '#1e2330',
-  green: '#34d399',
-  greenSoft: 'rgba(52,211,153,0.08)',
-  muted: '#6b7280',
-  text: '#f0f0f0',
-  red: '#f87171',
-  yellow: '#fbbf24',
-}
 
 function DomainStep({
   product,
@@ -227,13 +217,13 @@ function PublishStep({
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-medium">Publish</span>
           {product.publishStatus === "live" && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-foreground rounded-full">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-foreground rounded-md">
               <span className="w-1.5 h-1.5 bg-foreground rounded-full" />
               Live
             </span>
           )}
           {product.publishStatus === "publishing" && (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground rounded-full">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground rounded-md">
               <Loader2 className="w-2.5 h-2.5 animate-spin" />
               Publishing
             </span>
@@ -336,6 +326,7 @@ function LifecycleProjectCard({ project, lifecycle, onRestore, onArchive, onDele
   onArchive?: () => void;
   onDelete?: () => void;
 }) {
+  const c = useThemeColors();
   return (
     <div style={{
       border: `1px solid ${c.border}`,
@@ -348,8 +339,8 @@ function LifecycleProjectCard({ project, lifecycle, onRestore, onArchive, onDele
       fontFamily: '"JetBrains Mono", Menlo, monospace',
     }}>
       <div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: c.text }}>{project.name}</div>
-        <div style={{ fontSize: 10, color: c.muted, marginTop: 2 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>{project.name}</div>
+        <div style={{ fontSize: 12, color: c.muted, marginTop: 2, fontFamily: c.fontSans }}>
           {lifecycle === 'completed' ? 'Marked complete' : lifecycle === 'archived' ? 'Archived' : 'Marked for deletion'}
         </div>
       </div>
@@ -363,7 +354,7 @@ function LifecycleProjectCard({ project, lifecycle, onRestore, onArchive, onDele
             padding: '4px 10px',
             borderRadius: 4,
             cursor: 'pointer',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 600,
             fontFamily: '"JetBrains Mono", Menlo, monospace',
           }}
@@ -378,7 +369,7 @@ function LifecycleProjectCard({ project, lifecycle, onRestore, onArchive, onDele
               padding: '4px 10px',
               borderRadius: 4,
               cursor: 'pointer',
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 600,
               fontFamily: '"JetBrains Mono", Menlo, monospace',
             }}
@@ -394,7 +385,7 @@ function LifecycleProjectCard({ project, lifecycle, onRestore, onArchive, onDele
               padding: '4px 10px',
               borderRadius: 4,
               cursor: 'pointer',
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 600,
               fontFamily: '"JetBrains Mono", Menlo, monospace',
             }}
@@ -406,6 +397,7 @@ function LifecycleProjectCard({ project, lifecycle, onRestore, onArchive, onDele
 }
 
 export function CompletedProducts() {
+  const c = useThemeColors();
   const [, navigate] = useLocation();
   const { activeProjects, completedProducts, projectLifecycles, restoreProject, archiveProject, deleteProject } = useProjects();
   const [activeTab, setActiveTab] = useState<LifecycleTab>(getInitialTab);
@@ -441,7 +433,7 @@ export function CompletedProducts() {
         top: 0,
         zIndex: 10,
         borderBottom: `1px solid ${c.border}`,
-        background: 'rgba(8,10,14,0.9)',
+        background: c.panel,
         backdropFilter: 'blur(8px)',
       }}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -468,9 +460,12 @@ export function CompletedProducts() {
           </button>
           <div>
             <h1 style={{ fontSize: 16, fontWeight: 700, letterSpacing: 0.5 }}>Current Projects</h1>
-            <p style={{ fontSize: 10, color: c.muted, marginTop: 2 }}>
+            <p style={{ fontSize: 12, color: c.muted, marginTop: 2, fontFamily: c.fontSans }}>
               Manage completed, archived, and deleted projects
             </p>
+          </div>
+          <div style={{ marginLeft: 'auto' }}>
+            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -501,12 +496,12 @@ export function CompletedProducts() {
               {tab.label}
               {tabCounts[tab.key] > 0 && (
                 <span style={{
-                  fontSize: 9,
+                  fontSize: 11,
                   fontWeight: 700,
                   background: activeTab === tab.key ? c.greenSoft : 'rgba(107,114,128,0.12)',
                   color: activeTab === tab.key ? c.green : c.muted,
                   padding: '1px 5px',
-                  borderRadius: 999,
+                  borderRadius: 6,
                 }}>{tabCounts[tab.key]}</span>
               )}
             </button>
@@ -521,19 +516,19 @@ export function CompletedProducts() {
                   <div key={product.id} style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 10, padding: 14 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                       <div style={{ fontWeight: 700, fontSize: 14, color: c.text }}>{product.name}</div>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: c.green, background: c.greenSoft, padding: '2px 8px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: c.green, background: c.greenSoft, padding: '2px 8px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.green, boxShadow: `0 0 4px ${c.green}` }} />
                         LIVE
                       </span>
                     </div>
-                    <div style={{ fontSize: 10, color: '#666', marginBottom: 8 }}>{product.summary}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10 }}>
+                    <div style={{ fontSize: 13, color: c.muted, marginBottom: 8, fontFamily: c.fontSans, lineHeight: 1.5 }}>{product.summary}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12 }}>
                       {product.domain && (
                         <span style={{ color: c.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
                           <Link2 size={12} /> {product.domain}
                         </span>
                       )}
-                      <span style={{ color: '#555' }}>Completed {product.completedAt}</span>
+                      <span style={{ color: c.dim }}>Completed {product.completedAt}</span>
                     </div>
                   </div>
                 ))}
@@ -541,8 +536,8 @@ export function CompletedProducts() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', textAlign: 'center' }}>
                 <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◉</div>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>No published products</div>
-                <div style={{ fontSize: 11, color: c.muted, maxWidth: 320 }}>Deploy and publish a completed product to see it here.</div>
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>No published products</div>
+                <div style={{ fontSize: 13, color: c.muted, maxWidth: 320, fontFamily: c.fontSans, lineHeight: 1.5 }}>Deploy and publish a completed product to see it here.</div>
               </div>
             )
           ) : (
@@ -575,10 +570,10 @@ export function CompletedProducts() {
                     <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>
                       {activeTab === 'completed' ? '✓' : activeTab === 'archived' ? '▪' : '✕'}
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
                       No {activeTab} projects
                     </div>
-                    <div style={{ fontSize: 11, color: c.muted, maxWidth: 320 }}>
+                    <div style={{ fontSize: 13, color: c.muted, maxWidth: 320, fontFamily: c.fontSans, lineHeight: 1.5 }}>
                       {activeTab === 'completed'
                         ? 'Mark a project complete from the dashboard to move it here.'
                         : activeTab === 'archived'
