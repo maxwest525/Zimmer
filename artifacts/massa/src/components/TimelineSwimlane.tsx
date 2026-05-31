@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { InlineCompanyLogo } from '@/components/CompanyLogo'
 
-type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
+type Status = 'idle' | 'queued' | 'planning' | 'awaiting_approval' | 'running' | 'complete' | 'failed'
 
 type Build = {
   id: string

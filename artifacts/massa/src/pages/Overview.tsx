@@ -20,7 +20,7 @@ const WorkflowCanvas = lazy(() => import('@/components/WorkflowCanvas').then(m =
 import { useTheme, useThemeColors } from '@/contexts/ThemeContext'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
-type Status = 'idle' | 'queued' | 'running' | 'complete' | 'failed'
+type Status = 'idle' | 'queued' | 'planning' | 'awaiting_approval' | 'running' | 'complete' | 'failed'
 type Phase = 'thinking' | 'building' | 'deploying' | 'done' | 'queued'
 
 type Build = {
@@ -50,6 +50,66 @@ type Project = {
   lifecycle: 'active' | 'completed' | 'archived' | 'deleted'
   projectType?: string
   previewUrl?: string
+  research?: string
+  architecture?: string
+  wireframes?: string
+}
+
+function PlanningReviewPanel({ project, onApprove, themeColors: c }: {
+  project: Project
+  onApprove: () => Promise<void>
+  themeColors: ReturnType<typeof useThemeColors>
+}) {
+  const [tab, setTab] = useState<'research' | 'architecture' | 'wireframes'>('research')
+  const [approving, setApproving] = useState(false)
+  const isAwaiting = project.status === 'awaiting_approval'
+  const tabs = [
+    { key: 'research' as const, label: 'Research', content: project.research },
+    { key: 'architecture' as const, label: 'Architecture', content: project.architecture },
+    { key: 'wireframes' as const, label: 'Wireframes', content: project.wireframes },
+  ]
+  return (
+    <div style={{ border: `1px solid ${isAwaiting ? '#a78bfa44' : c.border}`, borderRadius: 10, overflow: 'hidden', marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderBottom: `1px solid ${c.border}`, background: c.alt }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: isAwaiting ? '#a78bfa' : c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.08em' }}>
+          {isAwaiting ? '⬡ AWAITING APPROVAL' : '⟳ PLANNING IN PROGRESS'}
+        </span>
+        <div style={{ flex: 1 }} />
+        {tabs.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+            style={{ padding: '3px 10px', borderRadius: 4, border: `1px solid ${tab === t.key ? '#a78bfa66' : c.border}`, background: tab === t.key ? '#a78bfa18' : 'transparent', color: tab === t.key ? '#a78bfa' : c.dim, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>
+            {t.label}{!tabs.find(tt => tt.key === t.key)?.content && project.status === 'planning' ? ' …' : ''}
+          </button>
+        ))}
+        {isAwaiting && (
+          <button
+            onClick={async () => { setApproving(true); await onApprove().finally(() => setApproving(false)) }}
+            disabled={approving}
+            style={{ padding: '4px 14px', borderRadius: 5, border: '1px solid #a78bfa88', background: approving ? '#a78bfa22' : '#a78bfa33', color: '#a78bfa', fontSize: 10, fontWeight: 700, cursor: approving ? 'wait' : 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>
+            {approving ? 'Starting…' : 'Approve & Build ✓'}
+          </button>
+        )}
+      </div>
+      <div style={{ padding: 14, maxHeight: 280, overflowY: 'auto', background: c.panel }}>
+        {project.status === 'failed' && tab === 'research' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#ef4444', fontFamily: 'Inter, system-ui, sans-serif' }}>Research failed — no builds were started</div>
+            <pre style={{ margin: 0, fontSize: 11, color: '#fca5a5', fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+              {project.research}
+            </pre>
+          </div>
+        ) : tabs.find(t => t.key === tab)?.content ? (
+          <pre style={{ margin: 0, fontSize: 11, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+            {tabs.find(t => t.key === tab)!.content}
+          </pre>
+        ) : (
+          <div style={{ fontSize: 11, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+            {project.status === 'planning' ? 'Generating…' : 'Not available'}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 const SKILL_COLORS: Record<string, string> = {
@@ -2529,8 +2589,30 @@ export function Overview() {
       setProjects(prev => [newProject, ...prev])
       setSelectedProjectId(String(p.id))
 
-      // SSE stream for real-time build logs
+      // SSE stream for real-time build logs and planning pipeline
       const es = new EventSource(`/api/projects/${p.id}/stream`)
+      es.addEventListener('planning_stage', (e) => {
+        const { stage, status, content } = JSON.parse(e.data) as { stage: string; status: string; content?: string }
+        setProjects(prev => prev.map(proj => {
+          if (proj.id !== String(p.id)) return proj
+          if (status === 'running') return { ...proj, status: 'planning' as Status }
+          if (stage === 'research' && content) return { ...proj, research: content }
+          if (stage === 'architecture' && content) return { ...proj, architecture: content }
+          if (stage === 'wireframes' && content) return { ...proj, wireframes: content }
+          return proj
+        }))
+      })
+      es.addEventListener('awaiting_approval', () => {
+        setProjects(prev => prev.map(proj => proj.id === String(p.id) ? { ...proj, status: 'awaiting_approval' as Status } : proj))
+      })
+      es.addEventListener('planning_failed', (e) => {
+        const { error } = JSON.parse(e.data) as { error: string }
+        setProjects(prev => prev.map(proj => proj.id === String(p.id) ? { ...proj, status: 'failed' as Status, research: `Research failed: ${error}` } : proj))
+        es.close()
+      })
+      es.addEventListener('approved', () => {
+        setProjects(prev => prev.map(proj => proj.id === String(p.id) ? { ...proj, status: 'running' as Status } : proj))
+      })
       es.addEventListener('build_start', (e) => {
         const { buildId } = JSON.parse(e.data) as { buildId: number }
         setProjects(prev => prev.map(proj => {
@@ -2576,7 +2658,10 @@ export function Overview() {
             if (proj.id !== String(p.id)) return proj
             return {
               ...proj,
-              status: (d.project.status === 'completed' ? 'complete' : d.project.status) as Status,
+              status: (d.project.status === 'completed' ? 'complete' : d.project.status === 'in_progress' ? 'running' : d.project.status) as Status,
+              research: d.project.research,
+              architecture: d.project.architecture,
+              wireframes: d.project.wireframes,
               builds: (d.project.builds || []).map((b: { id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[]; plan?: string; code?: string; thinkingLog?: string }) => ({
                 id: String(b.id), title: b.title, summary: b.summary,
                 status: (b.status === 'completed' ? 'complete' : b.status === 'in_progress' ? 'running' : b.status) as Status,
@@ -3978,6 +4063,14 @@ export function Overview() {
                         })()}
 
                       </div>
+
+                      {/* Planning review panel */}
+                      {(project.status === 'planning' || project.status === 'awaiting_approval' || (project.status === 'failed' && project.research)) && (
+                        <PlanningReviewPanel project={project} onApprove={async () => {
+                          await fetch(`/api/projects/${project.id}/approve`, { method: 'POST' })
+                          setProjects(prev => prev.map(p => p.id === project.id ? { ...p, status: 'running' as Status } : p))
+                        }} themeColors={c} />
+                      )}
 
                       {/* Builds strip (horizontal scroll) */}
                       <div style={{ minWidth: 0 }}>

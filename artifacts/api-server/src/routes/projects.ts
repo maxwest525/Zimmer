@@ -2,7 +2,8 @@ import { Router, type Response } from "express";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
 import { complete } from "../lib/models.js";
 import { db, projectsTable, buildsTable, projectMessagesTable, massaSkillsTable } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, or, like } from "drizzle-orm";
+import { createProjectSession, getCoordinatorId } from "../lib/massaAgents.js";
 
 const router = Router();
 
@@ -408,7 +409,7 @@ Create 4-6 modules that together form a complete, production-ready ${projectType
   const [project] = await db.insert(projectsTable).values({
     name: decomposition.name,
     goal: decomposition.goal,
-    status: "in_progress",
+    status: "planning",
     projectType,
     designMd: designMd || null,
   }).returning();
@@ -430,8 +431,32 @@ Create 4-6 modules that together form a complete, production-ready ${projectType
 
   res.json({ project: { ...project, builds: buildRows } });
 
-  void runBuildsWithStreaming(project.id, buildRows, decomposition.builds, typeConfig, project.name, project.goal, model, project.designMd);
+  void runPlanningPipeline(project.id, project.name, project.goal, projectType, model, buildRows, decomposition.builds, typeConfig, project.designMd);
   return;
+});
+
+// POST /api/projects/:id/approve — approve planning and start builds
+router.post("/projects/:id/approve", async (req, res) => {
+  const projectId = parseInt(req.params.id);
+  try {
+    const project = await db.query.projectsTable.findFirst({ where: eq(projectsTable.id, projectId) });
+    if (!project) return res.status(404).json({ error: "project not found" });
+    if (project.status !== "awaiting_approval") return res.status(400).json({ error: "project is not awaiting approval" });
+
+    await db.update(projectsTable).set({ status: "in_progress" }).where(eq(projectsTable.id, projectId));
+
+    const buildRows = await db.query.buildsTable.findMany({ where: eq(buildsTable.projectId, projectId) });
+    const origBuilds = buildRows.map(b => ({ slug: b.slug, dependsOn: b.dependsOn as string[] }));
+    const typeConfig = PROJECT_TYPE_CONFIG[project.projectType] ?? DEFAULT_TYPE_CONFIG;
+
+    pushSSE(projectId, "approved", { projectId });
+    void runBuildsWithStreaming(projectId, buildRows, origBuilds, typeConfig, project.name, project.goal, undefined, project.designMd);
+
+    return res.json({ ok: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "failed to approve";
+    return res.status(500).json({ error: msg });
+  }
 });
 
 // POST /api/projects/:id/deploy — Vercel deploy
@@ -716,6 +741,120 @@ router.delete("/skills/massa/:id", async (req, res) => {
 
 const VISUAL_PROJECT_TYPES = ["landing-page", "marketing-site", "ecommerce", "dashboard", "mobile-app"];
 
+async function notifySlack(message: { title: string; error: string; projectName: string; projectId: number }) {
+  const url = process.env.SLACK_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: `🚨 *MASSA OS — Planning Failed*`,
+        blocks: [
+          {
+            type: "header",
+            text: { type: "plain_text", text: "🚨 MASSA OS — Planning Failed", emoji: true },
+          },
+          {
+            type: "section",
+            fields: [
+              { type: "mrkdwn", text: `*Project:*\n${message.projectName} (ID: ${message.projectId})` },
+              { type: "mrkdwn", text: `*Time:*\n${new Date().toISOString()}` },
+            ],
+          },
+          {
+            type: "section",
+            text: { type: "mrkdwn", text: `*Error:*\n\`\`\`${message.error}\`\`\`` },
+          },
+          {
+            type: "section",
+            text: { type: "mrkdwn", text: `No builds were started. Fix the error and create a new project.` },
+          },
+        ],
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch { /* Slack notification failure should never crash the app */ }
+}
+
+async function webSearch(query: string): Promise<string> {
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) throw new Error("FIRECRAWL_API_KEY is not set — real web research requires this key. Add it to your environment variables.");
+  const res = await fetch("https://api.firecrawl.dev/v1/search", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ query, limit: 5, scrapeOptions: { formats: ["markdown"] } }),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) throw new Error(`Firecrawl search failed (HTTP ${res.status}) for query: "${query}"`);
+  const data = await res.json() as { data?: Array<{ url: string; markdown?: string; title?: string }> };
+  if (!data.data?.length) throw new Error(`Firecrawl returned no results for query: "${query}" — check your API key and quota`);
+  return data.data.map(r => `## ${r.title ?? r.url}\nSource: ${r.url}\n\n${(r.markdown ?? "").slice(0, 800)}`).join("\n\n---\n\n");
+}
+
+async function runPlanningPipeline(
+  projectId: number,
+  projectName: string,
+  projectGoal: string,
+  projectType: string,
+  model: string | undefined,
+  buildRows: Array<{ id: number; slug: string; title: string; summary: string; agent: string; agentRole?: string | null; stack: string[] }>,
+  origBuilds: Array<{ slug: string; dependsOn: string[] }>,
+  typeConfig: typeof DEFAULT_TYPE_CONFIG,
+  designMd?: string | null,
+) {
+  try {
+    // Stage 1: Research — real web search first, Claude synthesis second
+    pushSSE(projectId, "planning_stage", { stage: "research", status: "running" });
+
+    const searchQueries = [
+      `${projectType.replace("-", " ")} SaaS best practices 2025`,
+      `${projectGoal.split(" ").slice(0, 6).join(" ")} competitors analysis`,
+      `${buildRows.map(b => b.stack).flat().slice(0, 3).join(" ")} integration patterns`,
+    ];
+
+    const searchResults = await Promise.all(searchQueries.map(q => webSearch(q)));
+    const rawResearch = searchResults.join("\n\n===\n\n");
+
+    const research = await complete({
+      model,
+      maxTokens: 2000,
+      system: "You are a senior product strategist.",
+      user: `Synthesize the following real web research into a structured research brief for building "${projectName}" (${projectType}).\n\nGoal: ${projectGoal}\n\n## Web Research\n${rawResearch}\n\nReturn a structured markdown document covering: market context, key competitors and their differentiators, technical patterns used in the space, and 3-5 strategic recommendations for this specific build. Ground everything in the research above — no generic advice.`,
+    });
+    await db.update(projectsTable).set({ research }).where(eq(projectsTable.id, projectId));
+    pushSSE(projectId, "planning_stage", { stage: "research", status: "done", content: research });
+
+    // Stage 2: Architecture
+    pushSSE(projectId, "planning_stage", { stage: "architecture", status: "running" });
+    const architecture = await complete({
+      model,
+      maxTokens: 2000,
+      system: "You are a senior software architect.",
+      user: `Based on this research, design the architecture for "${projectName}" (${projectType}).\n\nGoal: ${projectGoal}\n\nResearch:\n${research.slice(0, 1500)}\n\nBuild modules planned:\n${buildRows.map(b => `- ${b.title}: ${b.summary} [${b.stack.join(", ")}]`).join("\n")}\n\nReturn a markdown architecture document covering: system overview, data models, API surface, infrastructure decisions, and how the build modules fit together. Be specific and opinionated.`,
+    });
+    await db.update(projectsTable).set({ architecture }).where(eq(projectsTable.id, projectId));
+    pushSSE(projectId, "planning_stage", { stage: "architecture", status: "done", content: architecture });
+
+    // Stage 3: Wireframes
+    pushSSE(projectId, "planning_stage", { stage: "wireframes", status: "running" });
+    const wireframes = await complete({
+      model,
+      maxTokens: 2000,
+      system: "You are a senior UX designer who communicates in ASCII wireframes and precise layout specs.",
+      user: `Create wireframes for the key screens of "${projectName}" (${projectType}).\n\nGoal: ${projectGoal}\n\nArchitecture context:\n${architecture.slice(0, 800)}\n\nFor each major screen: draw an ASCII wireframe, list the components on the page, and note key interactions. Focus on the 3-4 most important views.`,
+    });
+    await db.update(projectsTable).set({ wireframes, status: "awaiting_approval" }).where(eq(projectsTable.id, projectId));
+    pushSSE(projectId, "planning_stage", { stage: "wireframes", status: "done", content: wireframes });
+    pushSSE(projectId, "awaiting_approval", { projectId });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "planning failed";
+    await db.update(projectsTable).set({ status: "failed", research: `## Research Failed\n\n**Error:** ${msg}\n\nFix the error above and create a new project to try again. No builds were started.` }).where(eq(projectsTable.id, projectId));
+    pushSSE(projectId, "planning_failed", { projectId, error: msg });
+    void notifySlack({ title: "Planning Failed", error: msg, projectName, projectId });
+  }
+}
+
 async function generateHeroImage(prompt: string): Promise<string | null> {
   try {
     const openaiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
@@ -743,6 +882,20 @@ async function runBuildsWithStreaming(
   const completed = new Set<string>();
   const remaining = new Set(builds.map((b) => b.slug));
 
+  // Try to use managed agent session for the whole project
+  const coordinatorId = await getCoordinatorId();
+  let managedSessionId: string | null = null;
+  if (coordinatorId) {
+    try {
+      const sessionResult = await createProjectSession(projectId, projectName, projectGoal, typeConfig.description, designMd);
+      managedSessionId = sessionResult?.sessionId ?? null;
+      if (managedSessionId) {
+        await db.update(projectsTable).set({ sessionId: managedSessionId }).where(eq(projectsTable.id, projectId));
+        pushSSE(projectId, "session_created", { sessionId: managedSessionId });
+      }
+    } catch { managedSessionId = null; }
+  }
+
   async function processBuild(build: typeof builds[0]) {
     await db.update(buildsTable).set({ status: "in_progress", progress: 5, log: "" }).where(eq(buildsTable.id, build.id));
     pushSSE(projectId, "build_start", { buildId: build.id, slug: build.slug });
@@ -755,8 +908,51 @@ async function runBuildsWithStreaming(
     }
 
     try {
+      // Inject skills relevant to this agent/project type
+      const relevantSkills = await db.query.massaSkillsTable.findMany({
+        where: or(
+          like(massaSkillsTable.category, `%${build.agent}%`),
+          like(massaSkillsTable.category, `%${typeConfig.description.split(" ")[0]}%`),
+        ),
+        limit: 3,
+      });
+      const skillsContext = relevantSkills.length > 0
+        ? `\n\n## Injected Skills\n${relevantSkills.map(s => `### ${s.name}\n${s.content}`).join("\n\n")}`
+        : "";
+      if (relevantSkills.length > 0) {
+        appendLog(`[${build.agent}] Skills injected: ${relevantSkills.map(s => s.name).join(", ")}\n`);
+      }
+
       appendLog(`[${build.agent}] Starting "${build.title}"...\n`);
 
+      // If managed agent session is active, stream its events for this build
+      if (managedSessionId) {
+        try {
+          appendLog(`[${build.agent}] Running via Managed Agent session...\n`);
+          const { anthropicClient } = await import("../lib/massaAgents.js");
+          const stream = (anthropicClient.beta as any).sessions.events.stream(managedSessionId, {
+            filter: { types: ["message_delta", "agent_message_delta", "subagent_turn_start"] },
+          });
+          let code = "";
+          let plan = "";
+          for await (const event of stream) {
+            if (event.type === "subagent_turn_start") {
+              appendLog(`\n[${event.agent_name ?? build.agent}] Taking over...\n`);
+              pushSSE(projectId, "agent_handoff", { buildId: build.id, agentName: event.agent_name });
+            } else if (event.type === "message_delta" || event.type === "agent_message_delta") {
+              const text = event.delta?.text ?? "";
+              if (text) { code += text; appendLog(text); }
+            }
+          }
+          await db.update(buildsTable).set({ code, plan, status: "completed", progress: 100, log: fullLog }).where(eq(buildsTable.id, build.id));
+          pushSSE(projectId, "build_done", { buildId: build.id, slug: build.slug });
+          return;
+        } catch {
+          appendLog(`\n[${build.agent}] Managed session unavailable — falling back to streaming mode.\n`);
+        }
+      }
+
+      // Fallback: 3-phase streaming
       // Phase 1: Thinking (streaming)
       appendLog(`[${build.agent}] Analyzing requirements...\n`);
       let thinking = "";
@@ -764,7 +960,7 @@ async function runBuildsWithStreaming(
       const thinkStream = anthropic.messages.stream({
         model: "claude-sonnet-4-6",
         max_tokens: 800,
-        system: `You are ${build.agent}, ${build.agentRole ?? "a specialist engineer"}. Think through your approach to building the "${build.title}" module for "${projectName}". Be concise and technical.`,
+        system: `You are ${build.agent}, ${build.agentRole ?? "a specialist engineer"}. Think through your approach to building the "${build.title}" module for "${projectName}". Be concise and technical.${skillsContext}`,
         messages: [{ role: "user", content: `Module: ${build.title}\nSummary: ${build.summary}\nStack: ${build.stack.join(", ")}\nProject goal: ${projectGoal}` }],
       });
 
@@ -784,7 +980,7 @@ async function runBuildsWithStreaming(
       const planStream = anthropic.messages.stream({
         model: "claude-sonnet-4-6",
         max_tokens: 1000,
-        system: `You are ${build.agent}. Write a clear, numbered implementation plan for the "${build.title}" module. Be specific and actionable.`,
+        system: `You are ${build.agent}. Write a clear, numbered implementation plan for the "${build.title}" module. Be specific and actionable.${skillsContext}`,
         messages: [{ role: "user", content: `Module: ${build.title}\nStack: ${build.stack.join(", ")}\nGoal: ${build.summary}\n\nThinking:\n${thinking.slice(0, 400)}` }],
       });
 
@@ -820,7 +1016,7 @@ async function runBuildsWithStreaming(
       const codeStream = anthropic.messages.stream({
         model: "claude-sonnet-4-6",
         max_tokens: 4000,
-        system: typeConfig.systemPrompt(projectName, projectGoal) + designContext + `\n\nYou are specifically the ${build.agent}. Write production-quality code for the "${build.title}" module. Include all necessary files, TypeScript types, and comments. Make it look INCREDIBLE.`,
+        system: typeConfig.systemPrompt(projectName, projectGoal) + designContext + skillsContext + `\n\nYou are specifically the ${build.agent}. Write production-quality code for the "${build.title}" module. Include all necessary files, TypeScript types, and comments. Make it look INCREDIBLE.`,
         messages: [{ role: "user", content: `Module: ${build.title}\nSummary: ${build.summary}\nStack: ${build.stack.join(", ")}\nPlan:\n${plan}${heroImageNote}` }],
       });
 
