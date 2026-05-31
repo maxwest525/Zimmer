@@ -6,8 +6,31 @@ export const projectsTable = pgTable("projects", {
   goal: text("goal").notNull(),
   status: text("status").notNull().default("queued"),
   lifecycle: text("lifecycle").notNull().default("active"),
+  projectType: text("project_type").notNull().default("saas"),
+  previewUrl: text("preview_url"),
+  designMd: text("design_md"),
+  sessionId: text("session_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const agentRegistryTable = pgTable("agent_registry", {
+  id: serial("id").primaryKey(),
+  role: text("role").notNull(),
+  agentId: text("agent_id").notNull(),
+  environmentId: text("environment_id"),
+  version: text("version"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const massaSkillsTable = pgTable("massa_skills", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull().default("general"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const buildsTable = pgTable("builds", {
@@ -25,6 +48,7 @@ export const buildsTable = pgTable("builds", {
   plan: text("plan"),
   code: text("code"),
   thinkingLog: text("thinking_log"),
+  log: text("log"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -45,6 +69,9 @@ export const projectsRelations = relations(projectsTable, ({ many }) => ({
   messages: many(projectMessagesTable),
 }));
 
+export const agentRegistryRelations = relations(agentRegistryTable, ({ }) => ({}));
+export const massaSkillsRelations = relations(massaSkillsTable, ({ }) => ({}));
+
 export const buildsRelations = relations(buildsTable, ({ one, many }) => ({
   project: one(projectsTable, { fields: [buildsTable.projectId], references: [projectsTable.id] }),
   messages: many(projectMessagesTable),
@@ -58,3 +85,19 @@ export const projectMessagesRelations = relations(projectMessagesTable, ({ one }
 export type Project = typeof projectsTable.$inferSelect;
 export type Build = typeof buildsTable.$inferSelect;
 export type ProjectMessage = typeof projectMessagesTable.$inferSelect;
+export type AgentRegistry = typeof agentRegistryTable.$inferSelect;
+export type MassaSkill = typeof massaSkillsTable.$inferSelect;
+
+export const PROJECT_TYPES = [
+  "landing-page",
+  "crm",
+  "saas",
+  "marketing-site",
+  "ecommerce",
+  "dashboard",
+  "mobile-app",
+  "api",
+  "automation",
+  "data-pipeline",
+] as const;
+export type ProjectType = typeof PROJECT_TYPES[number];

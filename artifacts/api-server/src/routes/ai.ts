@@ -1,11 +1,14 @@
 import { Router } from "express";
 import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { complete, MODEL_CATALOG } from "../lib/models.js";
 
 const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
 });
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const router = Router();
 
@@ -204,6 +207,119 @@ router.post("/ai/image", async (req, res) => {
     return res.json({ url });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "image generation failed";
+    return res.status(500).json({ error: msg });
+  }
+});
+
+// POST /api/ai/image-to-html — convert screenshot/image to pixel-perfect HTML
+router.post("/ai/image-to-html", async (req, res) => {
+  const { imageBase64, imageUrl, mimeType = "image/png" } = req.body;
+  if (!imageBase64 && !imageUrl) {
+    return res.status(400).json({ error: "imageBase64 or imageUrl required" });
+  }
+
+  try {
+    const imageSource = imageBase64
+      ? { type: "base64" as const, media_type: mimeType as "image/png" | "image/jpeg" | "image/webp", data: imageBase64 }
+      : { type: "url" as const, url: imageUrl };
+
+    const response = await anthropic.messages.create({
+      model: "claude-opus-4-8",
+      max_tokens: 8000,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "image", source: imageSource },
+            {
+              type: "text",
+              text: `Convert this image/screenshot into pixel-perfect, production-ready HTML.
+
+Requirements:
+1. Match every visual detail exactly: colors (use exact hex values), spacing, typography, layout, borders, shadows
+2. Use Tailwind CSS (CDN) for utility classes, inline styles for precise values
+3. Add Framer Motion-style animations via CSS @keyframes where motion is implied (hover effects, transitions, entrance animations)
+4. Make it fully responsive (mobile-first)
+5. Use semantic HTML5 elements
+6. Include the full Tailwind CDN script tag
+7. Add smooth CSS transitions on interactive elements
+
+Return ONLY the complete HTML file, starting with <!DOCTYPE html>. No explanation, no markdown, just the raw HTML.`,
+            },
+          ],
+        },
+      ],
+    });
+
+    const html = response.content.find(c => c.type === "text")?.text ?? "";
+
+    // Extract tailwind config if present
+    const tailwindMatch = html.match(/tailwind\.config\s*=\s*({[\s\S]+?})/);
+    const tailwindConfig = tailwindMatch?.[1] ?? "{}";
+
+    return res.json({ html, tailwindConfig });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "image-to-html failed";
+    return res.status(500).json({ error: msg });
+  }
+});
+
+// POST /api/ai/video — generate video via Replicate
+router.post("/ai/video", async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
+    return res.status(400).json({ error: "prompt required" });
+  }
+
+  const replicateToken = process.env.REPLICATE_API_TOKEN;
+  if (!replicateToken) {
+    return res.json({
+      url: null,
+      placeholder: true,
+      message: "Video generation requires REPLICATE_API_TOKEN. Configure it to enable this feature.",
+    });
+  }
+
+  try {
+    // Use Wan2.1 (fast video gen model)
+    const startRes = await fetch("https://api.replicate.com/v1/predictions", {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${replicateToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        version: "wan-ai/wan2.1-t2v-480p",
+        input: { prompt: prompt.trim(), num_frames: 81, fps: 16 },
+      }),
+    });
+
+    const prediction = await startRes.json() as { id?: string; error?: string };
+    if (!startRes.ok || prediction.error) {
+      return res.status(500).json({ error: prediction.error || "Failed to start video generation" });
+    }
+
+    return res.json({ predictionId: prediction.id, status: "started" });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "video generation failed";
+    return res.status(500).json({ error: msg });
+  }
+});
+
+// GET /api/ai/video/:id — poll Replicate prediction status
+router.get("/ai/video/:id", async (req, res) => {
+  const replicateToken = process.env.REPLICATE_API_TOKEN;
+  if (!replicateToken) return res.status(400).json({ error: "REPLICATE_API_TOKEN not set" });
+
+  try {
+    const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${req.params.id}`, {
+      headers: { Authorization: `Token ${replicateToken}` },
+    });
+    const data = await pollRes.json() as { status?: string; output?: string | string[]; error?: string };
+    const url = Array.isArray(data.output) ? data.output[0] : data.output;
+    return res.json({ status: data.status, url: url ?? null, error: data.error });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "poll failed";
     return res.status(500).json({ error: msg });
   }
 });

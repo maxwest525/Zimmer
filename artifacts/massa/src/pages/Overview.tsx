@@ -48,6 +48,8 @@ type Project = {
   status: Status
   builds: Build[]
   lifecycle: 'active' | 'completed' | 'archived' | 'deleted'
+  projectType?: string
+  previewUrl?: string
 }
 
 const SKILL_COLORS: Record<string, string> = {
@@ -977,19 +979,120 @@ function TerminalPageView({ onBack, title, command, lines }: { onBack: () => voi
 }
 
 function HistoryView({ onBack }: { onBack: () => void }) {
-  return <TerminalPageView onBack={onBack} title="History" command="history" lines={[
-    '[2026-04-06 03:22:11] Build #847 completed — Trading Bot / Core Engine',
-    '[2026-04-06 03:18:45] Deploy #312 pushed — massa.ai (production)',
-    '[2026-04-06 03:14:02] Build #846 completed — Trading Bot / Risk Module',
-    '[2026-04-06 02:58:30] Agent assigned — UI Agent → Dashboard UI',
-    '[2026-04-06 02:45:19] Build #845 started — Trading Bot / Core Engine',
-    '[2026-04-06 02:30:00] Project created — Web Scraper',
-    '[2026-04-05 23:12:44] Build #844 completed — Massa Marketing Site / Homepage',
-    '[2026-04-05 22:58:11] Deploy #311 pushed — tradingbot.io (staging)',
-    '',
-    '> 847 events total — showing latest 8',
-    '> Use --all to view full history',
-  ]} />
+  const c = useThemeColors()
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(d => {
+        const all: Project[] = (d.projects || []).map((p: any) => ({
+          id: String(p.id),
+          name: p.name,
+          goal: p.goal,
+          status: p.status === 'completed' ? 'complete' : p.status === 'failed' ? 'failed' : p.status,
+          builds: (p.builds || []).map((b: any) => ({
+            id: String(b.id),
+            title: b.title,
+            summary: b.summary,
+            status: b.status === 'completed' ? 'complete' : b.status,
+            progress: b.progress,
+            stack: b.stack || [],
+            agent: b.agent,
+            agentRole: b.agent_role,
+            plan: b.plan,
+            code: b.code,
+          })),
+          lifecycle: 'active',
+          projectType: p.project_type,
+          previewUrl: p.preview_url,
+        }))
+        setProjects(all.filter(p => p.status === 'complete' || p.status === 'failed'))
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.text }} onMouseLeave={e => { e.currentTarget.style.color = c.muted }}>←</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>History</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{loading ? 'Loading…' : `${projects.length} completed project${projects.length !== 1 ? 's' : ''}`}</div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ padding: 32, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 12 }}>Loading project history…</div>
+      ) : projects.length === 0 ? (
+        <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◷</div>
+          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>No completed projects yet</div>
+          <div style={{ fontSize: 10, color: c.dim, marginTop: 4, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Finished projects appear here</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {projects.map(p => (
+            <div key={p.id} style={{ border: `1px solid ${p.status === 'complete' ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`, background: c.panel, borderRadius: 8, overflow: 'hidden' }}>
+              <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 10, color: p.status === 'complete' ? '#34d399' : '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>
+                      {p.status === 'complete' ? '✓' : '✕'}
+                    </span>
+                    <span style={{ fontWeight: 700, fontSize: 13, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{p.name}</span>
+                    {p.projectType && <span style={{ color: c.dim, border: `1px solid ${c.borderDim}`, fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 9, padding: '1px 5px', borderRadius: 3 }}>{p.projectType}</span>}
+                  </div>
+                  <div style={{ fontSize: 10, color: c.dim, marginTop: 2, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{p.goal} — {p.builds.length} build{p.builds.length !== 1 ? 's' : ''}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  {p.previewUrl && (
+                    <a href={p.previewUrl} target="_blank" rel="noreferrer"
+                      style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid rgba(52,211,153,0.3)', color: '#34d399', fontSize: 9, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textDecoration: 'none', background: 'rgba(52,211,153,0.06)' }}
+                      onClick={e => e.stopPropagation()}>↗ LIVE</a>
+                  )}
+                  <span style={{ color: c.dim, fontSize: 12 }}>{expandedId === p.id ? '▲' : '▼'}</span>
+                </div>
+              </div>
+
+              {/* Individual builds */}
+              {expandedId === p.id && (
+                <div style={{ borderTop: `1px solid ${c.borderDim}`, padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.05em', marginBottom: 4 }}>BUILDS</div>
+                  {p.builds.map(b => (
+                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', background: c.bg, borderRadius: 4, border: `1px solid ${c.borderDim}` }}>
+                      <span style={{ fontSize: 10, color: b.status === 'complete' ? '#34d399' : b.status === 'failed' ? '#f87171' : c.dim, flexShrink: 0 }}>{b.status === 'complete' ? '✓' : b.status === 'failed' ? '✕' : '…'}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 11, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.title}</div>
+                        <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.agent} — {b.summary}</div>
+                      </div>
+                      {b.stack?.slice(0, 3).map(s => (
+                        <span key={s} style={{ color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)', fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 9, padding: '1px 5px', borderRadius: 3, flexShrink: 0 }}>{s}</span>
+                      ))}
+                      {b.code && (
+                        <button onClick={() => {
+                          const win = window.open()
+                          win?.document.write(`<pre style="font-family:monospace;font-size:12px;padding:20px;background:#000;color:#eee;white-space:pre-wrap">${b.code?.replace(/</g,'&lt;')}</pre>`)
+                        }}
+                          style={{ padding: '3px 8px', borderRadius: 3, border: `1px solid ${c.borderDim}`, background: 'transparent', color: c.dim, fontSize: 9, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', flexShrink: 0 }}>
+                          &lt;/&gt; code
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function AutomationsView({ onBack }: { onBack: () => void }) {
@@ -1976,49 +2079,76 @@ function InsideMassaView({ onBack }: { onBack: () => void }) {
 }
 
 function PublishedView({ onBack }: { onBack: () => void }) {
-  const { completedProducts } = useProjects()
-  const publishedProducts = useMemo(() => completedProducts.filter(p => p.publishStatus === 'live'), [completedProducts])
-
   const c = useThemeColors()
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(d => {
+        const published = (d.projects || [])
+          .filter((p: any) => p.preview_url)
+          .map((p: any) => ({
+            id: String(p.id),
+            name: p.name,
+            goal: p.goal,
+            status: 'complete' as Status,
+            builds: (p.builds || []).map((b: any) => ({ id: String(b.id), title: b.title, summary: b.summary, status: 'complete' as Status, progress: 100, stack: b.stack || [], agent: b.agent })),
+            lifecycle: 'active' as ProjectLifecycle,
+            projectType: p.project_type,
+            previewUrl: p.preview_url,
+          }))
+        setProjects(published)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   return (
     <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = c.text }}
-          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
-        >←</button>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.text }} onMouseLeave={e => { e.currentTarget.style.color = c.muted }}>←</button>
         <div>
           <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Published</div>
-          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{publishedProducts.length} live product{publishedProducts.length !== 1 ? 's' : ''}</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{loading ? 'Loading…' : `${projects.length} live deployment${projects.length !== 1 ? 's' : ''}`}</div>
         </div>
       </div>
 
-      {publishedProducts.length === 0 ? (
+      {loading ? (
+        <div style={{ padding: 32, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 12 }}>Loading published projects…</div>
+      ) : projects.length === 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◉</div>
-          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>No published products yet</div>
-          <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Deploy and publish a completed product to see it here</div>
+          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>No published projects yet</div>
+          <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Complete a project and click "▲ Deploy" to publish it live on Vercel</div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {publishedProducts.map(product => (
-            <div key={product.id} style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 8, padding: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{product.name}</div>
-                <span style={{ fontSize: 9, fontWeight: 700, color: c.green, background: 'rgba(52,211,153,0.1)', padding: '2px 8px', borderRadius: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.green, boxShadow: `0 0 4px ${c.green}` }} />
-                  LIVE
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 }}>
+          {projects.map(p => (
+            <div key={p.id} style={{ border: '1px solid rgba(52,211,153,0.25)', background: c.panel, borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{p.name}</div>
+                  {p.projectType && <div style={{ fontSize: 9, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', marginTop: 2 }}>{p.projectType}</div>}
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399' }} /> LIVE
                 </span>
               </div>
-              <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{product.summary}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                {product.domain && (
-                  <span style={{ color: c.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 12 }}>🔗</span> {product.domain}
-                  </span>
-                )}
-                <span style={{ color: c.dim }}>Completed {product.completedAt}</span>
+              <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.5 }}>{p.goal}</div>
+              <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', wordBreak: 'break-all' }}>
+                🔗 {p.previewUrl?.replace('https://', '')}
+              </div>
+              <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+                <a href={p.previewUrl} target="_blank" rel="noreferrer"
+                  style={{ flex: 1, padding: '7px 0', borderRadius: 4, border: '1px solid rgba(52,211,153,0.35)', background: 'rgba(52,211,153,0.08)', color: '#34d399', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>
+                  ↗ Open Live Site
+                </a>
+              </div>
+              <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                {p.builds.length} build module{p.builds.length !== 1 ? 's' : ''}
               </div>
             </div>
           ))}
@@ -2067,6 +2197,39 @@ export function Overview() {
   const [projectMenuOpen, setProjectMenuOpen] = useState<string | null>(null)
   const [archTab, setArchTab] = useState<'tree' | 'graph' | 'timeline'>('tree')
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
+  const [projectType, setProjectType] = useState<string>('saas')
+  const [buildLogs, setBuildLogs] = useState<Record<string, string>>({})
+  const [deployingProjectId, setDeployingProjectId] = useState<string | null>(null)
+  const [showProjectTypeMenu, setShowProjectTypeMenu] = useState(false)
+
+  const PROJECT_TYPES = [
+    { id: 'landing-page', label: 'Landing Page', emoji: '🚀', desc: 'High-converting hero, features, pricing' },
+    { id: 'saas', label: 'SaaS App', emoji: '⚡', desc: 'Auth, billing, dashboard, multi-tenant' },
+    { id: 'crm', label: 'CRM', emoji: '🎯', desc: 'Contacts, pipeline, activities, analytics' },
+    { id: 'marketing-site', label: 'Marketing Site', emoji: '✨', desc: 'Blog, SEO, lead capture, animations' },
+    { id: 'ecommerce', label: 'E-commerce', emoji: '🛒', desc: 'Products, cart, checkout, orders' },
+    { id: 'dashboard', label: 'Dashboard', emoji: '📊', desc: 'Charts, tables, real-time data' },
+    { id: 'mobile-app', label: 'Mobile App', emoji: '📱', desc: 'React Native, native gestures, animations' },
+    { id: 'api', label: 'API', emoji: '🔌', desc: 'REST/GraphQL, auth, rate limiting, docs' },
+    { id: 'automation', label: 'Automation', emoji: '🤖', desc: 'Triggers, actions, workflow builder' },
+    { id: 'data-pipeline', label: 'Data Pipeline', emoji: '🔄', desc: 'ETL, transforms, visualization' },
+    { id: 'video-generation', label: 'Video Gen', emoji: '🎬', desc: 'AI video generation platform' },
+  ] as const
+
+  // Image upload → HTML state
+  const [uploadedImage, setUploadedImage] = useState<{ base64: string; mimeType: string; preview: string } | null>(null)
+  const [imageToHtmlLoading, setImageToHtmlLoading] = useState(false)
+  const uploadInputRef = useRef<HTMLInputElement>(null)
+
+  // Site clone state
+  const [cloneUrl, setCloneUrl] = useState('')
+  const [cloneLoading, setCloneLoading] = useState(false)
+  const [showCloneInput, setShowCloneInput] = useState(false)
+
+  // Skills library state
+  const [massaSkills, setMassaSkills] = useState<Array<{ id: number; slug: string; name: string; description: string; content: string; category: string }>>([])
+  const [skillsLoading, setSkillsLoading] = useState(false)
+  const [selectedSkill, setSelectedSkill] = useState<typeof massaSkills[0] | null>(null)
   const panelWasCollapsedBeforeSuggestions = useRef(false)
   const suggestionsAutoCollapsed = useRef(false)
   const [rawInput, setRawInput] = useState('')
@@ -2155,7 +2318,7 @@ export function Overview() {
   }, [rawInput, promptMode, selectedModel])
 
   useEffect(() => {
-    if (promptMode !== 'auto' || rawInput.trim().length < 3) {
+    if (promptMode !== 'auto' || rawInput.trim().length < 10) {
       setQuickType([])
       setQuickTypeLoading(false)
       return
@@ -2166,14 +2329,14 @@ export function Overview() {
       fetch('/api/ai/autocomplete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: rawInput, model: selectedModel }),
+        body: JSON.stringify({ prompt: rawInput, model: 'claude-haiku-4-5' }),
         signal: controller.signal,
       })
         .then(r => r.json())
         .then(d => setQuickType(d.completions || []))
         .catch(() => { if (!controller.signal.aborted) setQuickType([]) })
         .finally(() => { if (!controller.signal.aborted) setQuickTypeLoading(false) })
-    }, 350)
+    }, 700)
     return () => { clearTimeout(timer); controller.abort(); setQuickTypeLoading(false) }
   }, [rawInput, promptMode, selectedModel])
 
@@ -2254,6 +2417,79 @@ export function Overview() {
     return () => { aborted = true }
   }, [])
 
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result as string
+      const base64 = dataUrl.split(',')[1] ?? ''
+      setUploadedImage({ base64, mimeType: file.type || 'image/png', preview: dataUrl })
+    }
+    reader.readAsDataURL(file)
+  }, [])
+
+  const convertImageToHtml = useCallback(async () => {
+    if (!uploadedImage) return
+    setImageToHtmlLoading(true)
+    try {
+      const res = await fetch('/api/ai/image-to-html', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: uploadedImage.base64, mimeType: uploadedImage.mimeType }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.html) return
+      // Create a landing-page project with the generated HTML as the starting prompt
+      const prompt = `Pixel-perfect landing page converted from uploaded screenshot. Use this exact HTML as the base and enhance it with Framer Motion animations and React components:\n\n${data.html.slice(0, 500)}...`
+      setUploadedImage(null)
+      await createProject(prompt)
+    } catch { /* ok */ } finally {
+      setImageToHtmlLoading(false)
+    }
+  }, [uploadedImage]) // createProject added after
+
+  const cloneSite = useCallback(async () => {
+    if (!cloneUrl.trim()) return
+    setCloneLoading(true)
+    try {
+      const res = await fetch('/api/projects/clone-site', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: cloneUrl.trim(), projectType, goal: rawInput.trim() || undefined }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.project) return
+      const p = data.project
+      const newProject: Project = {
+        id: String(p.id),
+        name: p.name,
+        goal: p.goal,
+        status: 'queued',
+        builds: [],
+        lifecycle: 'active',
+        projectType: p.project_type || projectType,
+      }
+      setProjects(prev => [newProject, ...prev])
+      setCloneUrl('')
+      setShowCloneInput(false)
+      setRawInput(`Build ${newProject.name} using the cloned design system`)
+    } catch { /* ok */ } finally {
+      setCloneLoading(false)
+    }
+  }, [cloneUrl, projectType, rawInput])
+
+  const loadMassaSkills = useCallback(async () => {
+    setSkillsLoading(true)
+    try {
+      const res = await fetch('/api/skills/massa')
+      const data = await res.json()
+      setMassaSkills(data.skills || [])
+    } catch { /* ok */ } finally {
+      setSkillsLoading(false)
+    }
+  }, [])
+
   const createProject = useCallback(async (prompt: string, clarifications?: {question: string; answer: string}[]) => {
     setRawInput('')
     setShowClarifyModal(false)
@@ -2264,7 +2500,7 @@ export function Overview() {
       const res = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, clarifications: clarifications || [], model: selectedModel }),
+        body: JSON.stringify({ prompt, clarifications: clarifications || [], model: selectedModel, projectType }),
       })
       const data = await res.json()
       if (!res.ok || !data.project) return
@@ -2292,6 +2528,69 @@ export function Overview() {
       }
       setProjects(prev => [newProject, ...prev])
       setSelectedProjectId(String(p.id))
+
+      // SSE stream for real-time build logs
+      const es = new EventSource(`/api/projects/${p.id}/stream`)
+      es.addEventListener('build_start', (e) => {
+        const { buildId } = JSON.parse(e.data) as { buildId: number }
+        setProjects(prev => prev.map(proj => {
+          if (proj.id !== String(p.id)) return proj
+          return { ...proj, status: 'running' as Status, builds: proj.builds.map(b => b.id === String(buildId) ? { ...b, status: 'running' as Status } : b) }
+        }))
+      })
+      es.addEventListener('build_error', (e) => {
+        const { buildId } = JSON.parse(e.data) as { buildId: number }
+        setProjects(prev => prev.map(proj => {
+          if (proj.id !== String(p.id)) return proj
+          return { ...proj, builds: proj.builds.map(b => b.id === String(buildId) ? { ...b, status: 'failed' as Status } : b) }
+        }))
+      })
+      es.onerror = () => {
+        // SSE dropped — polling fallback handles recovery
+        es.close()
+      }
+      es.addEventListener('log', (e) => {
+        const { buildId, text } = JSON.parse(e.data) as { buildId: number; text: string }
+        setBuildLogs(prev => ({ ...prev, [String(buildId)]: (prev[String(buildId)] || '') + text }))
+      })
+      es.addEventListener('progress', (e) => {
+        const { buildId, progress } = JSON.parse(e.data) as { buildId: number; progress: number }
+        setProjects(prev => prev.map(proj => {
+          if (proj.id !== String(p.id)) return proj
+          return { ...proj, builds: proj.builds.map(b => b.id === String(buildId) ? { ...b, progress } : b) }
+        }))
+      })
+      es.addEventListener('build_done', (e) => {
+        const { buildId } = JSON.parse(e.data) as { buildId: number }
+        setProjects(prev => prev.map(proj => {
+          if (proj.id !== String(p.id)) return proj
+          return { ...proj, builds: proj.builds.map(b => b.id === String(buildId) ? { ...b, status: 'complete' as Status, progress: 100 } : b) }
+        }))
+      })
+      es.addEventListener('project_done', () => {
+        es.close()
+        // Fetch final state for code/plan
+        fetch(`/api/projects/${p.id}`).then(r => r.json()).then(d => {
+          if (!d.project) return
+          setProjects(prev => prev.map(proj => {
+            if (proj.id !== String(p.id)) return proj
+            return {
+              ...proj,
+              status: (d.project.status === 'completed' ? 'complete' : d.project.status) as Status,
+              builds: (d.project.builds || []).map((b: { id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[]; plan?: string; code?: string; thinkingLog?: string }) => ({
+                id: String(b.id), title: b.title, summary: b.summary,
+                status: (b.status === 'completed' ? 'complete' : b.status === 'in_progress' ? 'running' : b.status) as Status,
+                progress: b.progress, stack: b.stack || [], agent: b.agent, agentRole: b.agentRole,
+                dependsOn: b.dependsOn || [], plan: b.plan, code: b.code, thinkingLog: b.thinkingLog,
+              })),
+            }
+          }))
+        }).catch(() => {})
+      })
+      es.addEventListener('deployed', (e) => {
+        const { previewUrl } = JSON.parse(e.data) as { previewUrl: string }
+        setProjects(prev => prev.map(proj => proj.id === String(p.id) ? { ...proj, previewUrl } : proj))
+      })
 
       // Poll for build completion every 5 seconds
       const pollInterval = setInterval(async () => {
@@ -2327,7 +2626,7 @@ export function Overview() {
         } catch { /* ignore */ }
       }, 5000)
     } catch { /* ignore */ }
-  }, [selectedModel])
+  }, [selectedModel, projectType])
 
   const handleExecute = useCallback(() => {
     if (rawInput.trim().length === 0) return
@@ -2390,6 +2689,27 @@ export function Overview() {
 
   const sendChatMessage = async (buildId: string) => {
     if (!chatInput.trim()) return
+
+    // "ideas tab <content>" — save idea silently and confirm
+    const ideasMatch = chatInput.match(/^ideas?\s+tab\s+(.+)/i)
+    if (ideasMatch) {
+      const ideaText = ideasMatch[1].trim()
+      setChatInput('')
+      const now = new Date()
+      const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`
+      const userMsg = { id: `u-${Date.now()}`, role: 'user' as const, content: chatInput, time }
+      const confirmMsg = { id: `a-${Date.now()}`, role: 'agent' as const, content: `Saved to Ideas tab: "${ideaText}"`, time }
+      setChatMessages(prev => ({ ...prev, [buildId]: [...(prev[buildId] || []), userMsg, confirmMsg] }))
+      try {
+        await fetch('/api/ideas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: ideaText.slice(0, 80), description: ideaText }),
+        })
+      } catch { /* silent */ }
+      return
+    }
+
     const now = new Date()
     const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`
     const userMsg = { id: `u-${Date.now()}`, role: 'user' as const, content: chatInput, time }
@@ -2913,7 +3233,7 @@ export function Overview() {
                 )}
                 {/* Bottom bar */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px 10px', borderTop: `1px solid ${c.border}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <button
                       onMouseEnter={() => setHoveredArchBtn('arch-build')}
                       onMouseLeave={() => setHoveredArchBtn(null)}
@@ -2922,6 +3242,101 @@ export function Overview() {
                       style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: enhancingInput ? 'default' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
                       <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>{enhancingInput ? (promptMode === 'mvp' ? 'SCOPING…' : 'ENHANCING…') : promptMode === 'nebulous' ? 'CLARIFY' : 'EXECUTE'}
                     </button>
+                    {/* Project type picker */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => setShowProjectTypeMenu(o => !o)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, border: `1px solid ${showProjectTypeMenu ? 'rgba(52,211,153,0.4)' : c.border}`, padding: '5px 10px', borderRadius: 4, background: 'transparent', color: c.muted, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'all 0.15s', fontWeight: 600 }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(52,211,153,0.3)'; e.currentTarget.style.color = '#34d399' }}
+                        onMouseLeave={e => { if (!showProjectTypeMenu) { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.muted } }}
+                      >
+                        <span>{PROJECT_TYPES.find(t => t.id === projectType)?.emoji ?? '⚡'}</span>
+                        <span style={{ color: '#34d399' }}>{PROJECT_TYPES.find(t => t.id === projectType)?.label ?? 'SaaS App'}</span>
+                        <span style={{ color: '#4b5563', fontSize: 7 }}>{showProjectTypeMenu ? '▲' : '▼'}</span>
+                      </button>
+                      {showProjectTypeMenu && (
+                        <>
+                          <div onClick={() => setShowProjectTypeMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 19 }} />
+                          <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 6, background: isDark ? '#0c0f14' : '#fff', border: `1px solid ${c.border}`, borderRadius: 10, padding: 6, minWidth: 240, maxHeight: 320, overflowY: 'auto', boxShadow: '0 8px 28px rgba(0,0,0,0.5)', zIndex: 20 }}>
+                            {PROJECT_TYPES.map(t => (
+                              <button key={t.id} onClick={() => { setProjectType(t.id); setShowProjectTypeMenu(false) }}
+                                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 6, background: projectType === t.id ? (isDark ? '#141e18' : '#f0fdf4') : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = isDark ? '#141e18' : '#f0fdf4' }}
+                                onMouseLeave={e => { if (projectType !== t.id) e.currentTarget.style.background = 'transparent' }}
+                              >
+                                <span style={{ fontSize: 16 }}>{t.emoji}</span>
+                                <div>
+                                  <div style={{ fontSize: 12, fontWeight: 700, color: projectType === t.id ? '#34d399' : c.text }}>{t.label}</div>
+                                  <div style={{ fontSize: 10, color: c.dim, marginTop: 1 }}>{t.desc}</div>
+                                </div>
+                                {projectType === t.id && <span style={{ marginLeft: 'auto', color: '#34d399', fontSize: 12 }}>✓</span>}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Image upload button */}
+                    <div style={{ position: 'relative' }}>
+                      <input ref={uploadInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+                      <button
+                        onClick={() => uploadInputRef.current?.click()}
+                        title="Upload screenshot → pixel-perfect HTML"
+                        style={{ display: 'flex', alignItems: 'center', gap: 4, border: `1px solid ${uploadedImage ? 'rgba(99,102,241,0.5)' : c.border}`, padding: '5px 10px', borderRadius: 4, background: uploadedImage ? 'rgba(99,102,241,0.1)' : 'transparent', color: uploadedImage ? '#818cf8' : c.dim, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', fontWeight: 600, transition: 'all 0.15s' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'; e.currentTarget.style.color = '#818cf8' }}
+                        onMouseLeave={e => { if (!uploadedImage) { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.dim } }}
+                      >
+                        📎 {uploadedImage ? 'img attached' : 'screenshot'}
+                      </button>
+                      {/* Preview + convert button */}
+                      {uploadedImage && (
+                        <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 8, background: isDark ? '#0c0f14' : '#fff', border: `1px solid rgba(99,102,241,0.3)`, borderRadius: 10, padding: 10, width: 240, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', zIndex: 20 }}>
+                          <img src={uploadedImage.preview} alt="preview" style={{ width: '100%', borderRadius: 6, marginBottom: 8, maxHeight: 140, objectFit: 'cover' }} />
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={convertImageToHtml} disabled={imageToHtmlLoading}
+                              style={{ flex: 1, padding: '6px 0', borderRadius: 4, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: imageToHtmlLoading ? 'default' : 'pointer', fontWeight: 700 }}>
+                              {imageToHtmlLoading ? 'Converting…' : '→ HTML'}
+                            </button>
+                            <button onClick={() => setUploadedImage(null)}
+                              style={{ padding: '6px 10px', borderRadius: 4, background: 'transparent', border: `1px solid ${c.border}`, color: c.dim, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer' }}>
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Clone site button */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => setShowCloneInput(o => !o)}
+                        title="Clone a site's design → new project"
+                        style={{ display: 'flex', alignItems: 'center', gap: 4, border: `1px solid ${showCloneInput ? 'rgba(251,191,36,0.5)' : c.border}`, padding: '5px 10px', borderRadius: 4, background: showCloneInput ? 'rgba(251,191,36,0.07)' : 'transparent', color: showCloneInput ? '#fbbf24' : c.dim, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', fontWeight: 600, transition: 'all 0.15s' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.color = '#fbbf24' }}
+                        onMouseLeave={e => { if (!showCloneInput) { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.dim } }}
+                      >
+                        🔍 clone site
+                      </button>
+                      {showCloneInput && (
+                        <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 8, background: isDark ? '#0c0f14' : '#fff', border: `1px solid rgba(251,191,36,0.25)`, borderRadius: 10, padding: 12, width: 280, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', zIndex: 20 }}>
+                          <div style={{ fontSize: 11, color: c.text, fontWeight: 700, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 6 }}>Clone a site's design</div>
+                          <div style={{ fontSize: 10, color: c.muted, marginBottom: 8, lineHeight: 1.5 }}>Paste a URL → MASSA extracts colors, fonts, spacing and creates a design.md for your project</div>
+                          <input
+                            value={cloneUrl}
+                            onChange={e => setCloneUrl(e.target.value)}
+                            placeholder="https://stripe.com"
+                            onKeyDown={e => { if (e.key === 'Enter') cloneSite() }}
+                            style={{ width: '100%', padding: '6px 10px', borderRadius: 4, border: `1px solid ${c.border}`, background: c.bg, color: c.text, fontSize: 11, fontFamily: '"JetBrains Mono", Menlo, monospace', boxSizing: 'border-box', marginBottom: 8, outline: 'none' }}
+                          />
+                          <button onClick={cloneSite} disabled={cloneLoading || !cloneUrl.trim()}
+                            style={{ width: '100%', padding: '7px 0', borderRadius: 4, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)', color: '#fbbf24', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: cloneLoading || !cloneUrl.trim() ? 'default' : 'pointer', fontWeight: 700 }}>
+                            {cloneLoading ? 'Cloning…' : '→ Clone & Create Project'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
                     <div style={{ position: 'relative', display: 'inline-block' }}>
                       <button
                         onClick={() => setModelMenuOpen(o => !o)}
@@ -3432,6 +3847,30 @@ export function Overview() {
                               {btn.label}
                             </button>
                           ))}
+                          {project.status === 'complete' && !project.previewUrl && (
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation()
+                                setDeployingProjectId(project.id)
+                                try {
+                                  const r = await fetch(`/api/projects/${project.id}/deploy`, { method: 'POST' })
+                                  const d = await r.json() as { previewUrl?: string }
+                                  if (d.previewUrl) setProjects(prev => prev.map(p => p.id === project.id ? { ...p, previewUrl: d.previewUrl } : p))
+                                } catch { /* ignore */ }
+                                finally { setDeployingProjectId(null) }
+                              }}
+                              disabled={deployingProjectId === project.id}
+                              style={{ flex: 1, padding: '6px 0', borderRadius: 4, background: deployingProjectId === project.id ? 'transparent' : 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.4)', color: deployingProjectId === project.id ? c.dim : '#818cf8', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: deployingProjectId === project.id ? 'default' : 'pointer', transition: 'all 0.15s', fontWeight: 700 }}>
+                              {deployingProjectId === project.id ? 'Deploying…' : '▲ Deploy'}
+                            </button>
+                          )}
+                          {project.previewUrl && (
+                            <a href={project.previewUrl} target="_blank" rel="noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              style={{ flex: 1, padding: '6px 0', borderRadius: 4, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.4)', color: '#34d399', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontWeight: 700, transition: 'all 0.15s' }}>
+                              ↗ Live
+                            </a>
+                          )}
                         </div>
 
                         <div style={{ display: 'flex', gap: 5, flex: 1, minHeight: 36, marginBottom: 10 }}>
@@ -4808,8 +5247,26 @@ export function Overview() {
                     const buildCode = expandedBuild.build.code
                     const buildPlan = expandedBuild.build.plan
                     const isRunning = expandedBuild.build.status === 'running'
+                    const liveLog = buildLogs[expandedBuild.build.id] || ''
                     return (
                       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px' }}>
+                        {/* Live streaming terminal */}
+                        {(isRunning || (liveLog && !buildCode)) && (
+                          <div style={{ background: '#080a0d', border: `1px solid ${sc}33`, borderRadius: 12, overflow: 'hidden', marginBottom: 14 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: `1px solid ${sc}22`, background: '#0a0c10' }}>
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                {['#ff5f56','#ffbd2e','#27c93f'].map(clr => <div key={clr} style={{ width: 8, height: 8, borderRadius: 99, background: clr }} />)}
+                              </div>
+                              <span style={{ fontSize: 11, color: sc, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600, flex: 1 }}>
+                                {expandedBuild.build.agent} — live output
+                              </span>
+                              {isRunning && <div style={{ width: 8, height: 8, borderRadius: 99, background: '#34d399', animation: 'subtle-glow 1s ease-in-out infinite', flexShrink: 0 }} />}
+                            </div>
+                            <div style={{ background: '#060809', padding: '12px 14px', fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 11.5, color: '#b0c4b0', lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 360, overflowY: 'auto', minHeight: 80 }}>
+                              {liveLog || <span style={{ color: '#444' }}>Waiting for agent output...</span>}
+                            </div>
+                          </div>
+                        )}
                         {buildCode ? (
                           <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden', marginBottom: 14 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: `1px solid ${c.border}`, background: '#0e1116' }}>
@@ -4827,7 +5284,7 @@ export function Overview() {
                         ) : (
                           <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 32, marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: c.muted }}>
                             {isRunning && <div style={{ width: 20, height: 20, borderRadius: 999, border: `2px solid ${sc}`, borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />}
-                            <span style={{ fontSize: 13 }}>{isRunning ? 'Agent is still generating code…' : 'No code generated yet'}</span>
+                            <span style={{ fontSize: 13 }}>{isRunning ? 'Agent is generating code — watch the terminal above…' : 'No code generated yet'}</span>
                           </div>
                         )}
                         {buildPlan && (

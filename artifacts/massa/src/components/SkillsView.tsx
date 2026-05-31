@@ -16,12 +16,25 @@ type TrendingRepo = {
 
 const apiBase = '/api'
 
+type MassaSkill = {
+  id: number
+  slug: string
+  name: string
+  description: string
+  content: string
+  category: string
+}
+
 export function SkillsView({ onBack }: { onBack: () => void }) {
   const c = useThemeColors()
   const [repos, setRepos] = useState<TrendingRepo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [since, setSince] = useState('')
+
+  const [massaSkills, setMassaSkills] = useState<MassaSkill[]>([])
+  const [massaSkillsLoading, setMassaSkillsLoading] = useState(true)
+  const [selectedMassaSkill, setSelectedMassaSkill] = useState<MassaSkill | null>(null)
 
   const [selected, setSelected] = useState<TrendingRepo | null>(null)
   const [fileLoading, setFileLoading] = useState(false)
@@ -50,9 +63,26 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
     }
   }, [])
 
+  const [trendingOpen, setTrendingOpen] = useState(false)
+
+  const fetchMassaSkills = useCallback(async () => {
+    setMassaSkillsLoading(true)
+    try {
+      const res = await fetch(`${apiBase}/skills/massa`)
+      const data = await res.json()
+      setMassaSkills(data.skills || [])
+    } catch { /* ok */ } finally {
+      setMassaSkillsLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    fetchTrending()
-  }, [fetchTrending])
+    fetchMassaSkills()
+  }, [fetchMassaSkills])
+
+  useEffect(() => {
+    if (trendingOpen) fetchTrending()
+  }, [trendingOpen, fetchTrending])
 
   const pullSkillFile = useCallback(async (repo: TrendingRepo) => {
     setSelected(repo)
@@ -99,11 +129,54 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
         </button>
       </div>
 
-      {/* Section title */}
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ fontSize: 12, color: c.green, fontFamily: c.font, fontWeight: 700 }}>$ massa skills --trending --top 10 (today)</div>
-        {since && <div style={{ fontSize: 11, color: c.dim, fontFamily: c.font }}>pushed since {since}</div>}
+      {/* MASSA Built-in Skills Library */}
+      <div style={{ background: c.panel, border: `1px solid rgba(167,139,250,0.25)`, borderRadius: 6, padding: 14, marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
+          <div style={{ fontSize: 14, color: c.text, fontFamily: c.font, fontWeight: 700 }}>MASSA Skills Library</div>
+          <span style={{ color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', fontFamily: c.font, fontSize: 10, padding: '1px 6px', borderRadius: 3, fontWeight: 700 }}>BUILT-IN</span>
+        </div>
+        <div style={{ fontSize: 13, color: c.muted, marginBottom: 12, lineHeight: 1.6 }}>
+          Reusable skill files injected into agent system prompts. Each skill gives an agent deep expertise in a specific domain — automatically applied based on project type.
+        </div>
+        {massaSkillsLoading ? (
+          <div style={{ padding: 12, color: c.muted, fontSize: 13 }}>Loading skills library…</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 }}>
+            {massaSkills.map(skill => (
+              <div key={skill.id} onClick={() => setSelectedMassaSkill(selectedMassaSkill?.id === skill.id ? null : skill)}
+                style={{ padding: '11px 13px', background: c.bg, border: `1px solid ${selectedMassaSkill?.id === skill.id ? 'rgba(167,139,250,0.5)' : c.borderDim}`, borderRadius: 4, cursor: 'pointer', transition: 'border-color 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.35)' }}
+                onMouseLeave={e => { if (selectedMassaSkill?.id !== skill.id) e.currentTarget.style.borderColor = c.borderDim }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                  <span style={{ color: c.text, fontFamily: c.font, fontSize: 12, fontWeight: 700 }}>{skill.name}</span>
+                  <span style={{ color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', fontFamily: c.font, fontSize: 10, padding: '0 4px', borderRadius: 3, textTransform: 'uppercase', flexShrink: 0 }}>{skill.category}</span>
+                </div>
+                <div style={{ color: c.muted, fontFamily: c.fontSans, fontSize: 12, lineHeight: 1.5, marginTop: 4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{skill.description}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {selectedMassaSkill && (
+          <div style={{ marginTop: 12, background: c.bg, border: `1px solid rgba(167,139,250,0.2)`, borderRadius: 6, padding: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ color: '#a78bfa', fontFamily: c.font, fontSize: 13, fontWeight: 700 }}>{selectedMassaSkill.name}</div>
+              <button onClick={() => setSelectedMassaSkill(null)} style={{ border: 'none', background: 'transparent', color: c.dim, cursor: 'pointer', fontSize: 14, padding: '2px 6px', fontFamily: c.font }}>✕</button>
+            </div>
+            <pre style={{ color: c.text, fontFamily: c.font, fontSize: 11, lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0, maxHeight: 360, overflowY: 'auto' }}>{selectedMassaSkill.content}</pre>
+          </div>
+        )}
       </div>
+
+      {/* GitHub Trending — collapsed by default */}
+      <div style={{ border: `1px solid ${c.borderDim}`, borderRadius: 6, overflow: 'hidden', marginBottom: 12 }}>
+        <button onClick={() => setTrendingOpen(o => !o)}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: c.muted }}>
+          <span style={{ fontSize: 12, color: c.green, fontFamily: c.font, fontWeight: 700 }}>$ massa skills --trending --github (today)</span>
+          <span style={{ fontSize: 10, color: c.dim }}>{trendingOpen ? '▲ hide' : '▼ show'}</span>
+        </button>
+        {trendingOpen && (
+          <div style={{ borderTop: `1px solid ${c.borderDim}`, padding: '10px 14px' }}>
+            {since && <div style={{ fontSize: 11, color: c.dim, fontFamily: c.font, marginBottom: 8 }}>pushed since {since}</div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1fr' : '1fr', gap: 12, alignItems: 'start' }}>
         {/* Repo list */}
@@ -166,6 +239,9 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
                 <a href={fileHtmlUrl} target="_blank" rel="noreferrer" style={{ color: c.green, fontFamily: c.font, fontSize: 11, textDecoration: 'none' }}>view on github ↗</a>
               </div>
             )}
+          </div>
+        )}
+      </div>
           </div>
         )}
       </div>
