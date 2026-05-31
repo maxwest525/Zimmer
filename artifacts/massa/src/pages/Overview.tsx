@@ -48,6 +48,8 @@ type Project = {
   status: Status
   builds: Build[]
   lifecycle: 'active' | 'completed' | 'archived' | 'deleted'
+  projectType?: string
+  previewUrl?: string
 }
 
 const SKILL_COLORS: Record<string, string> = {
@@ -2067,6 +2069,23 @@ export function Overview() {
   const [projectMenuOpen, setProjectMenuOpen] = useState<string | null>(null)
   const [archTab, setArchTab] = useState<'tree' | 'graph' | 'timeline'>('tree')
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
+  const [projectType, setProjectType] = useState<string>('saas')
+  const [buildLogs, setBuildLogs] = useState<Record<string, string>>({})
+  const [deployingProjectId, setDeployingProjectId] = useState<string | null>(null)
+  const [showProjectTypeMenu, setShowProjectTypeMenu] = useState(false)
+
+  const PROJECT_TYPES = [
+    { id: 'landing-page', label: 'Landing Page', emoji: '🚀', desc: 'High-converting hero, features, pricing' },
+    { id: 'saas', label: 'SaaS App', emoji: '⚡', desc: 'Auth, billing, dashboard, multi-tenant' },
+    { id: 'crm', label: 'CRM', emoji: '🎯', desc: 'Contacts, pipeline, activities, analytics' },
+    { id: 'marketing-site', label: 'Marketing Site', emoji: '✨', desc: 'Blog, SEO, lead capture, animations' },
+    { id: 'ecommerce', label: 'E-commerce', emoji: '🛒', desc: 'Products, cart, checkout, orders' },
+    { id: 'dashboard', label: 'Dashboard', emoji: '📊', desc: 'Charts, tables, real-time data' },
+    { id: 'mobile-app', label: 'Mobile App', emoji: '📱', desc: 'React Native, native gestures, animations' },
+    { id: 'api', label: 'API', emoji: '🔌', desc: 'REST/GraphQL, auth, rate limiting, docs' },
+    { id: 'automation', label: 'Automation', emoji: '🤖', desc: 'Triggers, actions, workflow builder' },
+    { id: 'data-pipeline', label: 'Data Pipeline', emoji: '🔄', desc: 'ETL, transforms, visualization' },
+  ] as const
   const panelWasCollapsedBeforeSuggestions = useRef(false)
   const suggestionsAutoCollapsed = useRef(false)
   const [rawInput, setRawInput] = useState('')
@@ -2264,7 +2283,7 @@ export function Overview() {
       const res = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, clarifications: clarifications || [], model: selectedModel }),
+        body: JSON.stringify({ prompt, clarifications: clarifications || [], model: selectedModel, projectType }),
       })
       const data = await res.json()
       if (!res.ok || !data.project) return
@@ -2292,6 +2311,51 @@ export function Overview() {
       }
       setProjects(prev => [newProject, ...prev])
       setSelectedProjectId(String(p.id))
+
+      // SSE stream for real-time build logs
+      const es = new EventSource(`/api/projects/${p.id}/stream`)
+      es.addEventListener('log', (e) => {
+        const { buildId, text } = JSON.parse(e.data) as { buildId: number; text: string }
+        setBuildLogs(prev => ({ ...prev, [String(buildId)]: (prev[String(buildId)] || '') + text }))
+      })
+      es.addEventListener('progress', (e) => {
+        const { buildId, progress } = JSON.parse(e.data) as { buildId: number; progress: number }
+        setProjects(prev => prev.map(proj => {
+          if (proj.id !== String(p.id)) return proj
+          return { ...proj, builds: proj.builds.map(b => b.id === String(buildId) ? { ...b, progress } : b) }
+        }))
+      })
+      es.addEventListener('build_done', (e) => {
+        const { buildId } = JSON.parse(e.data) as { buildId: number }
+        setProjects(prev => prev.map(proj => {
+          if (proj.id !== String(p.id)) return proj
+          return { ...proj, builds: proj.builds.map(b => b.id === String(buildId) ? { ...b, status: 'complete' as Status, progress: 100 } : b) }
+        }))
+      })
+      es.addEventListener('project_done', () => {
+        es.close()
+        // Fetch final state for code/plan
+        fetch(`/api/projects/${p.id}`).then(r => r.json()).then(d => {
+          if (!d.project) return
+          setProjects(prev => prev.map(proj => {
+            if (proj.id !== String(p.id)) return proj
+            return {
+              ...proj,
+              status: (d.project.status === 'completed' ? 'complete' : d.project.status) as Status,
+              builds: (d.project.builds || []).map((b: { id: number; title: string; summary: string; status: string; progress: number; stack: string[]; agent: string; agentRole?: string; dependsOn?: string[]; plan?: string; code?: string; thinkingLog?: string }) => ({
+                id: String(b.id), title: b.title, summary: b.summary,
+                status: (b.status === 'completed' ? 'complete' : b.status === 'in_progress' ? 'running' : b.status) as Status,
+                progress: b.progress, stack: b.stack || [], agent: b.agent, agentRole: b.agentRole,
+                dependsOn: b.dependsOn || [], plan: b.plan, code: b.code, thinkingLog: b.thinkingLog,
+              })),
+            }
+          }))
+        }).catch(() => {})
+      })
+      es.addEventListener('deployed', (e) => {
+        const { previewUrl } = JSON.parse(e.data) as { previewUrl: string }
+        setProjects(prev => prev.map(proj => proj.id === String(p.id) ? { ...proj, previewUrl } : proj))
+      })
 
       // Poll for build completion every 5 seconds
       const pollInterval = setInterval(async () => {
@@ -2327,7 +2391,7 @@ export function Overview() {
         } catch { /* ignore */ }
       }, 5000)
     } catch { /* ignore */ }
-  }, [selectedModel])
+  }, [selectedModel, projectType])
 
   const handleExecute = useCallback(() => {
     if (rawInput.trim().length === 0) return
@@ -2913,7 +2977,7 @@ export function Overview() {
                 )}
                 {/* Bottom bar */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px 10px', borderTop: `1px solid ${c.border}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <button
                       onMouseEnter={() => setHoveredArchBtn('arch-build')}
                       onMouseLeave={() => setHoveredArchBtn(null)}
@@ -2922,6 +2986,40 @@ export function Overview() {
                       style={{ background: hoveredArchBtn === 'arch-build' ? '#141e14' : '#0c1210', color: '#34d399', border: `1px solid ${hoveredArchBtn === 'arch-build' ? 'rgba(52,211,153,0.4)' : 'rgba(52,211,153,0.15)'}`, padding: '5px 12px', borderRadius: 4, fontWeight: 700, cursor: enhancingInput ? 'default' : 'pointer', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', boxShadow: hoveredArchBtn === 'arch-build' ? '0 0 16px rgba(52,211,153,0.1)' : 'none', transition: 'all 0.2s ease', letterSpacing: 0.3 }}>
                       <span style={{ marginRight: 5, opacity: 0.5 }}>▶</span>{enhancingInput ? (promptMode === 'mvp' ? 'SCOPING…' : 'ENHANCING…') : promptMode === 'nebulous' ? 'CLARIFY' : 'EXECUTE'}
                     </button>
+                    {/* Project type picker */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => setShowProjectTypeMenu(o => !o)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, border: `1px solid ${showProjectTypeMenu ? 'rgba(52,211,153,0.4)' : c.border}`, padding: '5px 10px', borderRadius: 4, background: 'transparent', color: c.muted, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', transition: 'all 0.15s', fontWeight: 600 }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(52,211,153,0.3)'; e.currentTarget.style.color = '#34d399' }}
+                        onMouseLeave={e => { if (!showProjectTypeMenu) { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.muted } }}
+                      >
+                        <span>{PROJECT_TYPES.find(t => t.id === projectType)?.emoji ?? '⚡'}</span>
+                        <span style={{ color: '#34d399' }}>{PROJECT_TYPES.find(t => t.id === projectType)?.label ?? 'SaaS App'}</span>
+                        <span style={{ color: '#4b5563', fontSize: 7 }}>{showProjectTypeMenu ? '▲' : '▼'}</span>
+                      </button>
+                      {showProjectTypeMenu && (
+                        <>
+                          <div onClick={() => setShowProjectTypeMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 19 }} />
+                          <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 6, background: isDark ? '#0c0f14' : '#fff', border: `1px solid ${c.border}`, borderRadius: 10, padding: 6, minWidth: 240, maxHeight: 320, overflowY: 'auto', boxShadow: '0 8px 28px rgba(0,0,0,0.5)', zIndex: 20 }}>
+                            {PROJECT_TYPES.map(t => (
+                              <button key={t.id} onClick={() => { setProjectType(t.id); setShowProjectTypeMenu(false) }}
+                                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 6, background: projectType === t.id ? (isDark ? '#141e18' : '#f0fdf4') : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = isDark ? '#141e18' : '#f0fdf4' }}
+                                onMouseLeave={e => { if (projectType !== t.id) e.currentTarget.style.background = 'transparent' }}
+                              >
+                                <span style={{ fontSize: 16 }}>{t.emoji}</span>
+                                <div>
+                                  <div style={{ fontSize: 12, fontWeight: 700, color: projectType === t.id ? '#34d399' : c.text }}>{t.label}</div>
+                                  <div style={{ fontSize: 10, color: c.dim, marginTop: 1 }}>{t.desc}</div>
+                                </div>
+                                {projectType === t.id && <span style={{ marginLeft: 'auto', color: '#34d399', fontSize: 12 }}>✓</span>}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
                       <button
                         onClick={() => setModelMenuOpen(o => !o)}
@@ -3432,6 +3530,30 @@ export function Overview() {
                               {btn.label}
                             </button>
                           ))}
+                          {project.status === 'complete' && !project.previewUrl && (
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation()
+                                setDeployingProjectId(project.id)
+                                try {
+                                  const r = await fetch(`/api/projects/${project.id}/deploy`, { method: 'POST' })
+                                  const d = await r.json() as { previewUrl?: string }
+                                  if (d.previewUrl) setProjects(prev => prev.map(p => p.id === project.id ? { ...p, previewUrl: d.previewUrl } : p))
+                                } catch { /* ignore */ }
+                                finally { setDeployingProjectId(null) }
+                              }}
+                              disabled={deployingProjectId === project.id}
+                              style={{ flex: 1, padding: '6px 0', borderRadius: 4, background: deployingProjectId === project.id ? 'transparent' : 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.4)', color: deployingProjectId === project.id ? c.dim : '#818cf8', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: deployingProjectId === project.id ? 'default' : 'pointer', transition: 'all 0.15s', fontWeight: 700 }}>
+                              {deployingProjectId === project.id ? 'Deploying…' : '▲ Deploy'}
+                            </button>
+                          )}
+                          {project.previewUrl && (
+                            <a href={project.previewUrl} target="_blank" rel="noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              style={{ flex: 1, padding: '6px 0', borderRadius: 4, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.4)', color: '#34d399', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontWeight: 700, transition: 'all 0.15s' }}>
+                              ↗ Live
+                            </a>
+                          )}
                         </div>
 
                         <div style={{ display: 'flex', gap: 5, flex: 1, minHeight: 36, marginBottom: 10 }}>
@@ -4808,8 +4930,26 @@ export function Overview() {
                     const buildCode = expandedBuild.build.code
                     const buildPlan = expandedBuild.build.plan
                     const isRunning = expandedBuild.build.status === 'running'
+                    const liveLog = buildLogs[expandedBuild.build.id] || ''
                     return (
                       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 24px' }}>
+                        {/* Live streaming terminal */}
+                        {(isRunning || (liveLog && !buildCode)) && (
+                          <div style={{ background: '#080a0d', border: `1px solid ${sc}33`, borderRadius: 12, overflow: 'hidden', marginBottom: 14 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: `1px solid ${sc}22`, background: '#0a0c10' }}>
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                {['#ff5f56','#ffbd2e','#27c93f'].map(clr => <div key={clr} style={{ width: 8, height: 8, borderRadius: 99, background: clr }} />)}
+                              </div>
+                              <span style={{ fontSize: 11, color: sc, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 600, flex: 1 }}>
+                                {expandedBuild.build.agent} — live output
+                              </span>
+                              {isRunning && <div style={{ width: 8, height: 8, borderRadius: 99, background: '#34d399', animation: 'subtle-glow 1s ease-in-out infinite', flexShrink: 0 }} />}
+                            </div>
+                            <div style={{ background: '#060809', padding: '12px 14px', fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 11.5, color: '#b0c4b0', lineHeight: 1.75, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 360, overflowY: 'auto', minHeight: 80 }}>
+                              {liveLog || <span style={{ color: '#444' }}>Waiting for agent output...</span>}
+                            </div>
+                          </div>
+                        )}
                         {buildCode ? (
                           <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden', marginBottom: 14 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: `1px solid ${c.border}`, background: '#0e1116' }}>
@@ -4827,7 +4967,7 @@ export function Overview() {
                         ) : (
                           <div style={{ background: c.alt, border: `1px solid ${c.border}`, borderRadius: 12, padding: 32, marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: c.muted }}>
                             {isRunning && <div style={{ width: 20, height: 20, borderRadius: 999, border: `2px solid ${sc}`, borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />}
-                            <span style={{ fontSize: 13 }}>{isRunning ? 'Agent is still generating code…' : 'No code generated yet'}</span>
+                            <span style={{ fontSize: 13 }}>{isRunning ? 'Agent is generating code — watch the terminal above…' : 'No code generated yet'}</span>
                           </div>
                         )}
                         {buildPlan && (

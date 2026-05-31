@@ -6,6 +6,8 @@ export const projectsTable = pgTable("projects", {
   goal: text("goal").notNull(),
   status: text("status").notNull().default("queued"),
   lifecycle: text("lifecycle").notNull().default("active"),
+  projectType: text("project_type").notNull().default("saas"),
+  previewUrl: text("preview_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -25,6 +27,7 @@ export const buildsTable = pgTable("builds", {
   plan: text("plan"),
   code: text("code"),
   thinkingLog: text("thinking_log"),
+  log: text("log"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -58,3 +61,17 @@ export const projectMessagesRelations = relations(projectMessagesTable, ({ one }
 export type Project = typeof projectsTable.$inferSelect;
 export type Build = typeof buildsTable.$inferSelect;
 export type ProjectMessage = typeof projectMessagesTable.$inferSelect;
+
+export const PROJECT_TYPES = [
+  "landing-page",
+  "crm",
+  "saas",
+  "marketing-site",
+  "ecommerce",
+  "dashboard",
+  "mobile-app",
+  "api",
+  "automation",
+  "data-pipeline",
+] as const;
+export type ProjectType = typeof PROJECT_TYPES[number];
