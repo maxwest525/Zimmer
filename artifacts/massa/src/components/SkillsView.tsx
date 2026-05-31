@@ -63,6 +63,8 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
     }
   }, [])
 
+  const [trendingOpen, setTrendingOpen] = useState(false)
+
   const fetchMassaSkills = useCallback(async () => {
     setMassaSkillsLoading(true)
     try {
@@ -75,9 +77,12 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
   }, [])
 
   useEffect(() => {
-    fetchTrending()
     fetchMassaSkills()
-  }, [fetchTrending, fetchMassaSkills])
+  }, [fetchMassaSkills])
+
+  useEffect(() => {
+    if (trendingOpen) fetchTrending()
+  }, [trendingOpen, fetchTrending])
 
   const pullSkillFile = useCallback(async (repo: TrendingRepo) => {
     setSelected(repo)
@@ -162,11 +167,16 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
         )}
       </div>
 
-      {/* Section title */}
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ fontSize: 12, color: c.green, fontFamily: c.font, fontWeight: 700 }}>$ massa skills --trending --top 10 (today)</div>
-        {since && <div style={{ fontSize: 11, color: c.dim, fontFamily: c.font }}>pushed since {since}</div>}
-      </div>
+      {/* GitHub Trending — collapsed by default */}
+      <div style={{ border: `1px solid ${c.borderDim}`, borderRadius: 6, overflow: 'hidden', marginBottom: 12 }}>
+        <button onClick={() => setTrendingOpen(o => !o)}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', color: c.muted }}>
+          <span style={{ fontSize: 12, color: c.green, fontFamily: c.font, fontWeight: 700 }}>$ massa skills --trending --github (today)</span>
+          <span style={{ fontSize: 10, color: c.dim }}>{trendingOpen ? '▲ hide' : '▼ show'}</span>
+        </button>
+        {trendingOpen && (
+          <div style={{ borderTop: `1px solid ${c.borderDim}`, padding: '10px 14px' }}>
+            {since && <div style={{ fontSize: 11, color: c.dim, fontFamily: c.font, marginBottom: 8 }}>pushed since {since}</div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1fr' : '1fr', gap: 12, alignItems: 'start' }}>
         {/* Repo list */}
@@ -229,6 +239,9 @@ export function SkillsView({ onBack }: { onBack: () => void }) {
                 <a href={fileHtmlUrl} target="_blank" rel="noreferrer" style={{ color: c.green, fontFamily: c.font, fontSize: 11, textDecoration: 'none' }}>view on github ↗</a>
               </div>
             )}
+          </div>
+        )}
+      </div>
           </div>
         )}
       </div>

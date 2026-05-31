@@ -979,19 +979,120 @@ function TerminalPageView({ onBack, title, command, lines }: { onBack: () => voi
 }
 
 function HistoryView({ onBack }: { onBack: () => void }) {
-  return <TerminalPageView onBack={onBack} title="History" command="history" lines={[
-    '[2026-04-06 03:22:11] Build #847 completed — Trading Bot / Core Engine',
-    '[2026-04-06 03:18:45] Deploy #312 pushed — massa.ai (production)',
-    '[2026-04-06 03:14:02] Build #846 completed — Trading Bot / Risk Module',
-    '[2026-04-06 02:58:30] Agent assigned — UI Agent → Dashboard UI',
-    '[2026-04-06 02:45:19] Build #845 started — Trading Bot / Core Engine',
-    '[2026-04-06 02:30:00] Project created — Web Scraper',
-    '[2026-04-05 23:12:44] Build #844 completed — Massa Marketing Site / Homepage',
-    '[2026-04-05 22:58:11] Deploy #311 pushed — tradingbot.io (staging)',
-    '',
-    '> 847 events total — showing latest 8',
-    '> Use --all to view full history',
-  ]} />
+  const c = useThemeColors()
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(d => {
+        const all: Project[] = (d.projects || []).map((p: any) => ({
+          id: String(p.id),
+          name: p.name,
+          goal: p.goal,
+          status: p.status === 'completed' ? 'complete' : p.status === 'failed' ? 'failed' : p.status,
+          builds: (p.builds || []).map((b: any) => ({
+            id: String(b.id),
+            title: b.title,
+            summary: b.summary,
+            status: b.status === 'completed' ? 'complete' : b.status,
+            progress: b.progress,
+            stack: b.stack || [],
+            agent: b.agent,
+            agentRole: b.agent_role,
+            plan: b.plan,
+            code: b.code,
+          })),
+          lifecycle: 'active',
+          projectType: p.project_type,
+          previewUrl: p.preview_url,
+        }))
+        setProjects(all.filter(p => p.status === 'complete' || p.status === 'failed'))
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  return (
+    <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.text }} onMouseLeave={e => { e.currentTarget.style.color = c.muted }}>←</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>History</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{loading ? 'Loading…' : `${projects.length} completed project${projects.length !== 1 ? 's' : ''}`}</div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ padding: 32, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 12 }}>Loading project history…</div>
+      ) : projects.length === 0 ? (
+        <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◷</div>
+          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>No completed projects yet</div>
+          <div style={{ fontSize: 10, color: c.dim, marginTop: 4, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Finished projects appear here</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {projects.map(p => (
+            <div key={p.id} style={{ border: `1px solid ${p.status === 'complete' ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}`, background: c.panel, borderRadius: 8, overflow: 'hidden' }}>
+              <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 10, color: p.status === 'complete' ? '#34d399' : '#f87171', fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700 }}>
+                      {p.status === 'complete' ? '✓' : '✕'}
+                    </span>
+                    <span style={{ fontWeight: 700, fontSize: 13, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{p.name}</span>
+                    {p.projectType && <span style={{ color: c.dim, border: `1px solid ${c.borderDim}`, fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 9, padding: '1px 5px', borderRadius: 3 }}>{p.projectType}</span>}
+                  </div>
+                  <div style={{ fontSize: 10, color: c.dim, marginTop: 2, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{p.goal} — {p.builds.length} build{p.builds.length !== 1 ? 's' : ''}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  {p.previewUrl && (
+                    <a href={p.previewUrl} target="_blank" rel="noreferrer"
+                      style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid rgba(52,211,153,0.3)', color: '#34d399', fontSize: 9, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textDecoration: 'none', background: 'rgba(52,211,153,0.06)' }}
+                      onClick={e => e.stopPropagation()}>↗ LIVE</a>
+                  )}
+                  <span style={{ color: c.dim, fontSize: 12 }}>{expandedId === p.id ? '▲' : '▼'}</span>
+                </div>
+              </div>
+
+              {/* Individual builds */}
+              {expandedId === p.id && (
+                <div style={{ borderTop: `1px solid ${c.borderDim}`, padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', letterSpacing: '0.05em', marginBottom: 4 }}>BUILDS</div>
+                  {p.builds.map(b => (
+                    <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', background: c.bg, borderRadius: 4, border: `1px solid ${c.borderDim}` }}>
+                      <span style={{ fontSize: 10, color: b.status === 'complete' ? '#34d399' : b.status === 'failed' ? '#f87171' : c.dim, flexShrink: 0 }}>{b.status === 'complete' ? '✓' : b.status === 'failed' ? '✕' : '…'}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 11, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.title}</div>
+                        <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{b.agent} — {b.summary}</div>
+                      </div>
+                      {b.stack?.slice(0, 3).map(s => (
+                        <span key={s} style={{ color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)', fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 9, padding: '1px 5px', borderRadius: 3, flexShrink: 0 }}>{s}</span>
+                      ))}
+                      {b.code && (
+                        <button onClick={() => {
+                          const win = window.open()
+                          win?.document.write(`<pre style="font-family:monospace;font-size:12px;padding:20px;background:#000;color:#eee;white-space:pre-wrap">${b.code?.replace(/</g,'&lt;')}</pre>`)
+                        }}
+                          style={{ padding: '3px 8px', borderRadius: 3, border: `1px solid ${c.borderDim}`, background: 'transparent', color: c.dim, fontSize: 9, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', flexShrink: 0 }}>
+                          &lt;/&gt; code
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function AutomationsView({ onBack }: { onBack: () => void }) {
@@ -1978,49 +2079,76 @@ function InsideMassaView({ onBack }: { onBack: () => void }) {
 }
 
 function PublishedView({ onBack }: { onBack: () => void }) {
-  const { completedProducts } = useProjects()
-  const publishedProducts = useMemo(() => completedProducts.filter(p => p.publishStatus === 'live'), [completedProducts])
-
   const c = useThemeColors()
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(d => {
+        const published = (d.projects || [])
+          .filter((p: any) => p.preview_url)
+          .map((p: any) => ({
+            id: String(p.id),
+            name: p.name,
+            goal: p.goal,
+            status: 'complete' as Status,
+            builds: (p.builds || []).map((b: any) => ({ id: String(b.id), title: b.title, summary: b.summary, status: 'complete' as Status, progress: 100, stack: b.stack || [], agent: b.agent })),
+            lifecycle: 'active' as ProjectLifecycle,
+            projectType: p.project_type,
+            previewUrl: p.preview_url,
+          }))
+        setProjects(published)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   return (
     <div style={{ gridColumn: '2 / -1', border: `1px solid ${c.border}`, background: c.bg, padding: 16, overflow: 'auto', borderRadius: 2, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = c.text }}
-          onMouseLeave={e => { e.currentTarget.style.color = c.muted }}
-        >←</button>
+        <button onClick={onBack} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.muted, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, padding: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.color = c.text }} onMouseLeave={e => { e.currentTarget.style.color = c.muted }}>←</button>
         <div>
           <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Published</div>
-          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{publishedProducts.length} live product{publishedProducts.length !== 1 ? 's' : ''}</div>
+          <div style={{ fontSize: 10, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{loading ? 'Loading…' : `${projects.length} live deployment${projects.length !== 1 ? 's' : ''}`}</div>
         </div>
       </div>
 
-      {publishedProducts.length === 0 ? (
+      {loading ? (
+        <div style={{ padding: 32, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', fontSize: 12 }}>Loading published projects…</div>
+      ) : projects.length === 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.3 }}>◉</div>
-          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>No published products yet</div>
-          <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Deploy and publish a completed product to see it here</div>
+          <div style={{ fontSize: 13, color: c.muted, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 4 }}>No published projects yet</div>
+          <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>Complete a project and click "▲ Deploy" to publish it live on Vercel</div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {publishedProducts.map(product => (
-            <div key={product.id} style={{ border: `1px solid ${c.border}`, background: c.alt, borderRadius: 8, padding: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{product.name}</div>
-                <span style={{ fontSize: 9, fontWeight: 700, color: c.green, background: 'rgba(52,211,153,0.1)', padding: '2px 8px', borderRadius: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: c.green, boxShadow: `0 0 4px ${c.green}` }} />
-                  LIVE
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 }}>
+          {projects.map(p => (
+            <div key={p.id} style={{ border: '1px solid rgba(52,211,153,0.25)', background: c.panel, borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>{p.name}</div>
+                  {p.projectType && <div style={{ fontSize: 9, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', marginTop: 2 }}>{p.projectType}</div>}
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399' }} /> LIVE
                 </span>
               </div>
-              <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 8 }}>{product.summary}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
-                {product.domain && (
-                  <span style={{ color: c.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 12 }}>🔗</span> {product.domain}
-                  </span>
-                )}
-                <span style={{ color: c.dim }}>Completed {product.completedAt}</span>
+              <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.5 }}>{p.goal}</div>
+              <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace', wordBreak: 'break-all' }}>
+                🔗 {p.previewUrl?.replace('https://', '')}
+              </div>
+              <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+                <a href={p.previewUrl} target="_blank" rel="noreferrer"
+                  style={{ flex: 1, padding: '7px 0', borderRadius: 4, border: '1px solid rgba(52,211,153,0.35)', background: 'rgba(52,211,153,0.08)', color: '#34d399', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>
+                  ↗ Open Live Site
+                </a>
+              </div>
+              <div style={{ fontSize: 10, color: c.dim, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>
+                {p.builds.length} build module{p.builds.length !== 1 ? 's' : ''}
               </div>
             </div>
           ))}
