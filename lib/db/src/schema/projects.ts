@@ -10,6 +10,9 @@ export const projectsTable = pgTable("projects", {
   previewUrl: text("preview_url"),
   designMd: text("design_md"),
   sessionId: text("session_id"),
+  research: text("research"),
+  architecture: text("architecture"),
+  wireframes: text("wireframes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
