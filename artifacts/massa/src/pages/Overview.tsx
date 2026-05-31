@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useLocation } from 'wouter'
 import { InlineCompanyLogo, CompanyLogo } from '@/components/CompanyLogo'
@@ -95,7 +94,7 @@ function StatusBadge({ status, colors, size = 'sm' }: { status: Status; colors: 
   const pad = size === 'lg' ? '5px 12px' : '3px 8px'
   const iconSize = size === 'lg' ? 12 : 10
   if (status === 'running') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#e8eaed', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', padding: pad, borderRadius: 6, fontWeight: 600, boxShadow: '0 0 6px rgba(52,211,153,0.15)' }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: fs, color: '#0a8f4e', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)', padding: pad, borderRadius: 6, fontWeight: 600, boxShadow: '0 0 6px rgba(52,211,153,0.15)' }}>
       <span style={{ display: 'inline-flex', flexShrink: 0, color: '#34d399' }}>{getPhaseIcon('building', iconSize)}</span>
       Building
     </span>
@@ -1010,7 +1009,7 @@ function AutomationsView({ onBack }: { onBack: () => void }) {
 }
 
 function MarketingView({ onBack }: { onBack: () => void }) {
-  const c = { border: '#1e2530', muted: '#9ca3af', green: '#34d399' }
+  const c = useThemeColors()
   type MarketingTab = 'engines' | 'workflow' | 'templates'
   const [activeTab, setActiveTab] = useState<MarketingTab>('engines')
   const [workflowNodes, setWorkflowNodes] = useState<WorkflowNode[]>([])
@@ -1023,7 +1022,6 @@ function MarketingView({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     fetch('/api/workflows/templates').then(r => r.json()).then(d => { if (d.templates) setTemplates(d.templates) }).catch(() => {})
   }, [])
-  const c = useThemeColors()
 
   const loopInputRef = useRef<HTMLInputElement | null>(null)
   const docInputRef = useRef<HTMLInputElement | null>(null)
@@ -2725,7 +2723,7 @@ export function Overview() {
       `}</style>
 
       {/* HEADER */}
-      <div style={{ height: 56, border: `1px solid ${c.border}`, background: c.bg, display: 'flex', alignItems: 'center', padding: '0 18px', marginBottom: 12, position: 'relative', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+      <div style={{ height: 56, border: `1px solid ${c.border}`, background: c.bg, display: 'flex', alignItems: 'center', padding: isMobile ? '0 10px' : '0 18px', marginBottom: 12, position: 'relative', borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.12)', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, letterSpacing: 8, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace' }}>MASSA</span>
           <span style={{ background: '#34d399', color: c.bg, fontWeight: 800, fontSize: isMobile ? 12 : 14, padding: '2px 8px', borderRadius: 3, boxShadow: '0 0 12px rgba(52,211,153,0.3)', fontFamily: '"JetBrains Mono", Menlo, monospace' }}>AI</span>
@@ -2739,7 +2737,7 @@ export function Overview() {
       </div>
 
       {/* 3-COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? (`${mobileNavOpen ? '160px' : '42px'} minmax(0, 1fr) ${mobileRightOpen ? '160px' : '42px'}`) : isTablet ? (`${mobileNavOpen ? '160px' : '42px'} minmax(0, 1fr) ${mobileRightOpen ? '180px' : '42px'}`) : (`${leftNavCollapsed ? '42px' : '160px'} minmax(0, 1fr) ${rightPanelCollapsed ? '42px' : '200px'}`), gap: isMobile ? 6 : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? (`${mobileNavOpen ? '140px' : '36px'} minmax(0, 1fr) ${mobileRightOpen ? '140px' : '36px'}`) : isTablet ? (`${mobileNavOpen ? '140px' : '36px'} minmax(0, 1fr) ${mobileRightOpen ? '160px' : '36px'}`) : (`${leftNavCollapsed ? '42px' : '160px'} minmax(0, 1fr) ${rightPanelCollapsed ? '42px' : '200px'}`), gap: isMobile ? 4 : 12, minHeight: 'calc(100vh - 96px)', transition: 'grid-template-columns 0.3s ease', overflow: 'hidden' }}>
 
         {/* LEFT SIDEBAR */}
         <div style={{ border: `1px solid ${c.border}`, background: c.bg, padding: (isDesktop ? leftNavCollapsed : !mobileNavOpen) ? '12px 4px' : 12, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 2, overflow: 'hidden', transition: 'padding 0.3s ease' }}>
@@ -2790,7 +2788,7 @@ export function Overview() {
 
         {/* CENTER + RIGHT AREA */}
         {activeView === 'chats' ? (
-          <div style={{ gridColumn: '2 / -1' }}>
+          <div style={{ gridColumn: '2 / -1', minWidth: 0, overflow: 'hidden' }}>
             <ChatView
               projects={projects}
               selectedBuildId={selectedChatBuildId}
