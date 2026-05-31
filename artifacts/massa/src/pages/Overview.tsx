@@ -2318,7 +2318,7 @@ export function Overview() {
   }, [rawInput, promptMode, selectedModel])
 
   useEffect(() => {
-    if (promptMode !== 'auto' || rawInput.trim().length < 3) {
+    if (promptMode !== 'auto' || rawInput.trim().length < 10) {
       setQuickType([])
       setQuickTypeLoading(false)
       return
@@ -2329,14 +2329,14 @@ export function Overview() {
       fetch('/api/ai/autocomplete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: rawInput, model: selectedModel }),
+        body: JSON.stringify({ prompt: rawInput, model: 'claude-haiku-4-5' }),
         signal: controller.signal,
       })
         .then(r => r.json())
         .then(d => setQuickType(d.completions || []))
         .catch(() => { if (!controller.signal.aborted) setQuickType([]) })
         .finally(() => { if (!controller.signal.aborted) setQuickTypeLoading(false) })
-    }, 350)
+    }, 700)
     return () => { clearTimeout(timer); controller.abort(); setQuickTypeLoading(false) }
   }, [rawInput, promptMode, selectedModel])
 
@@ -2531,6 +2531,24 @@ export function Overview() {
 
       // SSE stream for real-time build logs
       const es = new EventSource(`/api/projects/${p.id}/stream`)
+      es.addEventListener('build_start', (e) => {
+        const { buildId } = JSON.parse(e.data) as { buildId: number }
+        setProjects(prev => prev.map(proj => {
+          if (proj.id !== String(p.id)) return proj
+          return { ...proj, status: 'running' as Status, builds: proj.builds.map(b => b.id === String(buildId) ? { ...b, status: 'running' as Status } : b) }
+        }))
+      })
+      es.addEventListener('build_error', (e) => {
+        const { buildId } = JSON.parse(e.data) as { buildId: number }
+        setProjects(prev => prev.map(proj => {
+          if (proj.id !== String(p.id)) return proj
+          return { ...proj, builds: proj.builds.map(b => b.id === String(buildId) ? { ...b, status: 'failed' as Status } : b) }
+        }))
+      })
+      es.onerror = () => {
+        // SSE dropped — polling fallback handles recovery
+        es.close()
+      }
       es.addEventListener('log', (e) => {
         const { buildId, text } = JSON.parse(e.data) as { buildId: number; text: string }
         setBuildLogs(prev => ({ ...prev, [String(buildId)]: (prev[String(buildId)] || '') + text }))
