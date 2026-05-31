@@ -741,6 +741,42 @@ router.delete("/skills/massa/:id", async (req, res) => {
 
 const VISUAL_PROJECT_TYPES = ["landing-page", "marketing-site", "ecommerce", "dashboard", "mobile-app"];
 
+async function notifySlack(message: { title: string; error: string; projectName: string; projectId: number }) {
+  const url = process.env.SLACK_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: `🚨 *MASSA OS — Planning Failed*`,
+        blocks: [
+          {
+            type: "header",
+            text: { type: "plain_text", text: "🚨 MASSA OS — Planning Failed", emoji: true },
+          },
+          {
+            type: "section",
+            fields: [
+              { type: "mrkdwn", text: `*Project:*\n${message.projectName} (ID: ${message.projectId})` },
+              { type: "mrkdwn", text: `*Time:*\n${new Date().toISOString()}` },
+            ],
+          },
+          {
+            type: "section",
+            text: { type: "mrkdwn", text: `*Error:*\n\`\`\`${message.error}\`\`\`` },
+          },
+          {
+            type: "section",
+            text: { type: "mrkdwn", text: `No builds were started. Fix the error and create a new project.` },
+          },
+        ],
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch { /* Slack notification failure should never crash the app */ }
+}
+
 async function webSearch(query: string): Promise<string> {
   const key = process.env.FIRECRAWL_API_KEY;
   if (!key) throw new Error("FIRECRAWL_API_KEY is not set — real web research requires this key. Add it to your environment variables.");
@@ -815,6 +851,7 @@ async function runPlanningPipeline(
     const msg = err instanceof Error ? err.message : "planning failed";
     await db.update(projectsTable).set({ status: "failed", research: `## Research Failed\n\n**Error:** ${msg}\n\nFix the error above and create a new project to try again. No builds were started.` }).where(eq(projectsTable.id, projectId));
     pushSSE(projectId, "planning_failed", { projectId, error: msg });
+    void notifySlack({ title: "Planning Failed", error: msg, projectName, projectId });
   }
 }
 
