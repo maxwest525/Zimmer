@@ -12,16 +12,16 @@ interface ThemeContextValue {
 const STORAGE_KEY = "massa-theme";
 
 function readInitialTheme(): ThemeMode {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === "light" || stored === "dark") return stored;
-  return "dark";
+  return "light";
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "dark",
-  isDark: true,
-  colors: getThemeColors(true),
+  theme: "light",
+  isDark: false,
+  colors: getThemeColors(false),
   setTheme: () => {},
   toggleTheme: () => {},
 });
