@@ -2085,7 +2085,23 @@ export function Overview() {
     { id: 'api', label: 'API', emoji: '🔌', desc: 'REST/GraphQL, auth, rate limiting, docs' },
     { id: 'automation', label: 'Automation', emoji: '🤖', desc: 'Triggers, actions, workflow builder' },
     { id: 'data-pipeline', label: 'Data Pipeline', emoji: '🔄', desc: 'ETL, transforms, visualization' },
+    { id: 'video-generation', label: 'Video Gen', emoji: '🎬', desc: 'AI video generation platform' },
   ] as const
+
+  // Image upload → HTML state
+  const [uploadedImage, setUploadedImage] = useState<{ base64: string; mimeType: string; preview: string } | null>(null)
+  const [imageToHtmlLoading, setImageToHtmlLoading] = useState(false)
+  const uploadInputRef = useRef<HTMLInputElement>(null)
+
+  // Site clone state
+  const [cloneUrl, setCloneUrl] = useState('')
+  const [cloneLoading, setCloneLoading] = useState(false)
+  const [showCloneInput, setShowCloneInput] = useState(false)
+
+  // Skills library state
+  const [massaSkills, setMassaSkills] = useState<Array<{ id: number; slug: string; name: string; description: string; content: string; category: string }>>([])
+  const [skillsLoading, setSkillsLoading] = useState(false)
+  const [selectedSkill, setSelectedSkill] = useState<typeof massaSkills[0] | null>(null)
   const panelWasCollapsedBeforeSuggestions = useRef(false)
   const suggestionsAutoCollapsed = useRef(false)
   const [rawInput, setRawInput] = useState('')
@@ -2271,6 +2287,79 @@ export function Overview() {
       .then(d => { if (!aborted && Array.isArray(d.models)) setAvailableModels(d.models) })
       .catch(() => {})
     return () => { aborted = true }
+  }, [])
+
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result as string
+      const base64 = dataUrl.split(',')[1] ?? ''
+      setUploadedImage({ base64, mimeType: file.type || 'image/png', preview: dataUrl })
+    }
+    reader.readAsDataURL(file)
+  }, [])
+
+  const convertImageToHtml = useCallback(async () => {
+    if (!uploadedImage) return
+    setImageToHtmlLoading(true)
+    try {
+      const res = await fetch('/api/ai/image-to-html', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: uploadedImage.base64, mimeType: uploadedImage.mimeType }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.html) return
+      // Create a landing-page project with the generated HTML as the starting prompt
+      const prompt = `Pixel-perfect landing page converted from uploaded screenshot. Use this exact HTML as the base and enhance it with Framer Motion animations and React components:\n\n${data.html.slice(0, 500)}...`
+      setUploadedImage(null)
+      await createProject(prompt)
+    } catch { /* ok */ } finally {
+      setImageToHtmlLoading(false)
+    }
+  }, [uploadedImage]) // createProject added after
+
+  const cloneSite = useCallback(async () => {
+    if (!cloneUrl.trim()) return
+    setCloneLoading(true)
+    try {
+      const res = await fetch('/api/projects/clone-site', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: cloneUrl.trim(), projectType, goal: rawInput.trim() || undefined }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.project) return
+      const p = data.project
+      const newProject: Project = {
+        id: String(p.id),
+        name: p.name,
+        goal: p.goal,
+        status: 'queued',
+        builds: [],
+        lifecycle: 'active',
+        projectType: p.project_type || projectType,
+      }
+      setProjects(prev => [newProject, ...prev])
+      setCloneUrl('')
+      setShowCloneInput(false)
+      setRawInput(`Build ${newProject.name} using the cloned design system`)
+    } catch { /* ok */ } finally {
+      setCloneLoading(false)
+    }
+  }, [cloneUrl, projectType, rawInput])
+
+  const loadMassaSkills = useCallback(async () => {
+    setSkillsLoading(true)
+    try {
+      const res = await fetch('/api/skills/massa')
+      const data = await res.json()
+      setMassaSkills(data.skills || [])
+    } catch { /* ok */ } finally {
+      setSkillsLoading(false)
+    }
   }, [])
 
   const createProject = useCallback(async (prompt: string, clarifications?: {question: string; answer: string}[]) => {
@@ -3020,6 +3109,67 @@ export function Overview() {
                         </>
                       )}
                     </div>
+
+                    {/* Image upload button */}
+                    <div style={{ position: 'relative' }}>
+                      <input ref={uploadInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+                      <button
+                        onClick={() => uploadInputRef.current?.click()}
+                        title="Upload screenshot → pixel-perfect HTML"
+                        style={{ display: 'flex', alignItems: 'center', gap: 4, border: `1px solid ${uploadedImage ? 'rgba(99,102,241,0.5)' : c.border}`, padding: '5px 10px', borderRadius: 4, background: uploadedImage ? 'rgba(99,102,241,0.1)' : 'transparent', color: uploadedImage ? '#818cf8' : c.dim, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', fontWeight: 600, transition: 'all 0.15s' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'; e.currentTarget.style.color = '#818cf8' }}
+                        onMouseLeave={e => { if (!uploadedImage) { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.dim } }}
+                      >
+                        📎 {uploadedImage ? 'img attached' : 'screenshot'}
+                      </button>
+                      {/* Preview + convert button */}
+                      {uploadedImage && (
+                        <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 8, background: isDark ? '#0c0f14' : '#fff', border: `1px solid rgba(99,102,241,0.3)`, borderRadius: 10, padding: 10, width: 240, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', zIndex: 20 }}>
+                          <img src={uploadedImage.preview} alt="preview" style={{ width: '100%', borderRadius: 6, marginBottom: 8, maxHeight: 140, objectFit: 'cover' }} />
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button onClick={convertImageToHtml} disabled={imageToHtmlLoading}
+                              style={{ flex: 1, padding: '6px 0', borderRadius: 4, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: imageToHtmlLoading ? 'default' : 'pointer', fontWeight: 700 }}>
+                              {imageToHtmlLoading ? 'Converting…' : '→ HTML'}
+                            </button>
+                            <button onClick={() => setUploadedImage(null)}
+                              style={{ padding: '6px 10px', borderRadius: 4, background: 'transparent', border: `1px solid ${c.border}`, color: c.dim, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer' }}>
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Clone site button */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => setShowCloneInput(o => !o)}
+                        title="Clone a site's design → new project"
+                        style={{ display: 'flex', alignItems: 'center', gap: 4, border: `1px solid ${showCloneInput ? 'rgba(251,191,36,0.5)' : c.border}`, padding: '5px 10px', borderRadius: 4, background: showCloneInput ? 'rgba(251,191,36,0.07)' : 'transparent', color: showCloneInput ? '#fbbf24' : c.dim, fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: 'pointer', fontWeight: 600, transition: 'all 0.15s' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)'; e.currentTarget.style.color = '#fbbf24' }}
+                        onMouseLeave={e => { if (!showCloneInput) { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.dim } }}
+                      >
+                        🔍 clone site
+                      </button>
+                      {showCloneInput && (
+                        <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 8, background: isDark ? '#0c0f14' : '#fff', border: `1px solid rgba(251,191,36,0.25)`, borderRadius: 10, padding: 12, width: 280, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', zIndex: 20 }}>
+                          <div style={{ fontSize: 11, color: c.text, fontWeight: 700, fontFamily: '"JetBrains Mono", Menlo, monospace', marginBottom: 6 }}>Clone a site's design</div>
+                          <div style={{ fontSize: 10, color: c.muted, marginBottom: 8, lineHeight: 1.5 }}>Paste a URL → MASSA extracts colors, fonts, spacing and creates a design.md for your project</div>
+                          <input
+                            value={cloneUrl}
+                            onChange={e => setCloneUrl(e.target.value)}
+                            placeholder="https://stripe.com"
+                            onKeyDown={e => { if (e.key === 'Enter') cloneSite() }}
+                            style={{ width: '100%', padding: '6px 10px', borderRadius: 4, border: `1px solid ${c.border}`, background: c.bg, color: c.text, fontSize: 11, fontFamily: '"JetBrains Mono", Menlo, monospace', boxSizing: 'border-box', marginBottom: 8, outline: 'none' }}
+                          />
+                          <button onClick={cloneSite} disabled={cloneLoading || !cloneUrl.trim()}
+                            style={{ width: '100%', padding: '7px 0', borderRadius: 4, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)', color: '#fbbf24', fontSize: 10, fontFamily: '"JetBrains Mono", Menlo, monospace', cursor: cloneLoading || !cloneUrl.trim() ? 'default' : 'pointer', fontWeight: 700 }}>
+                            {cloneLoading ? 'Cloning…' : '→ Clone & Create Project'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
                     <div style={{ position: 'relative', display: 'inline-block' }}>
                       <button
                         onClick={() => setModelMenuOpen(o => !o)}

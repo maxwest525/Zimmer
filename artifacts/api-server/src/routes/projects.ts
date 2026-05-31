@@ -1,7 +1,7 @@
 import { Router, type Response } from "express";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
 import { complete } from "../lib/models.js";
-import { db, projectsTable, buildsTable, projectMessagesTable } from "@workspace/db";
+import { db, projectsTable, buildsTable, projectMessagesTable, massaSkillsTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 
 const router = Router();
@@ -248,6 +248,25 @@ Generate complete TypeScript + Node.js + PostgreSQL + Bull (job queues) + React 
   },
 };
 
+PROJECT_TYPE_CONFIG["video-generation"] = {
+  description: "AI-generated video content and video-first web experiences",
+  agents: ["Motion Designer", "Frontend Engineer", "Copywriter Agent"],
+  systemPrompt: (name, goal) => `You are building a video-generation platform called "${name}". Goal: ${goal}
+
+${DESIGN_SYSTEM_PROMPT}
+
+VIDEO PLATFORM MUST INCLUDE:
+1. VIDEO PROMPT INPUT: Full-screen cinematic prompt builder with style presets (cinematic, animated, documentary, product demo)
+2. GENERATION QUEUE: Progress tracker with estimated time, thumbnail preview on completion
+3. VIDEO GALLERY: Masonry grid of generated videos with hover-to-play, download, share
+4. STYLE CONFIGURATOR: Duration, aspect ratio (16:9/9:16/1:1), FPS, quality settings
+5. SCRIPT-TO-VIDEO: Text input → scene breakdown → multiple video clips → assembled timeline
+6. BRAND KIT: Upload logo, color palette, intro/outro templates
+
+Design: Cinematic dark theme with film grain texture, spotlight effects, premium video player UI.
+Generate complete React + TypeScript + Tailwind + Framer Motion code.`,
+};
+
 const DEFAULT_TYPE_CONFIG = PROJECT_TYPE_CONFIG["saas"];
 
 // GET /api/projects
@@ -318,7 +337,7 @@ router.get("/projects/:id/stream", async (req, res) => {
 
 // POST /api/projects — create and immediately start generating
 router.post("/projects", async (req, res) => {
-  const { prompt, clarifications, model, projectType = "saas" } = req.body;
+  const { prompt, clarifications, model, projectType = "saas", designMd } = req.body;
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 5) {
     return res.status(400).json({ error: "prompt required" });
   }
@@ -391,6 +410,7 @@ Create 4-6 modules that together form a complete, production-ready ${projectType
     goal: decomposition.goal,
     status: "in_progress",
     projectType,
+    designMd: designMd || null,
   }).returning();
 
   const buildRows = await db.insert(buildsTable).values(
@@ -410,7 +430,7 @@ Create 4-6 modules that together form a complete, production-ready ${projectType
 
   res.json({ project: { ...project, builds: buildRows } });
 
-  void runBuildsWithStreaming(project.id, buildRows, decomposition.builds, typeConfig, project.name, project.goal, model);
+  void runBuildsWithStreaming(project.id, buildRows, decomposition.builds, typeConfig, project.name, project.goal, model, project.designMd);
   return;
 });
 
@@ -576,7 +596,139 @@ router.get("/projects/:id/messages", async (req, res) => {
   }
 });
 
+// POST /api/projects/clone-site — clone a site's design into a new project
+router.post("/projects/clone-site", async (req, res) => {
+  const { url, projectType = "landing-page", goal } = req.body;
+  if (!url || typeof url !== "string") {
+    return res.status(400).json({ error: "url required" });
+  }
+
+  try {
+    // Fetch the site HTML
+    let html = "";
+    try {
+      const fetchRes = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0 (MASSA OS design extractor)" },
+        signal: AbortSignal.timeout(10000),
+      });
+      html = await fetchRes.text();
+    } catch {
+      return res.status(400).json({ error: "Could not fetch URL. Make sure it is publicly accessible." });
+    }
+
+    // Truncate HTML to save tokens
+    const htmlExcerpt = html.slice(0, 12000);
+
+    // Extract design tokens via Claude
+    const designMdRaw = await complete({
+      model: undefined,
+      maxTokens: 2500,
+      system: `You are a design system extractor. Given raw HTML/CSS from a website, extract the design tokens and patterns into a structured design.md document.
+
+Return a markdown document with exactly these sections:
+# Design System: [Brand Name]
+
+## Brand Colors
+- Primary: #hex — [usage]
+- Secondary: #hex — [usage]
+- Background: #hex
+- Text: #hex
+- Accent: #hex
+
+## Typography
+- Heading font: [name] ([weight range])
+- Body font: [name] ([size range])
+- Tracking: [tight/normal/wide]
+
+## Spacing & Layout
+- Base grid: [Xpx]
+- Section padding: [vertical/horizontal values]
+- Component gap: [Xpx]
+
+## Visual Style
+- [3-5 bullet points describing the overall aesthetic]
+
+## Component Patterns
+- [List key UI components and their visual treatment]
+
+## Tone of Voice
+- [2-3 sentences describing the brand's communication style]
+
+## Animations
+- [Describe any animation patterns present or implied]`,
+      user: `Extract the design system from this website HTML:\n\nURL: ${url}\n\n${htmlExcerpt}`,
+    });
+
+    const designMd = designMdRaw.trim();
+
+    // Create the project with design.md attached
+    const typeConfig = PROJECT_TYPE_CONFIG[projectType] ?? DEFAULT_TYPE_CONFIG;
+    const projectName = url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]?.split(".")[0] ?? "Cloned Site";
+
+    const [project] = await db.insert(projectsTable).values({
+      name: `${projectName} Clone`,
+      goal: goal || `Clone the design and UX patterns of ${url} into a new ${projectType}`,
+      status: "queued",
+      projectType,
+      designMd,
+    }).returning();
+
+    return res.json({ project, designMd });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "clone failed";
+    return res.status(500).json({ error: msg });
+  }
+});
+
+// GET /api/skills/massa — list MASSA built-in skills
+router.get("/skills/massa", async (_req, res) => {
+  try {
+    const skills = await db.query.massaSkillsTable.findMany({ orderBy: [massaSkillsTable.category, massaSkillsTable.name] });
+    return res.json({ skills });
+  } catch (err) {
+    return res.status(500).json({ error: "failed to fetch skills" });
+  }
+});
+
+// POST /api/skills/massa — create a custom skill
+router.post("/skills/massa", async (req, res) => {
+  const { slug, name, description, content, category } = req.body;
+  if (!slug || !name || !content) return res.status(400).json({ error: "slug, name, content required" });
+  try {
+    const [skill] = await db.insert(massaSkillsTable).values({ slug, name, description: description || "", content, category: category || "custom" }).returning();
+    return res.json({ skill });
+  } catch (err) {
+    return res.status(500).json({ error: "failed to create skill" });
+  }
+});
+
+// DELETE /api/skills/massa/:id — delete a skill
+router.delete("/skills/massa/:id", async (req, res) => {
+  try {
+    await db.delete(massaSkillsTable).where(eq(massaSkillsTable.id, parseInt(req.params.id)));
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: "failed to delete skill" });
+  }
+});
+
 // ── Streaming build runner ────────────────────────────────────────────────────
+
+const VISUAL_PROJECT_TYPES = ["landing-page", "marketing-site", "ecommerce", "dashboard", "mobile-app"];
+
+async function generateHeroImage(prompt: string): Promise<string | null> {
+  try {
+    const openaiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+    if (!openaiKey) return null;
+    const res = await fetch(`${process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ?? "https://api.openai.com/v1"}/images/generations`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "dall-e-3", prompt, n: 1, size: "1792x1024", quality: "standard", response_format: "url" }),
+    });
+    const data = await res.json() as { data?: Array<{ url: string }> };
+    return data.data?.[0]?.url ?? null;
+  } catch { return null; }
+}
 
 async function runBuildsWithStreaming(
   projectId: number,
@@ -586,6 +738,7 @@ async function runBuildsWithStreaming(
   projectName: string,
   projectGoal: string,
   model: string | undefined,
+  designMd?: string | null,
 ) {
   const completed = new Set<string>();
   const remaining = new Set(builds.map((b) => b.slug));
@@ -646,13 +799,29 @@ async function runBuildsWithStreaming(
       pushSSE(projectId, "progress", { buildId: build.id, progress: 55 });
       appendLog(`\n\n[${build.agent}] Writing code...\n`);
 
+      // Inject design.md context if available
+      const designContext = designMd ? `\n\n## Cloned Design System\n${designMd}\n\nImportant: Apply the above design tokens (colors, fonts, spacing) faithfully throughout your code.` : "";
+
+      // Generate hero image for visual builds
+      let heroImageUrl: string | null = null;
+      const isVisualBuild = VISUAL_PROJECT_TYPES.includes(typeConfig.description.toLowerCase().split(" ")[0] ?? "");
+      if (isVisualBuild && (build.slug.includes("hero") || build.slug.includes("landing") || build.slug.includes("home"))) {
+        appendLog(`\n[${build.agent}] Generating hero image...\n`);
+        heroImageUrl = await generateHeroImage(`Premium ${projectName} hero image: ${projectGoal}. Photorealistic, modern, corporate, wide format, no text.`);
+        if (heroImageUrl) {
+          appendLog(`[${build.agent}] ✓ Hero image generated\n`);
+        }
+      }
+
+      const heroImageNote = heroImageUrl ? `\n\nA hero image has been generated for you at this URL — use it in the hero section as an <img> or CSS background:\n${heroImageUrl}` : "";
+
       // Phase 3: Code generation (streaming) — type-aware prompts
       let code = "";
       const codeStream = anthropic.messages.stream({
         model: "claude-sonnet-4-6",
         max_tokens: 4000,
-        system: typeConfig.systemPrompt(projectName, projectGoal) + `\n\nYou are specifically the ${build.agent}. Write production-quality code for the "${build.title}" module. Include all necessary files, TypeScript types, and comments. Make it look INCREDIBLE.`,
-        messages: [{ role: "user", content: `Module: ${build.title}\nSummary: ${build.summary}\nStack: ${build.stack.join(", ")}\nPlan:\n${plan}` }],
+        system: typeConfig.systemPrompt(projectName, projectGoal) + designContext + `\n\nYou are specifically the ${build.agent}. Write production-quality code for the "${build.title}" module. Include all necessary files, TypeScript types, and comments. Make it look INCREDIBLE.`,
+        messages: [{ role: "user", content: `Module: ${build.title}\nSummary: ${build.summary}\nStack: ${build.stack.join(", ")}\nPlan:\n${plan}${heroImageNote}` }],
       });
 
       for await (const chunk of codeStream) {

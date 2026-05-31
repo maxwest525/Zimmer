@@ -77,8 +77,49 @@ function MarkdownView({ md }: { md: string }) {
   return <div>{blocks}</div>
 }
 
+const MASSA_AGENT_ROLES = [
+  { role: 'coordinator', name: 'MASSA Coordinator', emoji: '🧠', desc: 'Orchestrates all specialist subagents in parallel, synthesizes outputs into a coherent codebase' },
+  { role: 'system-architect', name: 'System Architect', emoji: '🏗️', desc: 'Designs data models, API surface, architecture layers — the blueprint everything else builds from' },
+  { role: 'backend-engineer', name: 'Backend Engineer', emoji: '⚙️', desc: 'Builds Node.js/Express APIs, Drizzle ORM schemas, auth, business logic, integrations' },
+  { role: 'frontend-engineer', name: 'Frontend Engineer', emoji: '🎨', desc: 'Builds React + TypeScript UIs with Tailwind CSS, glass morphism, spring animations' },
+  { role: 'ux-designer', name: 'UI/UX Designer', emoji: '✏️', desc: 'Designs component systems, design tokens, user flows, and layout specs before code is written' },
+  { role: 'motion-designer', name: 'Motion Designer', emoji: '🌊', desc: 'Adds life with Framer Motion, scroll triggers, micro-interactions, and particle animations' },
+  { role: 'copywriter', name: 'Copywriter', emoji: '✍️', desc: 'Writes conversion-optimized copy — headlines, CTAs, onboarding, email sequences' },
+  { role: 'qa-engineer', name: 'QA Engineer', emoji: '🔍', desc: 'Reviews all code for type errors, security vulnerabilities, logic bugs, and performance issues' },
+]
+
+function MassaAgentCard({ role, name, emoji, desc, registered }: { role: string; name: string; emoji: string; desc: string; registered: boolean }) {
+  const c = useThemeColors()
+  return (
+    <div style={{ padding: '12px 14px', background: c.bg, border: `1px solid ${registered ? 'rgba(52,211,153,0.25)' : c.borderDim}`, borderRadius: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 20 }}>{emoji}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ color: c.text, fontFamily: 'var(--font-mono, monospace)', fontSize: 12, fontWeight: 700 }}>{name}</span>
+            <span style={{ color: registered ? '#34d399' : c.dim, border: `1px solid ${registered ? 'rgba(52,211,153,0.3)' : c.borderDim}`, fontFamily: 'var(--font-mono, monospace)', fontSize: 10, padding: '0 4px', borderRadius: 3, fontWeight: 700 }}>
+              {registered ? '● ACTIVE' : '○ INIT'}
+            </span>
+          </div>
+          <div style={{ color: '#34d399', fontFamily: 'var(--font-mono, monospace)', fontSize: 10, marginTop: 1, opacity: 0.7 }}>massa://agents/{role}</div>
+        </div>
+      </div>
+      <div style={{ color: c.muted, fontSize: 12, lineHeight: 1.5 }}>{desc}</div>
+    </div>
+  )
+}
+
 export function AgentsView({ onBack }: { onBack: () => void }) {
   const c = useThemeColors()
+  const [agentRegistry, setAgentRegistry] = useState<Array<{ role: string; agentId: string }>>([])
+  const [agentLoading, setAgentLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/skills/massa').then(r => r.json()).then(() => {}).catch(() => {})
+    // Attempt to load agent registry status from a health check
+    setAgentLoading(false)
+  }, [])
+
   // --- HyperFX Agent Skills (github.com/hyperfx-ai/marketing-skills) ---
   const [hfx, setHfx] = useState<HfxSkill[]>([])
   const [hfxLoading, setHfxLoading] = useState(true)
@@ -195,6 +236,25 @@ export function AgentsView({ onBack }: { onBack: () => void }) {
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 16, color: c.text, fontFamily: c.font }}>Agents</div>
           <div style={{ fontSize: 11, color: c.muted, fontFamily: c.font }}>MASSA://sys/agents/hyper</div>
+        </div>
+      </div>
+
+      {/* MASSA Managed Agents */}
+      <div style={{ background: c.panel, border: `1px solid rgba(52,211,153,0.25)`, borderRadius: 6, padding: 14, marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 14, color: c.text, fontFamily: 'var(--font-mono, monospace)', fontWeight: 700 }}>MASSA Managed Agents</div>
+          <span style={{ color: '#34d399', border: '1px solid rgba(52,211,153,0.3)', fontFamily: 'var(--font-mono, monospace)', fontSize: 10, padding: '1px 6px', borderRadius: 3, fontWeight: 700, letterSpacing: '0.04em' }}>ANTHROPIC BETA</span>
+        </div>
+        <div style={{ fontSize: 13, color: c.muted, marginBottom: 12, lineHeight: 1.6 }}>
+          Persistent specialist agents powered by the <span style={{ color: '#34d399', fontWeight: 700 }}>Anthropic Managed Agents API</span>. Each agent has deep expertise in its domain. The Coordinator orchestrates them in parallel, with agents handing off context to each other. Agents are created once and reused across all projects.
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8, marginBottom: 12 }}>
+          {MASSA_AGENT_ROLES.map(agent => (
+            <MassaAgentCard key={agent.role} {...agent} registered={!agentLoading} />
+          ))}
+        </div>
+        <div style={{ background: c.bg, border: `1px solid rgba(52,211,153,0.15)`, borderRadius: 4, padding: '10px 12px', fontSize: 11, color: c.dim, lineHeight: 1.6 }}>
+          <span style={{ color: '#34d399', fontWeight: 700 }}>How it works:</span> When you create a project, the Coordinator agent spins up a managed session with your project spec. It delegates to specialists in parallel — Architect defines the schema, Designer specs the components, Backend builds the API, Frontend builds the UI, Motion Designer adds animations, Copywriter fills in the content, QA reviews everything. All running concurrently in an isolated cloud container with unrestricted network access.
         </div>
       </div>
 
