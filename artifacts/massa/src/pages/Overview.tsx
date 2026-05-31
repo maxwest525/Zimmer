@@ -91,7 +91,14 @@ function PlanningReviewPanel({ project, onApprove, themeColors: c }: {
         )}
       </div>
       <div style={{ padding: 14, maxHeight: 280, overflowY: 'auto', background: c.panel }}>
-        {tabs.find(t => t.key === tab)?.content ? (
+        {project.status === 'failed' && tab === 'research' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#ef4444', fontFamily: 'Inter, system-ui, sans-serif' }}>Research failed — no builds were started</div>
+            <pre style={{ margin: 0, fontSize: 11, color: '#fca5a5', fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+              {project.research}
+            </pre>
+          </div>
+        ) : tabs.find(t => t.key === tab)?.content ? (
           <pre style={{ margin: 0, fontSize: 11, color: c.text, fontFamily: '"JetBrains Mono", Menlo, monospace', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
             {tabs.find(t => t.key === tab)!.content}
           </pre>
@@ -2598,6 +2605,11 @@ export function Overview() {
       es.addEventListener('awaiting_approval', () => {
         setProjects(prev => prev.map(proj => proj.id === String(p.id) ? { ...proj, status: 'awaiting_approval' as Status } : proj))
       })
+      es.addEventListener('planning_failed', (e) => {
+        const { error } = JSON.parse(e.data) as { error: string }
+        setProjects(prev => prev.map(proj => proj.id === String(p.id) ? { ...proj, status: 'failed' as Status, research: `Research failed: ${error}` } : proj))
+        es.close()
+      })
       es.addEventListener('approved', () => {
         setProjects(prev => prev.map(proj => proj.id === String(p.id) ? { ...proj, status: 'running' as Status } : proj))
       })
@@ -4053,7 +4065,7 @@ export function Overview() {
                       </div>
 
                       {/* Planning review panel */}
-                      {(project.status === 'planning' || project.status === 'awaiting_approval') && (
+                      {(project.status === 'planning' || project.status === 'awaiting_approval' || (project.status === 'failed' && project.research)) && (
                         <PlanningReviewPanel project={project} onApprove={async () => {
                           await fetch(`/api/projects/${project.id}/approve`, { method: 'POST' })
                           setProjects(prev => prev.map(p => p.id === project.id ? { ...p, status: 'running' as Status } : p))

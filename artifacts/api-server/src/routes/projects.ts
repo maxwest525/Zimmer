@@ -742,19 +742,18 @@ router.delete("/skills/massa/:id", async (req, res) => {
 const VISUAL_PROJECT_TYPES = ["landing-page", "marketing-site", "ecommerce", "dashboard", "mobile-app"];
 
 async function webSearch(query: string): Promise<string> {
-  try {
-    const key = process.env.FIRECRAWL_API_KEY;
-    if (!key) return "";
-    const res = await fetch("https://api.firecrawl.dev/v1/search", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ query, limit: 5, scrapeOptions: { formats: ["markdown"] } }),
-      signal: AbortSignal.timeout(15000),
-    });
-    const data = await res.json() as { data?: Array<{ url: string; markdown?: string; title?: string }> };
-    if (!data.data?.length) return "";
-    return data.data.map(r => `## ${r.title ?? r.url}\nSource: ${r.url}\n\n${(r.markdown ?? "").slice(0, 800)}`).join("\n\n---\n\n");
-  } catch { return ""; }
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) throw new Error("FIRECRAWL_API_KEY is not set — real web research requires this key. Add it to your environment variables.");
+  const res = await fetch("https://api.firecrawl.dev/v1/search", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ query, limit: 5, scrapeOptions: { formats: ["markdown"] } }),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) throw new Error(`Firecrawl search failed (HTTP ${res.status}) for query: "${query}"`);
+  const data = await res.json() as { data?: Array<{ url: string; markdown?: string; title?: string }> };
+  if (!data.data?.length) throw new Error(`Firecrawl returned no results for query: "${query}" — check your API key and quota`);
+  return data.data.map(r => `## ${r.title ?? r.url}\nSource: ${r.url}\n\n${(r.markdown ?? "").slice(0, 800)}`).join("\n\n---\n\n");
 }
 
 async function runPlanningPipeline(
@@ -779,13 +778,14 @@ async function runPlanningPipeline(
     ];
 
     const searchResults = await Promise.all(searchQueries.map(q => webSearch(q)));
-    const rawResearch = searchResults.filter(Boolean).join("\n\n===\n\n");
+    const rawResearch = searchResults.join("\n\n===\n\n");
 
-    const researchPrompt = rawResearch
-      ? `You are a senior product strategist. Synthesize the following real web research into a structured research brief for building "${projectName}" (${projectType}).\n\nGoal: ${projectGoal}\n\n## Web Research\n${rawResearch}\n\nReturn a structured markdown document covering: market context, key competitors and their differentiators, technical patterns used in the space, and 3-5 strategic recommendations for this specific build. Ground everything in the research above — no generic advice.`
-      : `You are a senior product strategist. Write a research brief for building "${projectName}" (${projectType}). Goal: ${projectGoal}. Cover: market context, competitors, technical patterns, and 3-5 strategic recommendations.`;
-
-    const research = await complete({ model, maxTokens: 2000, system: "You are a senior product strategist.", user: researchPrompt });
+    const research = await complete({
+      model,
+      maxTokens: 2000,
+      system: "You are a senior product strategist.",
+      user: `Synthesize the following real web research into a structured research brief for building "${projectName}" (${projectType}).\n\nGoal: ${projectGoal}\n\n## Web Research\n${rawResearch}\n\nReturn a structured markdown document covering: market context, key competitors and their differentiators, technical patterns used in the space, and 3-5 strategic recommendations for this specific build. Ground everything in the research above — no generic advice.`,
+    });
     await db.update(projectsTable).set({ research }).where(eq(projectsTable.id, projectId));
     pushSSE(projectId, "planning_stage", { stage: "research", status: "done", content: research });
 
@@ -812,11 +812,9 @@ async function runPlanningPipeline(
     pushSSE(projectId, "planning_stage", { stage: "wireframes", status: "done", content: wireframes });
     pushSSE(projectId, "awaiting_approval", { projectId });
   } catch (err) {
-    // If planning fails, fall straight into builds
     const msg = err instanceof Error ? err.message : "planning failed";
-    pushSSE(projectId, "planning_error", { error: msg });
-    await db.update(projectsTable).set({ status: "in_progress" }).where(eq(projectsTable.id, projectId));
-    void runBuildsWithStreaming(projectId, buildRows, origBuilds, typeConfig, projectName, projectGoal, model, designMd);
+    await db.update(projectsTable).set({ status: "failed", research: `## Research Failed\n\n**Error:** ${msg}\n\nFix the error above and create a new project to try again. No builds were started.` }).where(eq(projectsTable.id, projectId));
+    pushSSE(projectId, "planning_failed", { projectId, error: msg });
   }
 }
 
