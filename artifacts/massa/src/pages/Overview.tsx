@@ -2689,6 +2689,27 @@ export function Overview() {
 
   const sendChatMessage = async (buildId: string) => {
     if (!chatInput.trim()) return
+
+    // "ideas tab <content>" — save idea silently and confirm
+    const ideasMatch = chatInput.match(/^ideas?\s+tab\s+(.+)/i)
+    if (ideasMatch) {
+      const ideaText = ideasMatch[1].trim()
+      setChatInput('')
+      const now = new Date()
+      const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`
+      const userMsg = { id: `u-${Date.now()}`, role: 'user' as const, content: chatInput, time }
+      const confirmMsg = { id: `a-${Date.now()}`, role: 'agent' as const, content: `Saved to Ideas tab: "${ideaText}"`, time }
+      setChatMessages(prev => ({ ...prev, [buildId]: [...(prev[buildId] || []), userMsg, confirmMsg] }))
+      try {
+        await fetch('/api/ideas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: ideaText.slice(0, 80), description: ideaText }),
+        })
+      } catch { /* silent */ }
+      return
+    }
+
     const now = new Date()
     const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`
     const userMsg = { id: `u-${Date.now()}`, role: 'user' as const, content: chatInput, time }
